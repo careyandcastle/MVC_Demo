@@ -1,0 +1,9 @@
+{
+  "runtimeOptions": {
+    "additionalProbingPaths": [
+      "C:\\Users\\a08844\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\a08844\\.nuget\\packages",
+      "D:\\工作軟件\\vsProfessional2019_安裝位置\\公用元件、工具、SDK_自訂位置\\NuGetPackages"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "ExtendedData": {
+    "inputs": [
+      "http://localhost:16835/TscWebService/Organization.asmx"
+    ],
+    "collectionTypes": [
+      "System.Collections.Generic.Dictionary`2",
+      "System.Collections.Generic.List`1"
+    ],
+    "namespaceMappings": [
+      "*, WS4Organization"
+    ],
+    "sync": true,
+    "targetFramework": "net5.0",
+    "typeReuseMode": "All"
+  }
+}

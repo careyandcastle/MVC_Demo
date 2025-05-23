@@ -24,7 +24,7 @@ namespace MVC_Demo2
 
         public void ConfigureServices(IServiceCollection services)
         {
-            const string syskind = "AA";
+            const string syskind = "MVC_Demo";
             ConnectionStrings cs = ConnectionStrings.CreateInstance(syskind);
 
             TscLibCore.Startup.ConfigureServices(

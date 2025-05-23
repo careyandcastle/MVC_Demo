@@ -1,0 +1,9 @@
+D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\obj\Debug\net5.0\MVC_Demo2.GeneratedMSBuildEditorConfig.editorconfig
+D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\obj\Debug\net5.0\MVC_Demo2.AssemblyInfoInputs.cache
+D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\obj\Debug\net5.0\MVC_Demo2.AssemblyInfo.cs
+D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\obj\Debug\net5.0\MVC_Demo2.csproj.CoreCompileInputs.cache
+D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\obj\Debug\net5.0\MVC_Demo2.MvcApplicationPartsAssemblyInfo.cs
+D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\obj\Debug\net5.0\MVC_Demo2.MvcApplicationPartsAssemblyInfo.cache
+D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\obj\Debug\net5.0\MVC_Demo2.RazorAssemblyInfo.cache
+D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\obj\Debug\net5.0\MVC_Demo2.RazorAssemblyInfo.cs
+D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\obj\Debug\net5.0\MVC_Demo2.csproj.AssemblyReference.cache

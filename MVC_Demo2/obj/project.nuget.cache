@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ccvDYzXRz0qM1W8eijE/4kA9e84ZryAAC+YtQLaBrkhQgw8QepwdhVmhY7emP5WG71IOTgAyKfn6pxE6pEz7Sw==",
+  "dgSpecHash": "SOrfG5nxsNAwmvl3ECvLv0y2QyIYpV8qOXJVRkeztSCHDlrvPb6qVU87N/vEWB4BiFBh3wJpNMN+mPDvjl7+CQ==",
   "success": true,
   "projectFilePath": "D:\\每日資料\\20250523_工作日\\MVC\\MVC_Demo2\\MVC_Demo2\\MVC_Demo2.csproj",
   "expectedPackageFiles": [
@@ -14,7 +14,6 @@
     "C:\\Users\\a08844\\.nuget\\packages\\enums.net\\4.0.1\\enums.net.4.0.1.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\envdte\\17.2.32505.113\\envdte.17.2.32505.113.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\extendednumerics.bigdecimal\\2025.1001.2.129\\extendednumerics.bigdecimal.2025.1001.2.129.nupkg.sha512",
-    "C:\\Users\\a08844\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\jquery\\1.4.4\\jquery.1.4.4.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\jquery.validation\\1.19.5\\jquery.validation.1.19.5.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\mailkit\\3.2.0\\mailkit.3.2.0.nupkg.sha512",
@@ -45,12 +44,10 @@
     "C:\\Users\\a08844\\.nuget\\packages\\microsoft.entityframeworkcore\\5.0.17\\microsoft.entityframeworkcore.5.0.17.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\5.0.17\\microsoft.entityframeworkcore.abstractions.5.0.17.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\5.0.17\\microsoft.entityframeworkcore.analyzers.5.0.17.nupkg.sha512",
-    "C:\\Users\\a08844\\.nuget\\packages\\microsoft.entityframeworkcore.design\\5.0.17\\microsoft.entityframeworkcore.design.5.0.17.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\5.0.17\\microsoft.entityframeworkcore.relational.5.0.17.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\microsoft.entityframeworkcore.sqlite\\5.0.17\\microsoft.entityframeworkcore.sqlite.5.0.17.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\microsoft.entityframeworkcore.sqlite.core\\5.0.17\\microsoft.entityframeworkcore.sqlite.core.5.0.17.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\microsoft.entityframeworkcore.sqlserver\\5.0.17\\microsoft.entityframeworkcore.sqlserver.5.0.17.nupkg.sha512",
-    "C:\\Users\\a08844\\.nuget\\packages\\microsoft.entityframeworkcore.tools\\5.0.17\\microsoft.entityframeworkcore.tools.5.0.17.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\5.0.0\\microsoft.extensions.caching.abstractions.5.0.0.nupkg.sha512",
     "C:\\Users\\a08844\\.nuget\\packages\\microsoft.extensions.caching.memory\\5.0.0\\microsoft.extensions.caching.memory.5.0.0.nupkg.sha512",

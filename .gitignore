@@ -1,2 +1,47 @@
+## --- .NET Core / ASP.NET Core / Visual Studio ---
 bin/
 obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.dbmdl
+*.pdb
+*.cache
+*.log
+*.tlog
+*.vscode/
+*.csproj.user
+
+## --- NuGet ---
+*.nupkg
+*.snupkg
+*.nuspec
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## --- Rider / JetBrains 系統 ---
+.idea/
+*.sln.iml
+
+## --- VSCode (若有用) ---
+.vscode/
+history/
+*.code-workspace
+
+## --- 系統垃圾檔 ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*.bak
+*.tmp
+*.old
+*.orig
+
+## --- Windows 特定資料夾 ---
+$RECYCLE.BIN/
+*.lnk

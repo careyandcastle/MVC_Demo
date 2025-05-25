@@ -57,11 +57,17 @@ namespace MVC_Demo2
                 // 🛠️ 如果現在是開發機（例如：localhost 或 測試環境），才套用這段路由
                 if (env.IsDevelopment())
                 {
-                    // 👉 這是「預設路由」，意思是：網址長得像 /Home/Index 就會進到 HomeController 的 Index 方法
+                     //👉 這是「預設路由」，意思是：網址長得像 / Home / Index 就會進到 HomeController 的 Index 方法
                     endpoints.MapControllerRoute(
                         name: "default",
                         pattern: "{controller=Home}/{action=Index}"
+                    //pattern: "MVC_Demo2/{controller=Home}/{action=Index}"
                     );
+                    //endpoints.MapGet("/", async context =>
+                    //{
+                    //    context.Response.Redirect("/MVC_Demo2/Home/Index");
+                    //});
+
 
                     // ✅ 這樣輸入 http://localhost/Home/Index 或 http://localhost 就會進到 HomeController.Index()
                     // ✅ 如果網址省略 controller 或 action，就會使用預設值 Home / Index
@@ -69,10 +75,10 @@ namespace MVC_Demo2
 
                 // ✅ 不管是不是開發機，都可以走這段：
                 // 🔍 這段網址會要求必須前綴加上 "MVC_Demo"，像這樣：
-                // http://localhost/MVC_Demo/Home/Index → 對應 HomeController.Index()
+                // http://localhost/MVC_Demo2/Home/Index → 對應 HomeController.Index()
                 endpoints.MapControllerRoute(
                     name: "MVC_Demo_Route",
-                    pattern: "MVC_Demo/{controller=Home}/{action=Index}"
+                    pattern: "MVC_Demo2/{controller=Home}/{action=Index}"
                 );
             });
 

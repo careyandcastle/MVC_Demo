@@ -84,16 +84,16 @@ namespace MVC_Demo2.Controllers
 
         [HttpPost]
         //寫資料庫(更改資料)，也就是@@@4、@@@5才會用post
-        public IActionResult DeleteCarSeatData(Models.MvcDemoModel.車位資料檔 delTarget)
+        public IActionResult DeleteCarSeatDataPost(Models.MvcDemoModel.車位資料檔 deleteTarget)
         {
             // 0526 01:50 寫DB
-            _mvcDemoContext.車位資料檔.Remove(delTarget);
+            _mvcDemoContext.車位資料檔.Remove(deleteTarget);
             _mvcDemoContext.SaveChanges();
             // 0526 01:50 讀最新資料
             return Redirect("CarSeatList"); // 回到顯示CarSeatList.cshtml
 
         }
-        public IActionResult DeleteCarSeatData( //0526 14:39 這是有點select的感覺 //@@@5
+        public IActionResult DeleteCarSeatDataGridView( //0526 14:39 這是有點select的感覺 //@@@5
             string 事業,
             string 單位,
             string 部門,

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -39,6 +40,8 @@ namespace MVC_Demo2
                   shouldRecordWebServiceLog = false, //暫不寫入WSDB //呼叫要不要寫log? 透過web? 透過api? 讀Json回來
                   webServiceLogDbName = "WSDB" //提供服務給別人呼叫
               });
+           
+              services.AddDbContext < Models.MvcDemoContext > (b => b.UseSqlServer(cs.GetDbConnectionString("MVCDemoDB")));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -61,13 +64,9 @@ namespace MVC_Demo2
                     endpoints.MapControllerRoute(
                         name: "default",
                         pattern: "{controller=Home}/{action=Index}"
-                    //pattern: "MVC_Demo2/{controller=Home}/{action=Index}"
-                    );
-                    //endpoints.MapGet("/", async context =>
-                    //{
-                    //    context.Response.Redirect("/MVC_Demo2/Home/Index");
-                    //});
 
+                    );
+ 
 
                     // ✅ 這樣輸入 http://localhost/Home/Index 或 http://localhost 就會進到 HomeController.Index()
                     // ✅ 如果網址省略 controller 或 action，就會使用預設值 Home / Index

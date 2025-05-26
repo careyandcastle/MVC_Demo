@@ -35,10 +35,14 @@ namespace MVC_Demo2.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
-        {
+        private readonly MvcDemoContext _mvcDemoContext;//0526 11:03 新增
+                                                        //👉 這行是：定義一個資料庫連線變數，類型是你之前設定的 DbContext（叫 MvcDemoContext）
+                                                        //它就像是「資料庫的遙控器」。
+        public HomeController(ILogger<HomeController> logger, MvcDemoContext mvcDemoContext)//0526 11:03 新增 ", MvcDemoContext mvcDemoContext"
+        {                                                                                   //👉 這是 建構子（Constructor），執行的時候 ASP.NET Core 會自動「把資料庫的服務實體塞進來」。
             _logger = logger;
+            _mvcDemoContext = mvcDemoContext;//0526 11:03 新增
+                                             //👉 這是把注入進來的物件存到你上面定義的 _mvcDemoContext 變數裡。
         }
 
         public IActionResult Index()
@@ -49,13 +53,29 @@ namespace MVC_Demo2.Controllers
         //0526-10:01
         public IActionResult CarSeatList()
         {
-            return View();
+            //List<Models.MvcDemoModel.車位資料檔> carList = (from cars in _mvcDemoContext.車位資料檔
+            //                                           select cars).ToList(); // 0526 11:21 講解了List的型別
+            //                                                                  // 關於ICollection、IList各自的刪除增加方法
+            List<Models.MvcDemoModel.車位資料檔> carList = (from cars in _mvcDemoContext.車位資料檔 select cars).ToList();
+
+            /*0526 11:38
+            ViewBag.myData = carList;
+            ViewBag.myDataLength = carList.Count();
+
+            11:45 俊智哥提醒: 這裡的變數一旦拿掉，就要對CarSeatList.cshtml的@{}部分做處理(不確定是甚麼處理，但看起來是轉型，對應改變@@@1)
+            */
+
+
+            return View(carList);
+            //return View("Error"); //0526 11:38
         }
 
 
         public IActionResult Privacy()
         {
             return View();
+            //10:59 F12解釋@model
+            //IEnumberable 是列舉，是一筆一筆的資料，所以才能被走訪
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

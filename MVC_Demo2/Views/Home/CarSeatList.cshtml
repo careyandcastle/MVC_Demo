@@ -90,7 +90,16 @@
                             樓層 = item.樓層,
                             車位編號 = item.車位編號,
                    }); |
-                        @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                        @Html.ActionLink("明細", "CarSeatDetailGridView", new
+                   {
+                       事業 = item.事業,
+                       單位 = item.單位,
+                       部門 = item.部門,
+                       分部 = item.分部,
+                       建物編號 = item.建物編號,
+                       樓層 = item.樓層,
+                       車位編號 = item.車位編號,
+                   }) |
                         @Html.ActionLink("刪除", "DeleteCarSeatDataGridView", new
                    {
                        事業 = item.事業,

@@ -30,13 +30,17 @@
 </head>
 <body>
     <p>
-        <a asp-action="Create">Create New</a>
+        @*0526 13:20*@
+        @*<a asp-action="Create">Create New</a>*@
+        <a asp-action="Create">Create New</a> 
     </p>
     <table class="table">
         <thead>
             <tr>
                 <th>
-                    @Html.DisplayNameFor(model => model.車位大小編號)
+                    @*@Html.DisplayNameFor(model => model.車位大小編號)*@
+                    @Html.DisplayNameFor(model => model.建物編號) 
+                    @*0526 13:58修改為建物編號*@
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.車位種類編號)
@@ -59,7 +63,9 @@
             {
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => item.車位大小編號)
+                        @*@Html.DisplayFor(modelItem => item.車位大小編號)*@
+                        @Html.DisplayFor(modelItem => item.建物編號)
+                        @*0526 13:58修改為建物編號*@
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.車位種類編號)

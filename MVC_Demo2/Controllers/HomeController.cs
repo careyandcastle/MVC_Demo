@@ -49,7 +49,9 @@ namespace MVC_Demo2.Controllers
         {
             return View();
         }
-        [HttpPost]
+
+       
+
         //public IActionResult Create(Models.MvcDemoModel.車位資料檔 userInput) // 0526 01:33 👉 處理「使用者送出表單後的資料」
         public IActionResult Create_A_Car(Models.MvcDemoModel.車位資料檔 userInput) // 0526 01:37 改名Create為Create_A_Car (@@@2於Create.cshtml)
         {
@@ -62,9 +64,95 @@ namespace MVC_Demo2.Controllers
             _mvcDemoContext.車位資料檔.Add(userInput);
             _mvcDemoContext.SaveChanges();
             // 0526 01:50 讀最新資料
-            return Redirect("CarSeatList");
+            return Redirect("CarSeatList"); // 回到顯示CarSeatList.cshtml
 
         }
+
+
+
+        //public IActionResult EditCarSeatData(Models.MvcDemoModel.車位資料檔 target) // 一定要把修改的那筆送給伺服器，他才知道要改那一筆
+        //{ //因為命名為EditCarSeatData，你在CarSeatList.cshtml中點edit是沒有用的，@@@3處要改成<form asp-action="EditCarSeatData"> 
+        //    // 0526 02:19 更新DB
+        //    //_mvcDemoContext.車位資料檔.Add(userInput); //0526 14:26 警告: 在edit中，不可以直接用userInput，要用上面的參數!!
+        //    var editTarget = _mvcDemoContext.車位資料檔.Find(事業,單位...);  //會去DB找出一筆，放入editTarget
+
+        //    _mvcDemoContext.SaveChanges();
+
+        //    // 0526 02:19 讀最新資料
+        //    return Redirect("CarSeatList"); // 回到顯示CarSeatList.cshtml
+        //}
+
+        [HttpPost]
+        //寫資料庫(更改資料)，也就是@@@4、@@@5才會用post
+        public IActionResult DeleteCarSeatData(Models.MvcDemoModel.車位資料檔 delTarget)
+        {
+            // 0526 01:50 寫DB
+            _mvcDemoContext.車位資料檔.Remove(delTarget);
+            _mvcDemoContext.SaveChanges();
+            // 0526 01:50 讀最新資料
+            return Redirect("CarSeatList"); // 回到顯示CarSeatList.cshtml
+
+        }
+        public IActionResult DeleteCarSeatData( //0526 14:39 這是有點select的感覺 //@@@5
+            string 事業,
+            string 單位,
+            string 部門,
+            string 分部,
+            string 建物編號,
+            int 樓層, // 0526 14:33 都要是int!
+            int 車位編號)  // 0526 14:33 都要是int!
+        {
+            var deleteTarget = _mvcDemoContext.車位資料檔.Find(
+                事業,
+                單位,
+                部門,
+                分部,
+                建物編號,
+                樓層,
+                車位編號);
+
+            return View(deleteTarget);
+        }
+
+        //public IActionResult EditCarSeatDataGridview()
+        //{
+        //    return View();
+        //    //View("EditCarSeatDataGridview");
+        //}
+
+        [HttpPost]
+        //寫資料庫(更改資料)，也就是@@@4、@@@5才會用post
+        public IActionResult EditCarSeatDataPost(Models.MvcDemoModel.車位資料檔 editTarget) //修改 //@@@4
+        {
+            // 0526 01:50 寫DB
+            _mvcDemoContext.車位資料檔.Update(editTarget);
+            _mvcDemoContext.SaveChanges();
+            // 0526 01:50 讀最新資料
+            return Redirect("CarSeatList"); // 回到顯示CarSeatList.cshtml
+ 
+        }
+        public IActionResult EditCarSeatDataGridview( // 顯示 //0526 14:39 這是有點select的感覺 //這裡是要畫面的，前面不能加[HttpPost](伺服器會認為我要去@@@4)
+            string 事業,
+            string 單位,
+            string 部門,
+            string 分部,
+            string 建物編號,
+            int 樓層, // 0526 14:33 都要是int!
+            int 車位編號)  // 0526 14:33 都要是int!
+        {
+            var editTarget = _mvcDemoContext.車位資料檔.Find(
+                事業,
+                單位,
+                部門,
+                分部,
+                建物編號,
+                樓層,
+                車位編號);
+
+            return View(editTarget);
+        }
+
+
         public IActionResult Create() // 0526 01:33 👉 顯示「空白的新增表單」
         {
             return View(); // ✅ 傳空資料進 View
@@ -121,8 +209,9 @@ namespace MVC_Demo2.Controllers
 
             return View(carList);
             //return View("Error"); //0526 11:38
-        }
+ 
 
+        }
 
         public IActionResult Privacy()
         {

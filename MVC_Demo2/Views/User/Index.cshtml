@@ -1,5 +1,13 @@
-﻿@*@model IEnumerable<MVC_Demo2.Models.ViewModel.承租人VM>*@
-@model IList<MVC_Demo2.Models.ViewModel.承租人VM>
+﻿@model IEnumerable<MVC_Demo2.Models.ViewModel.承租人VM>
+
+
+
+@*@model IList<MVC_Demo2.Models.ViewModel.承租人VM>*@
+
+
+
+
+
 @*@model IEnumerable<MVC_Demo2.Models.MvcDemoModel.承租人檔>*@ 
 @*0527 10:35註解掉了*@
 
@@ -13,87 +21,148 @@
     <a asp-action="Create">Create New</a>
 </p>
 <table class="table">
+    @*0527 11:47 這裡是標頭*@
     <thead>
         <tr>
 
             <th>
-                @Html.DisplayNameFor(model => model[0].事業)
+                @Html.DisplayNameFor(model => model.事業)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model[0].單位)
+                @Html.DisplayNameFor(model => model.單位)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model[0].部門)
+                @Html.DisplayNameFor(model => model.部門)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model[0].分部)
+                @Html.DisplayNameFor(model => model.分部)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model[0].承租人姓名)
+                @Html.DisplayNameFor(model => model.承租人姓名)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model[0].身分別編號)
+                @Html.DisplayNameFor(model => model.身分別編號)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.統一編號)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.電話)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.行動電話)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.傳真)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.eMail)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.地址)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.發票寄送地址)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.銀行帳號)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.備註)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.發票載具)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.刪除註記)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.修改人)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.修改時間)
+            </th>
+            @*<th>
+                @Html.DisplayNameFor(model => model.身分別編號)
+            </th>*@
 
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.承租人)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.統一編號)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.電話)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.行動電話)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.傳真)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.eMail)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.地址)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.發票寄送地址)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.銀行帳號)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.備註)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.發票載具)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.刪除註記)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.修改人)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.修改時間)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.身分別編號)
-            </td>
-            @*<td>
-            @Html.DisplayFor(modelItem => item.身分別編號Navigation.身分別編號)
-        </td>*@
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            @*0527 11:47 這裡是資料值*@
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.事業)
+                </td>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.單位)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.部門)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.分部)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.承租人姓名)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.身分別編號)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.統一編號)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.電話)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.行動電話)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.傳真)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.eMail)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.地址)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.發票寄送地址)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.銀行帳號)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.備註)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.發票載具)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.刪除註記)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.修改人)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.修改時間)
+                </td>
+                @*<td>
+                    @Html.DisplayFor(modelItem => item.身分別編號)
+                </td>*@
+                @*<td>
+                        @Html.DisplayFor(modelItem => item.身分別編號Navigation.身分別編號)
+                    </td>*@
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                    @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                    @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

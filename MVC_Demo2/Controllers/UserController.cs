@@ -21,6 +21,13 @@ namespace MVC_Demo2.Controllers
         {
             _context = context;
         }
+        //private static string SafeDecryptStatic11(MvcDemoContext context, byte[] encrypted)
+        //{
+        //    if (encrypted == null || encrypted.Length == 0)
+        //        return "(未填)";
+        //    var decrypted = context.DecryptByKey(encrypted);
+        //    return decrypted != null ? Encoding.Unicode.GetString(decrypted) : "(解密失敗)";
+        //}
 
         // GET: User
         public async Task<IActionResult> Index()  //0527 09:36 
@@ -40,6 +47,8 @@ namespace MVC_Demo2.Controllers
             //    單位 = s.單位,
             //    單位 = s.單位            
             //}); // 10:20
+
+            _context.OpenSymmetricKey = true; // 0527 11:35
             var mvcDemoContext = _context.承租人檔.Select(s => new 承租人VM{
                 單位 = s.單位,
                 //單位1 = s.單位, //左邊不能隨便取名，主要就是在承租人VM那邊只有"單位"，沒有"單位1"欄位
@@ -48,18 +57,22 @@ namespace MVC_Demo2.Controllers
                 部門 = s.部門,
                 分部 = s.分部,
                 承租人姓名 = Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人)),
-        //        承租人姓名 = s.承租人 != null && _context.DecryptByKey(s.承租人) != null
-        //? Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人))
-        //: "(未填)",
+                //承租人姓名 = s.承租人 != null
+                //? Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人))
+                //: "(未填)",
+
+                //: "(未填)",
 
                 身分別編號 = s.身分別編號 //隨便挑，來自 D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\MvcDemoModel\承租人檔.cs
-            }); //使用system.text
-        //}); // 10:20
+            });; //使用system.text
+                 //}); // 10:20
 
-
-            return View(await mvcDemoContext.ToListAsync());
-        //D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Views\User\Index.cshtml
-        //D:\SVN\TscLibCore\BaseObject\BaseDbContext.cs 這是解碼相關的
+            var result = await mvcDemoContext.ToListAsync(); // 0527 11:35
+            _context.OpenSymmetricKey = false; // 0527 11:35
+            return View(result); // 0527 11:35
+                                 //var result = await mvcDemoContext.ToListAsync();
+                                 //D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Views\User\Index.cshtml
+                                 //D:\SVN\TscLibCore\BaseObject\BaseDbContext.cs 這是解碼相關的
         }
 
         // GET: User/Details/5

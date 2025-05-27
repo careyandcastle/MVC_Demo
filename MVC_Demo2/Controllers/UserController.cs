@@ -98,7 +98,7 @@ namespace MVC_Demo2.Controllers
         // GET: User/Create
         public IActionResult Create()
         {
-            ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別編號");
+            ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別"); //0527 "身分別"
             return View();
         }
 
@@ -107,15 +107,27 @@ namespace MVC_Demo2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("事業,單位,部門,分部,承租人編號,承租人,身分別編號,統一編號,電話,行動電話,傳真,eMail,地址,發票寄送地址,銀行帳號,備註,發票載具,刪除註記,修改人,修改時間")] 承租人檔 承租人檔)
+        public async Task<IActionResult> Create([Bind("事業,單位,部門,分部,承租人編號,承租人,身分別編號,")] 承租人VM 承租人檔)
         {
-            if (ModelState.IsValid)
+            if (ModelState.IsValid) //Server端檢查 modelState，看誰錯 ResultView
             {
+                
+
+
+                //加密承租人中文姓名轉 bytes
+                var dbKeyName = "WuYeahSymmKey";
+                承租人檔.承租人 = _context.承租人檔.Select(x => _context.EncryptByKey(_context.Key_Guid(dbKeyName), 承租人檔.承租人姓名)
+                ).FirstOrDefault();
+
+                //承租人檔.統一編號 = new byte[5] { 1,2,3,4,5 };
+
                 _context.Add(承租人檔);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
+
             }
-            ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別編號", 承租人檔.身分別編號);
+            //ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別編號", 承租人檔.身分別編號);
+            ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別", 承租人檔.身分別編號);
             return View(承租人檔);
         }
 

@@ -64,7 +64,8 @@ namespace MVC_Demo2.Controllers
                 承租人姓名 = s.承租人 == null ? "假名" :  
                 Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人)), // 14:20
 
-                身分別編號 = s.身分別編號 //隨便挑，來自 D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\MvcDemoModel\承租人檔.cs
+                身分別編號 = s.身分別編號, //隨便挑，來自 D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\MvcDemoModel\承租人檔.cs
+                承租人編號 = s.承租人編號 //隨便挑，來自 D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\MvcDemoModel\承租人檔.cs
             }); //使用system.text
                 
             
@@ -165,44 +166,90 @@ namespace MVC_Demo2.Controllers
         }
 
         // GET: User/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        //public async Task<IActionResult> Edit(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    var 承租人檔 = await _context.承租人檔.FindAsync(id);
+        //    if (承租人檔 == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別編號", 承租人檔.身分別編號);
+        //    return View(承租人檔);
+        //}
+
+        // POST: User/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
+        public async Task<IActionResult> Edit(
+            string 事業, string 單位, string 部門, string 分部,
+            string 承租人編號)
         {
-            if (id == null)
+
+            if (單位 == null || 部門 == null)
             {
                 return NotFound();
             }
 
-            var 承租人檔 = await _context.承租人檔.FindAsync(id);
+            //讀DB資料
+            var 承租人檔 = await _context.承租人檔.FindAsync(事業, 單位, 部門, 分部, 承租人編號);
             if (承租人檔 == null)
             {
                 return NotFound();
             }
             ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別編號", 承租人檔.身分別編號);
-            return View(承租人檔);
+
+            //讀出來的資料轉JSON 字串
+            var 承租人檔JSON = System.Text.Json.JsonSerializer.Serialize(承租人檔);
+
+            //JSON字串轉物件
+            var 承租人檔VM = System.Text.Json.JsonSerializer.Deserialize<承租人VM>(承租人檔JSON);
+
+            //承租人Byte Array解密轉中文
+            _context.OpenSymmetricKey = true;
+            承租人檔VM.承租人姓名 = _context.承租人檔.Select(s => Encoding.Unicode.GetString(
+                    _context.DecryptByKey(承租人檔.承租人))).FirstOrDefault();
+            _context.OpenSymmetricKey = false;
+
+            //將承租人檔VM送給client
+            return View(承租人檔VM);
         }
 
-        // POST: User/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("事業,單位,部門,分部,承租人編號,承租人,身分別編號,統一編號,電話,行動電話,傳真,eMail,地址,發票寄送地址,銀行帳號,備註,發票載具,刪除註記,修改人,修改時間")] 承租人檔 承租人檔)
+        public async Task<IActionResult> Edit([Bind("事業,單位,部門,分部,承租人編號,承租人姓名,身分別編號,統一編號,電話,行動電話,傳真,eMail,地址,發票寄送地址,銀行帳號,備註,發票載具,刪除註記,修改人,修改時間")] 承租人VM User送來的承租人檔)
         {
-            if (id != 承租人檔.事業)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(承租人檔);
+                    var 舊的承租人檔 = await _context.承租人檔.FindAsync(User送來的承租人檔.事業, User送來的承租人檔.單位, User送來的承租人檔.部門, User送來的承租人檔.分部, User送來的承租人檔.承租人編號, User送來的承租人檔.承租人姓名);
+
+                    _context.OpenSymmetricKey = true;
+                    var dbKeyName = "WuYeahSymmKey";
+                    User送來的承租人檔.承租人 = _context.承租人檔.Select(s =>
+                                    _context.EncryptByKey(_context.Key_Guid(dbKeyName), User送來的承租人檔.承租人姓名)).FirstOrDefault();
+
+                    User送來的承租人檔.統一編號 = new byte[] { 1, 2, 3, 4, 5 };
+                    User送來的承租人檔.刪除註記 = false;
+                    User送來的承租人檔.修改人 = "08844";
+                    User送來的承租人檔.修改時間 = DateTime.Now;
+
+                    _context.Update(User送來的承租人檔);
                     await _context.SaveChangesAsync();
+
+                    _context.OpenSymmetricKey = false;
+                    return RedirectToAction(nameof(Edit));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!承租人檔Exists(承租人檔.事業))
+                    if (!承租人檔Exists(User送來的承租人檔.事業))
                     {
                         return NotFound();
                     }
@@ -213,9 +260,11 @@ namespace MVC_Demo2.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別編號", 承租人檔.身分別編號);
-            return View(承租人檔);
+            ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別編號", User送來的承租人檔.身分別編號);
+            return View(User送來的承租人檔);
         }
+
+
 
         // GET: User/Delete/5
         public async Task<IActionResult> Delete(string id)

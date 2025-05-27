@@ -1,0 +1,122 @@
+﻿@model MVC_Demo2.Models.MvcDemoModel.承租人檔
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>承租人檔</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="事業" class="control-label"></label>
+                <input asp-for="事業" class="form-control" />
+                <span asp-validation-for="事業" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="單位" class="control-label"></label>
+                <input asp-for="單位" class="form-control" />
+                <span asp-validation-for="單位" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="部門" class="control-label"></label>
+                <input asp-for="部門" class="form-control" />
+                <span asp-validation-for="部門" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="分部" class="control-label"></label>
+                <input asp-for="分部" class="form-control" />
+                <span asp-validation-for="分部" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="承租人編號" class="control-label"></label>
+                <input asp-for="承租人編號" class="form-control" />
+                <span asp-validation-for="承租人編號" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="承租人" class="control-label"></label>
+                <input asp-for="承租人" class="form-control" />
+                <span asp-validation-for="承租人" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="身分別編號" class="control-label"></label>
+                <select asp-for="身分別編號" class ="form-control" asp-items="ViewBag.身分別編號"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="統一編號" class="control-label"></label>
+                <input asp-for="統一編號" class="form-control" />
+                <span asp-validation-for="統一編號" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="電話" class="control-label"></label>
+                <input asp-for="電話" class="form-control" />
+                <span asp-validation-for="電話" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="行動電話" class="control-label"></label>
+                <input asp-for="行動電話" class="form-control" />
+                <span asp-validation-for="行動電話" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="傳真" class="control-label"></label>
+                <input asp-for="傳真" class="form-control" />
+                <span asp-validation-for="傳真" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="eMail" class="control-label"></label>
+                <input asp-for="eMail" class="form-control" />
+                <span asp-validation-for="eMail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="地址" class="control-label"></label>
+                <input asp-for="地址" class="form-control" />
+                <span asp-validation-for="地址" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="發票寄送地址" class="control-label"></label>
+                <input asp-for="發票寄送地址" class="form-control" />
+                <span asp-validation-for="發票寄送地址" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="銀行帳號" class="control-label"></label>
+                <input asp-for="銀行帳號" class="form-control" />
+                <span asp-validation-for="銀行帳號" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="備註" class="control-label"></label>
+                <input asp-for="備註" class="form-control" />
+                <span asp-validation-for="備註" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="發票載具" class="control-label"></label>
+                <input asp-for="發票載具" class="form-control" />
+                <span asp-validation-for="發票載具" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="刪除註記" /> @Html.DisplayNameFor(model => model.刪除註記)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="修改人" class="control-label"></label>
+                <input asp-for="修改人" class="form-control" />
+                <span asp-validation-for="修改人" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

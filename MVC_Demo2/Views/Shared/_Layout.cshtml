@@ -28,6 +28,11 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="CarSeatList">車位清單</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Index">User清單</a> 
+                            @*0527 09:36 這就是首頁的tab ， 我們controller採用自動生成的UserController，所以asp-controller = "User"。*@
+                            @*asp-action 記得改成index ， 這樣才可以使用UserController的index函式 *@
+                        </li>
                     </ul>
                 </div>
             </div>

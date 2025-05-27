@@ -30,7 +30,7 @@ namespace MVC_Demo2.Models.MvcDemoModel
         [Key]
         [StringLength(5)]
         public string 承租人編號 { get; set; }
-        [Required]
+        //[Required]
         public byte[] 承租人 { get; set; }
         //public byte[] 承租人姓名 { get; set; }
         //承租人VM，繼承"承租人檔"
@@ -39,7 +39,7 @@ namespace MVC_Demo2.Models.MvcDemoModel
         [Required]
         [StringLength(2)]
         public string 身分別編號 { get; set; }
-        [Required]
+        //[Required]
         public byte[] 統一編號 { get; set; }
         public byte[] 電話 { get; set; }
         public byte[] 行動電話 { get; set; }
@@ -51,7 +51,7 @@ namespace MVC_Demo2.Models.MvcDemoModel
         public byte[] 備註 { get; set; }
         public byte[] 發票載具 { get; set; }
         public bool 刪除註記 { get; set; }
-        [Required]
+        //[Required]
         [StringLength(10)]
         public string 修改人 { get; set; }
         [Column(TypeName = "datetime")]

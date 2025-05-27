@@ -57,9 +57,12 @@ namespace MVC_Demo2.Controllers
                 部門 = s.部門,
                 分部 = s.分部,
                 //承租人姓名 = Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人)),
-                承租人姓名 = (s.承租人 != null && _context.DecryptByKey(s.承租人) != null) // 0527 11:50實驗 @@@8
-                ? Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人))
-                : "(OpenSymmeticKey忘記開關囉)",
+                //承租人姓名 = (s.承租人 != null && _context.DecryptByKey(s.承租人) != null) // 0527 11:50實驗 @@@8
+                //? Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人))
+                //: "(OpenSymmeticKey忘記開關囉)",
+
+                承租人姓名 = s.承租人 == null ? "假名" :  
+                Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人)), // 14:20
 
                 身分別編號 = s.身分別編號 //隨便挑，來自 D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\MvcDemoModel\承租人檔.cs
             }); //使用system.text
@@ -107,27 +110,57 @@ namespace MVC_Demo2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("事業,單位,部門,分部,承租人編號,承租人,身分別編號,")] 承租人VM 承租人檔)
+        //public async Task<IActionResult> Create([Bind("事業,單位,部門,分部,承租人編號,承租人,身分別編號,")] 承租人VM 承租人檔)  //0527 14:36 錯誤版本
+        //{
+        //    if (ModelState.IsValid) //Server端檢查 modelState，看誰錯 ResultView
+        //    {
+        //        //加密承租人中文姓名轉 bytes
+        //        var dbKeyName = "WuYeahSymmKey";
+        //        _context.OpenSymmetricKey = true;
+        //        承租人檔.承租人 = _context.承租人檔.Select(x => _context.EncryptByKey(_context.Key_Guid(dbKeyName), 承租人檔.承租人姓名)
+        //        ).FirstOrDefault();
+
+        //        承租人檔.統一編號 = new byte[] { 1,2,3,4,5 };
+        //        承租人檔.刪除註記 = false;
+        //        承租人檔.修改人 = "08844";
+        //        承租人檔.修改時間 = DateTime.Now;
+
+        //        _context.Add(承租人檔);
+        //        await _context.SaveChangesAsync();
+
+        //        _context.OpenSymmetricKey = false;
+
+        //        return RedirectToAction(nameof(Index));//你可以住轉跳到很多action，但有時候可能會多打個空白，所以打nameof()能夠檢查，如果找不到本檔案裡的function(也就是Index)，他會是灰色警告
+
+        //    }
+        //    //ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別編號", 承租人檔.身分別編號);
+        //    ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別", 承租人檔.身分別編號);
+        //    return View(承租人檔);
+        //}
+
+        public async Task<IActionResult> Create([Bind("事業,單位,部門,分部,承租人編號,承租人姓名,身分別編號")] 承租人VM 承租人檔) //0527 14:36 正確版本，來自僑偉
         {
-            if (ModelState.IsValid) //Server端檢查 modelState，看誰錯 ResultView
+            if (ModelState.IsValid)
             {
-                
-
-
-                //加密承租人中文姓名轉 bytes
+                //_context.Add(承租人檔);
+                //await _context.SaveChangesAsync();
+                _context.OpenSymmetricKey = true;
                 var dbKeyName = "WuYeahSymmKey";
-                承租人檔.承租人 = _context.承租人檔.Select(x => _context.EncryptByKey(_context.Key_Guid(dbKeyName), 承租人檔.承租人姓名)
-                ).FirstOrDefault();
+                承租人檔.承租人 = _context.承租人檔.Select(s =>
+                                    _context.EncryptByKey(_context.Key_Guid(dbKeyName), 承租人檔.承租人姓名)).FirstOrDefault();
 
-                //承租人檔.統一編號 = new byte[5] { 1,2,3,4,5 };
+                承租人檔.統一編號 = new byte[] { 1, 2, 3, 4, 5 };
+                承租人檔.刪除註記 = false;
+                承租人檔.修改人 = "08844";
+                承租人檔.修改時間 = DateTime.Now;
 
                 _context.Add(承租人檔);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                _context.OpenSymmetricKey = false;
 
+                return RedirectToAction(nameof(Index));
             }
-            //ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別編號", 承租人檔.身分別編號);
-            ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別", 承租人檔.身分別編號);
+            ViewData["身分別編號"] = new SelectList(_context.身分別檔, "身分別編號", "身分別編號", 承租人檔.身分別編號);
             return View(承租人檔);
         }
 

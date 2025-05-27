@@ -223,29 +223,51 @@ namespace MVC_Demo2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([Bind("事業,單位,部門,分部,承租人編號,承租人姓名,身分別編號,統一編號,電話,行動電話,傳真,eMail,地址,發票寄送地址,銀行帳號,備註,發票載具,刪除註記,修改人,修改時間")] 承租人VM User送來的承租人檔)
+        public async Task<IActionResult> Edit([Bind("事業,單位,部門,分部,承租人編號,身分別編號,承租人姓名")] 承租人VM User送來的承租人檔)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var 舊的承租人檔 = await _context.承租人檔.FindAsync(User送來的承租人檔.事業, User送來的承租人檔.單位, User送來的承租人檔.部門, User送來的承租人檔.分部, User送來的承租人檔.承租人編號, User送來的承租人檔.承租人姓名);
+                    //var 舊的承租人檔 = await _context.承租人檔.FindAsync(User送來的承租人檔.事業, User送來的承租人檔.單位, User送來的承租人檔.部門, User送來的承租人檔.分部, User送來的承租人檔.承租人編號, User送來的承租人檔.承租人姓名);
+
+                    //_context.OpenSymmetricKey = true;
+                    //var dbKeyName = "WuYeahSymmKey";
+                    //User送來的承租人檔.承租人 = _context.承租人檔.Select(s =>
+                    //                _context.EncryptByKey(_context.Key_Guid(dbKeyName), User送來的承租人檔.承租人姓名)).FirstOrDefault();
+
+                    //User送來的承租人檔.統一編號 = new byte[] { 1, 2, 3, 4, 5 };
+                    //User送來的承租人檔.刪除註記 = false;
+                    //User送來的承租人檔.修改人 = "08844";
+                    //User送來的承租人檔.修改時間 = DateTime.Now;
+
+                    //_context.Update(User送來的承租人檔);
+                    //await _context.SaveChangesAsync();
+
+                    //_context.OpenSymmetricKey = false;
+                    //return RedirectToAction(nameof(Edit));
+                    var 舊有的_承租人檔 = await _context.承租人檔.FindAsync(
+                                         User送來的承租人檔.事業, User送來的承租人檔.單位,
+                                         User送來的承租人檔.部門, User送來的承租人檔.分部,
+                                         User送來的承租人檔.承租人編號); //0527 16:00 五個主鍵(想知道幾個主鍵，可以去Edit.cshtml看 哪個被hidden了)
 
                     _context.OpenSymmetricKey = true;
                     var dbKeyName = "WuYeahSymmKey";
-                    User送來的承租人檔.承租人 = _context.承租人檔.Select(s =>
-                                    _context.EncryptByKey(_context.Key_Guid(dbKeyName), User送來的承租人檔.承租人姓名)).FirstOrDefault();
+                    舊有的_承租人檔.承租人 = _context.承租人檔.Select(s =>
+                     _context.EncryptByKey(
+                         _context.Key_Guid(dbKeyName), User送來的承租人檔.承租人姓名)
+                     ).FirstOrDefault();
 
-                    User送來的承租人檔.統一編號 = new byte[] { 1, 2, 3, 4, 5 };
-                    User送來的承租人檔.刪除註記 = false;
-                    User送來的承租人檔.修改人 = "08844";
-                    User送來的承租人檔.修改時間 = DateTime.Now;
+                    //User送來的承租人檔.統一編號 = new byte[] { 1, 2, 3, 4, 5 };
+                    //User送來的承租人檔.刪除註記 = false;
+                    //User送來的承租人檔.修改人 = "08844";
+                    //User送來的承租人檔.修改時間 = DateTime.Now;
 
-                    _context.Update(User送來的承租人檔);
+                    _context.Update(舊有的_承租人檔);
                     await _context.SaveChangesAsync();
 
                     _context.OpenSymmetricKey = false;
-                    return RedirectToAction(nameof(Edit));
+                    //return RedirectToAction(nameof(Edit));
                 }
                 catch (DbUpdateConcurrencyException)
                 {

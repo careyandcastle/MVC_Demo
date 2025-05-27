@@ -32,6 +32,10 @@ namespace MVC_Demo2.Models.MvcDemoModel
         public string 承租人編號 { get; set; }
         [Required]
         public byte[] 承租人 { get; set; }
+        //public byte[] 承租人姓名 { get; set; }
+        //承租人VM，繼承"承租人檔"
+        //新增資料夾ViewModel於Models底下，承租人VM.cs
+        //新增類別，稱為 D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\ViewModel\承租人VM.cs
         [Required]
         [StringLength(2)]
         public string 身分別編號 { get; set; }

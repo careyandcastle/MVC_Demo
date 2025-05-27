@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MVC_Demo2.Models;
 using MVC_Demo2.Models.MvcDemoModel;
+using MVC_Demo2.Models.ViewModel;
 
 namespace MVC_Demo2.Controllers
 {
     public class UserController : Controller
     {
         private readonly MvcDemoContext _context;
+        // D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\MvcDemoContext.cs @@@6
 
         public UserController(MvcDemoContext context)
         {
@@ -22,10 +25,41 @@ namespace MVC_Demo2.Controllers
         // GET: User
         public async Task<IActionResult> Index()  //0527 09:36 
         {
-            var mvcDemoContext = _context.承租人檔; 
-            //_context.承租人檔.Include(承 => 承.身分別編號Navigation);
+            //var mvcDemoContext = _context.承租人檔; // 09:00
+            // 09:15 _context.承租人檔.Include(承 => 承.身分別編號Navigation);
+            //var mvcDemoContext = _context.承租人檔.Select(s => new承租人VM{ }); // 10:17 講解到一半
+            //var mvcDemoContext = _context.承租人檔.Select(s => s.單位); // 10:20 講解到一半
+
+            //講解，簡單來講，就是把承租人檔的item 都拋到承租人VM，
+            //var mvcDemoContext = _context.承租人檔.Select(s => new { 
+            //    單位 = s.單位, 
+            //    //單位1 = s.單位, //左邊隨便取名，主要就是在承租人VM那邊要用這些命名
+            //    事業 = s.事業, 
+            //    單位 = s.單位, 
+            //    單位 = s.單位,
+            //    單位 = s.單位,
+            //    單位 = s.單位            
+            //}); // 10:20
+            var mvcDemoContext = _context.承租人檔.Select(s => new 承租人VM{
+                單位 = s.單位,
+                //單位1 = s.單位, //左邊不能隨便取名，主要就是在承租人VM那邊只有"單位"，沒有"單位1"欄位
+                //頁54 Decrypt
+                事業 = s.事業,
+                部門 = s.部門,
+                分部 = s.分部,
+                承租人姓名 = Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人)),
+        //        承租人姓名 = s.承租人 != null && _context.DecryptByKey(s.承租人) != null
+        //? Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人))
+        //: "(未填)",
+
+                身分別編號 = s.身分別編號 //隨便挑，來自 D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\MvcDemoModel\承租人檔.cs
+            }); //使用system.text
+        //}); // 10:20
+
+
             return View(await mvcDemoContext.ToListAsync());
-            //D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Views\User\Index.cshtml
+        //D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Views\User\Index.cshtml
+        //D:\SVN\TscLibCore\BaseObject\BaseDbContext.cs 這是解碼相關的
         }
 
         // GET: User/Details/5

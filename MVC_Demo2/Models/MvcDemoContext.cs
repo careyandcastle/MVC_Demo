@@ -2,17 +2,27 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using MVC_Demo2.Models.MvcDemoModel;
+using TscLibCore.BaseObject;
 
 #nullable disable
 
 namespace MVC_Demo2.Models
 {
-    public partial class MvcDemoContext : DbContext
+    public partial class MvcDemoContext : BaseDbContext   //BaseDbContext取代為BaseDbContext @@6
     {
-        public MvcDemoContext()
+        //(DbContext取代為BaseDbContext)
+        public MvcDemoContext() : base() //新增 : base()，使用父類別的建構子
         {
+            //Console.WriteLine("constructor A");//0527 10:07講解區:
         }
 
+        public MvcDemoContext(int i)
+            : this()
+        {
+            //Console.WriteLine("constructor B");//0527 10:07講解區:
+        }
+        //0527 10:07講解區: new MvcDemoContext(5); 會輸出 constructor A constructor B
+        //
         public MvcDemoContext(DbContextOptions<MvcDemoContext> options)
             : base(options)
         {

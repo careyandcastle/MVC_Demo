@@ -48,7 +48,7 @@ namespace MVC_Demo2.Controllers
             //    單位 = s.單位            
             //}); // 10:20
 
-            _context.OpenSymmetricKey = true; // 0527 11:35
+            _context.OpenSymmetricKey = true; // 0527 11:35 // 講義55頁 使用Decrypt前，要先openSymmetricKey，否則金鑰未開時使用 DECRYPTBYKEY()，只會回傳 NULL (造成我必須使用 @@@8 來解決)
             var mvcDemoContext = _context.承租人檔.Select(s => new 承租人VM{
                 單位 = s.單位,
                 //單位1 = s.單位, //左邊不能隨便取名，主要就是在承租人VM那邊只有"單位"，沒有"單位1"欄位
@@ -56,23 +56,24 @@ namespace MVC_Demo2.Controllers
                 事業 = s.事業,
                 部門 = s.部門,
                 分部 = s.分部,
-                承租人姓名 = Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人)),
-                //承租人姓名 = s.承租人 != null
-                //? Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人))
-                //: "(未填)",
-
-                //: "(未填)",
+                //承租人姓名 = Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人)),
+                承租人姓名 = (s.承租人 != null && _context.DecryptByKey(s.承租人) != null) // 0527 11:50實驗 @@@8
+                ? Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人))
+                : "(OpenSymmeticKey忘記開關囉)",
 
                 身分別編號 = s.身分別編號 //隨便挑，來自 D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\MvcDemoModel\承租人檔.cs
-            });; //使用system.text
-                 //}); // 10:20
+            }); //使用system.text
+                
+            
+            //}); // 10:20
+            //return View(mvcDemoContext); // 0527 11:50實驗
+
 
             var result = await mvcDemoContext.ToListAsync(); // 0527 11:35
             _context.OpenSymmetricKey = false; // 0527 11:35
             return View(result); // 0527 11:35
-                                 //var result = await mvcDemoContext.ToListAsync();
-                                 //D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Views\User\Index.cshtml
-                                 //D:\SVN\TscLibCore\BaseObject\BaseDbContext.cs 這是解碼相關的
+            //D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Views\User\Index.cshtml
+            //D:\SVN\TscLibCore\BaseObject\BaseDbContext.cs 這是解碼相關的
         }
 
         // GET: User/Details/5

@@ -9,15 +9,19 @@ using Microsoft.EntityFrameworkCore;
 using MVC_Demo2.Models;
 using MVC_Demo2.Models.MvcDemoModel;
 using MVC_Demo2.Models.ViewModel;
+using TscLibCore.BaseObject;
 
 namespace MVC_Demo2.Controllers
 {
+    [ProcUseRang("User", ProcUseRang.Menu)]//0528 09:16 俊智哥解除兩行註解 //ProcUseRang F12 請看影片
+    [TypeFilter(typeof(BaseActionFilter))]//0528 09:16 俊智哥解除兩行註解，有了這兩行才會進行資安驗證
     public class UserController : Controller
     {
+
         private readonly MvcDemoContext _context;
         // D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\MvcDemoContext.cs @@@6
 
-        public UserController(MvcDemoContext context)
+        public UserController(MvcDemoContext context) //Startup.cs 加入 @@@11
         {
             _context = context;
         }

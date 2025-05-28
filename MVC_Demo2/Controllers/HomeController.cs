@@ -6,16 +6,21 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using TscLibCore.BaseObject;
 
 namespace MVC_Demo2.Controllers
 {
+
+
+    [ProcUseRang("Home", ProcUseRang.Menu)]//0528 09:16 俊智哥解除兩行註解
+    [TypeFilter(typeof(BaseActionFilter))]//0528 09:16 俊智哥解除兩行註解，有了這兩行才會進行資安驗證 @@@9
+
     /*0526 
     //(十六) 於HomeController增加以下Attribute。 --頁面13
 
 
     //單一入口 --天培分享
-    //[ProcUseRang("Home", ProcUseRang.Menu)]
-    //[TypeFilter(typeof(BaseActionFilter))]
+    
     
     
     // 五、功能權限 --頁面22
@@ -34,8 +39,8 @@ namespace MVC_Demo2.Controllers
     */
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-        private readonly MvcDemoContext _mvcDemoContext;//0526 11:03 新增
+        private readonly ILogger<HomeController> _logger; 
+        private readonly MvcDemoContext _mvcDemoContext;//0526 11:03 新增 
                                                         //👉 這行是：定義一個資料庫連線變數，類型是你之前設定的 DbContext（叫 MvcDemoContext）
                                                         //它就像是「資料庫的遙控器」。
         public HomeController(ILogger<HomeController> logger, MvcDemoContext mvcDemoContext)//0526 11:03 新增 ", MvcDemoContext mvcDemoContext"

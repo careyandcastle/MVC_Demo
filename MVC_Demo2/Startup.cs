@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TscLibCore.BaseObject;
 using TscLibCore.DB;
 
 namespace MVC_Demo2
@@ -40,8 +41,16 @@ namespace MVC_Demo2
                   shouldRecordWebServiceLog = false, //暫不寫入WSDB //呼叫要不要寫log? 透過web? 透過api? 讀Json回來
                   webServiceLogDbName = "WSDB" //提供服務給別人呼叫
               });
-           
-              services.AddDbContext < Models.MvcDemoContext > (b => b.UseSqlServer(cs.GetDbConnectionString("MVCDemoDB")));
+
+            services.AddDbContext<Models.MvcDemoContext>(b => //0528 10:15 修正底層，確保 User @@@11
+            {
+                var DB_Name = "MVCDemoDB";
+                b.UseSqlServer(cs.GetDbConnectionString(DB_Name));
+
+                SymmetricKey key = cs.GetDbSymmetricKey(DB_Name);
+                b.AddInterceptors(new BaseDbCommandInterceptor(DB_Name, key.Name, key.PWD));
+
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

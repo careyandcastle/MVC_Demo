@@ -26,8 +26,11 @@ namespace MVC_Demo2
 
         public void ConfigureServices(IServiceCollection services)
         {
+            
             const string syskind = "MVC_Demo";
+            //const string syskind = "TRDB";
             ConnectionStrings cs = ConnectionStrings.CreateInstance(syskind);
+            services.AddDbContext<Models.TRDBContext>(builder => builder.UseSqlServer(cs.GetDbConnectionString("TRDB")));
 
             TscLibCore.Startup.ConfigureServices(
               services,

@@ -1,0 +1,53 @@
+﻿@model IEnumerable<MVC_Demo2.Models.部門>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.部門名稱)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.組織狀態)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.修改人)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.修改日期時間)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.部門名稱)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.組織狀態)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.修改人)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.修改日期時間)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

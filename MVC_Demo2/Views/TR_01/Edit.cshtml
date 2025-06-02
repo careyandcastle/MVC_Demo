@@ -1,0 +1,47 @@
+﻿@model MVC_Demo2.Models.部門
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>部門</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="單位" />
+            <input type="hidden" asp-for="部門1" />
+            <div class="form-group">
+                <label asp-for="部門名稱" class="control-label"></label>
+                <input asp-for="部門名稱" class="form-control" />
+                <span asp-validation-for="部門名稱" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="組織狀態" /> @Html.DisplayNameFor(model => model.組織狀態)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="修改人" class="control-label"></label>
+                <input asp-for="修改人" class="form-control" />
+                <span asp-validation-for="修改人" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="修改日期時間" class="control-label"></label>
+                <input asp-for="修改日期時間" class="form-control" />
+                <span asp-validation-for="修改日期時間" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

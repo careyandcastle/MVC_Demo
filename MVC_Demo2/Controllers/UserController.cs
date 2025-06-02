@@ -61,12 +61,12 @@ namespace MVC_Demo2.Controllers
                 部門 = s.部門,
                 分部 = s.分部,
                 //承租人姓名 = Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人)),
-                //承租人姓名 = (s.承租人 != null && _context.DecryptByKey(s.承租人) != null) // 0527 11:50實驗 @@@8
-                //? Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人))
-                //: "(OpenSymmeticKey忘記開關囉)",
+                承租人姓名 = (s.承租人 != null && _context.DecryptByKey(s.承租人) != null) // 0527 11:50實驗 @@@8
+                ? Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人))
+                : "(OpenSymmeticKey忘記開關囉)",
 
-                承租人姓名 = s.承租人 == null ? "假名" :  
-                Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人)), // 14:20
+                //承租人姓名 = s.承租人 == null ? "假名" :  
+                //Encoding.Unicode.GetString(_context.DecryptByKey(s.承租人)), // 14:20
 
                 身分別編號 = s.身分別編號, //隨便挑，來自 D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\MvcDemoModel\承租人檔.cs
                 承租人編號 = s.承租人編號 //隨便挑，來自 D:\每日資料\20250523_工作日\MVC\MVC_Demo2\MVC_Demo2\Models\MvcDemoModel\承租人檔.cs

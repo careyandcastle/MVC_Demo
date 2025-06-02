@@ -15,6 +15,7 @@ namespace MVC_Demo2.Models.ViewModel
         [Key]
         //[StringLength(2)]
         public string 單位 { get; set; }
+        public string 單位顯示 { get; set; }
         [Key]
         //[Column("部門")]
         //[StringLength(2)]
@@ -24,6 +25,7 @@ namespace MVC_Demo2.Models.ViewModel
         //[StringLength(12)]
         public string 部門名稱 { get; set; }
         public bool 組織狀態 { get; set; }
+        public string 組織狀態顯示 { get; set; }
 
         //[Required]
         //[StringLength(5)]

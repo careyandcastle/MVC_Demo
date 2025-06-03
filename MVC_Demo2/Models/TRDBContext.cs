@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using TscLibCore.BaseObject;
 
 #nullable disable
 
 namespace MVC_Demo2.Models
 {
-    public partial class TRDBContext : DbContext
+    public partial class TRDBContext : BaseDbContext
     {
         public TRDBContext()
         {
@@ -298,6 +300,12 @@ namespace MVC_Demo2.Models
                 entity.Property(e => e.修改人)
                     .IsUnicode(false)
                     .IsFixedLength(true);
+
+                entity.HasOne(d => d.部門Navigation)
+                    .WithMany(p => p.分部)
+                    .HasForeignKey(d => new { d.單位, d.部門 })
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_分部_部門");
             });
 
             modelBuilder.Entity<單位>(entity =>
@@ -476,10 +484,17 @@ namespace MVC_Demo2.Models
                 entity.Property(e => e.修改人)
                     .IsUnicode(false)
                     .IsFixedLength(true);
+
+                entity.HasOne(d => d.單位Navigation)
+                    .WithMany(p => p.部門)
+                    .HasForeignKey(d => d.單位)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_部門_單位");
             });
 
             OnModelCreatingPartial(modelBuilder);
         }
+
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MVC_Demo2.Attributes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -17,6 +18,8 @@ namespace MVC_Demo2.Models.ViewModel
         [Key]
         //[Column("部門")]
         //[StringLength(2)]
+        [CTRequired]
+        [CTStringLength(2 ,MinimumLength = 2)]
         public string 部門 { get; set; }
         //public string 部門1 { get; set; }  //部門1要拿掉，要與部門做區分
         //部門.cs也有部門，MVC為了不混淆，將此處的"部門"改成"部門1"

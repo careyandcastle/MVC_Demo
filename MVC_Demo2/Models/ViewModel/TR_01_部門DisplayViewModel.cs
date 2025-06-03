@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using TscLibCore.Attribute;
 
 namespace MVC_Demo2.Models.ViewModel
 {
@@ -14,7 +16,9 @@ namespace MVC_Demo2.Models.ViewModel
 
         [Key]
         //[StringLength(2)]
+        [HiddenForView]
         public string 單位 { get; set; }
+        [DisplayName("單位")]
         public string 單位顯示 { get; set; }
         [Key]
         //[Column("部門")]
@@ -24,7 +28,10 @@ namespace MVC_Demo2.Models.ViewModel
         //[Required]
         //[StringLength(12)]
         public string 部門名稱 { get; set; }
+
+        [HiddenForView]
         public bool 組織狀態 { get; set; }
+        [DisplayName("組織狀態")]
         public string 組織狀態顯示 { get; set; }
 
         //[Required]

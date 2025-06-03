@@ -29,5 +29,9 @@ namespace MVC_Demo2.Models
         public string 修改人 { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime 修改日期時間 { get; set; }
+
+        [ForeignKey("單位,部門")]
+        [InverseProperty("分部")]
+        public virtual 部門 部門Navigation { get; set; }
     }
 }

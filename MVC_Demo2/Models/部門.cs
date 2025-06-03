@@ -10,6 +10,11 @@ namespace MVC_Demo2.Models
 {
     public partial class 部門
     {
+        public 部門()
+        {
+            分部 = new HashSet<分部>();
+        }
+
         [Key]
         [StringLength(2)]
         public string 單位 { get; set; }
@@ -26,5 +31,11 @@ namespace MVC_Demo2.Models
         public string 修改人 { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime 修改日期時間 { get; set; }
+
+        [ForeignKey(nameof(單位))]
+        [InverseProperty("部門")]
+        public virtual 單位 單位Navigation { get; set; }
+        [InverseProperty("部門Navigation")]
+        public virtual ICollection<分部> 分部 { get; set; }
     }
 }

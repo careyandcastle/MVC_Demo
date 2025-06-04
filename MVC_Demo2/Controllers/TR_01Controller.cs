@@ -428,15 +428,15 @@ namespace MVC_Demo2.Controllers
 
 
         // POST: TR_01/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
-        {
-            var 部門 = await _context.部門.FindAsync(id);
-            _context.部門.Remove(部門);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+        //[HttpPost, ActionName("Delete")]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> DeleteConfirmed(string id)
+        //{
+        //    var 部門 = await _context.部門.FindAsync(id);
+        //    _context.部門.Remove(部門);
+        //    await _context.SaveChangesAsync();
+        //    return RedirectToAction(nameof(Index));
+        //}
 
         [HttpPost, ActionName("GetDataPost")]
         [ValidateAntiForgeryToken]
@@ -455,6 +455,68 @@ namespace MVC_Demo2.Controllers
                 //📦 把查出來的資料（data）與總筆數（total）用 JSON 格式回傳給前端。
                 data = queryedData,
                 total = queryedData.TotalCount
+            });
+        }
+        [HttpPost, ActionName("Delete")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ProcUseRang(ProcNo, ProcUseRang.Delete)]
+        public async Task<ActionResult> DeleteConfirmed([Bind("單位,部門,部門名稱,組織狀態,修改人,修改日期時間")] TR_01_部門DisplayViewModel postData)
+        {
+            // 檢查參數是否正確傳遞
+
+            if (postData.單位 == null || postData.部門 == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                //await ValidateForDelete(postData);
+
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+                    {
+                        data = ModelState.ToErrorInfos()
+                    });
+                }
+
+                // 使用 mapper 會有一些問題 ， 所以我們直接從 DB 撈 model 就好
+                // var model = _mapper.Map<資料表DisplayViewModel, 資料表>(postData);
+                var model = await _context.部門
+                    .Where(s => s.單位 == postData.單位
+                           && s.部門1 == postData.部門)
+                    .SingleOrDefaultAsync();
+
+                if (model == null)
+                {
+                    return NotFound();
+                }
+
+                // 刪除資料並儲存
+                _context.部門.Remove(model);
+                var opCount = await _context.SaveChangesAsync();
+
+                if (opCount > 0)
+                {
+                    return Ok(new ReturnData(ReturnState.ReturnCode.OK));
+                }
+            }
+            catch (Exception ex)
+            {
+                // 處理例外
+                Exception realEx = ex.GetOriginalException();
+
+                return CreatedAtAction(nameof(DeleteConfirmed), new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
+                {
+                    message = realEx.ToMeaningfulMessage()
+                });
+            }
+
+            return CreatedAtAction(nameof(DeleteConfirmed), new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
+            {
+                message = "資料已不存在"
             });
         }
 

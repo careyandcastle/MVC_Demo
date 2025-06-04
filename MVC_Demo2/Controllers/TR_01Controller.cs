@@ -386,22 +386,46 @@ namespace MVC_Demo2.Controllers
             }
             return (true, "");
         }
-        public async Task<IActionResult> Delete(string id)
+        //public async Task<IActionResult> Delete(string id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    var 部門 = await _context.部門
+        //        .FirstOrDefaultAsync(m => m.單位 == id);
+        //    if (部門 == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return View(部門);
+        //}
+
+        [ProcUseRang(ProcNo, ProcUseRang.Delete)]
+        public async Task<ActionResult> Delete(string 單位, string 部門)
         {
-            if (id == null)
+            // 檢查參數
+            if (單位 == null || 部門 == null)
             {
                 return NotFound();
             }
 
-            var 部門 = await _context.部門
-                .FirstOrDefaultAsync(m => m.單位 == id);
-            if (部門 == null)
+            // 查詢要刪除的資料，得到DisplayViewModel
+            // 可以注意到我們使用與GetData中相同的GetBaseQuery()方法，來取得基底查詢語法
+            var viewModel = await GetBaseQuery()
+                .Where(s => s.單位 == 單位 && s.部門 == 部門)
+                .SingleOrDefaultAsync();
+
+            if (viewModel == null)
             {
                 return NotFound();
             }
 
-            return View(部門);
+            return PartialView(viewModel);
         }
+
 
         // POST: TR_01/Delete/5
         [HttpPost, ActionName("Delete")]

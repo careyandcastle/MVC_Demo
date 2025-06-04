@@ -58,6 +58,25 @@ namespace MVC_Demo2.Controllers
                   .IncludeBase<TR_01_部門BasicViewModel, 部門>();
 
                 // 定義分部的mapping
+                // 這個mapping將"分部"轉為"TR_01_分部BasicViewModel"
+                cfg.CreateMap<分部, TR_01_分部BasicViewModel>()
+                 .ForMember(dest => dest.分部, opts => opts.MapFrom(src => src.分部1));
+
+                // 這個mapping將"TR_01_分部BasicViewModel"轉回"分部"
+                cfg.CreateMap<TR_01_分部BasicViewModel, 分部>()
+                .ForMember(dest => dest.分部1, opts => opts.MapFrom(src => src.分部));
+
+                cfg.CreateMap<分部, TR_01_分部CreateViewModel>()
+                .IncludeBase<分部, TR_01_分部BasicViewModel>();
+
+                cfg.CreateMap<TR_01_分部CreateViewModel, 分部>()
+                 .IncludeBase<TR_01_分部BasicViewModel, 分部>();
+
+                cfg.CreateMap<分部, TR_01_分部EditViewModel>()
+                  .IncludeBase<分部, TR_01_分部BasicViewModel>();
+
+                cfg.CreateMap<TR_01_分部EditViewModel, 分部>()
+                  .IncludeBase<TR_01_分部BasicViewModel, 分部>();
 
             });
             // 建立Mapper
@@ -676,6 +695,87 @@ namespace MVC_Demo2.Controllers
             ViewBag.部門名稱 = 部門資料.部門1 + "_" + 部門資料.部門名稱;
 
             return PartialView();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ProcUseRang(ProcNo, ProcUseRang.Add)]
+        public async Task<IActionResult> CreateDetail([Bind("單位,部門,分部,分部名稱,組織狀態")]
+                        TR_01_分部CreateViewModel postData)
+        {
+            //// 檢查Model驗證結果。如果有任何驗證未通過，則回傳錯誤。
+            //// 請使用 early return 來回傳錯誤!
+            if (!ModelState.IsValid)
+            {
+                //這裡的Ok是HTTP 200 Ok的意思
+                return Ok(new ReturnData(ReturnState.ReturnCode.CREATE_ERROR)
+                {
+                    data = ModelState.ToErrorInfos()
+                });
+            }
+
+            //// 後端驗證
+            //await ValidateForCreateAsync(postData);
+
+            //// 檢查後端驗證結果。如果有任何驗證未通過，則回傳錯誤。
+            if (!ModelState.IsValid)
+            {
+                return Ok(new ReturnData(ReturnState.ReturnCode.CREATE_ERROR)
+                {
+                    data = ModelState.ToErrorInfos()
+                });
+            }
+
+            try
+            {
+                // 使用AutoMapper將ViewModel轉為Model
+                分部 model = _mapper.Map<TR_01_分部CreateViewModel, 分部>(postData);
+
+                // 取得ua。這段語法有點長，可以寫成一個function，直接用也沒關係。
+                // 在實務上，專案中會有其他語法用來取得ua。
+                var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+
+                // 設定修改人與修改時間與組織狀態
+                model.修改人 = ua.UserNo;
+                model.修改日期時間 = DateTime.Now;
+                model.組織狀態 = true;
+
+                // 告訴 EF Core 我們要新增這筆資料
+                //"_context.Add(model);" 也會work，但指定資料表名稱會比較嚴謹。*/
+                _context.分部.Add(model);
+
+
+                // 執行到這裡時，EF Core才會真的將上面的語法轉化為sql，並實際執行Insert，並得到受影響的資料筆數(opCount)
+                int opCount = await _context.SaveChangesAsync();
+
+                if (opCount > 0)
+                {
+                    // 回傳成功結果與新增的資料
+                    return Ok(new ReturnData(ReturnState.ReturnCode.OK)
+                    {
+                        // 回傳新增的資料，作為newItem顯示在主表格的最上面
+                        data = await GetBaseQuery()
+                              .Where(s => s.單位 == model.單位 && s.部門 == model.部門)
+                              .SingleOrDefaultAsync()
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                // 處理例外
+                Exception realEx = ex.GetOriginalException();
+
+                return CreatedAtAction(nameof(Create), new ReturnData(ReturnState.ReturnCode.CREATE_ERROR)
+                {
+                    message = realEx.ToMeaningfulMessage()
+                });
+            }
+
+            return CreatedAtAction(nameof(Create), new ReturnData(ReturnState.ReturnCode.CREATE_ERROR)
+            {
+                //message = StringConsts.DATA_NOT_EXIST
+                message = "發生未知的錯誤，請聯絡系統管理員"
+            });
         }
         //private async Task<List<SelectListItem>> Get分部選項(UserAccountForSession ua)
         //{

@@ -64,6 +64,7 @@ namespace MVC_Demo2.Controllers
             _mapper = _config.CreateMapper();
         }
 
+        #region 部門
         // GET: TR_01
         public async Task<IActionResult> Index()
         {
@@ -426,17 +427,10 @@ namespace MVC_Demo2.Controllers
             return PartialView(viewModel);
         }
 
+ 
 
-        // POST: TR_01/Delete/5
-        //[HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> DeleteConfirmed(string id)
-        //{
-        //    var 部門 = await _context.部門.FindAsync(id);
-        //    _context.部門.Remove(部門);
-        //    await _context.SaveChangesAsync();
-        //    return RedirectToAction(nameof(Index));
-        //}
+        
+
 
         [HttpPost, ActionName("GetDataPost")]
         [ValidateAntiForgeryToken]
@@ -472,7 +466,7 @@ namespace MVC_Demo2.Controllers
 
             try
             {
-                //await ValidateForDelete(postData);
+                await ValidateForDelete(postData);
 
                 if (!ModelState.IsValid)
                 {
@@ -520,6 +514,20 @@ namespace MVC_Demo2.Controllers
             });
         }
 
+        private async Task ValidateForDelete(TR_01_部門DisplayViewModel postData)
+        {
+            // 判斷是否還有分部資料（明細）
+            bool hasDetails = await _context.分部
+                .AnyAsync(d => d.單位 == postData.單位 && d.部門 == postData.部門);
+
+            if (hasDetails)
+            {
+                ModelState.AddModelError(string.Empty, "請先刪除明細資料");
+            }
+        }
+
+        
+
         private IQueryable<TR_01_部門DisplayViewModel> GetBaseQuery()
         {
             return (from s in _context.部門
@@ -565,5 +573,81 @@ namespace MVC_Demo2.Controllers
         {
             return _context.部門.Any(e => e.單位 == id);
         }
+
+        #endregion  
+
+        #region 分部
+        private IQueryable<TR_01_分部DisplayViewModel> GetDetailBaseQuery()
+        {
+
+            // 從部門表 (_context.部門) 查詢資料，並使用 Include 預先載入與部門關聯的 單位Navigation (多對一或一對一的關聯)
+            return (from s in _context.分部.Include(s => s.部門Navigation)
+                        //新的include寫法 ^^^
+                        //原本的JOIN寫法:
+                        //join dep in _context.單位 on s.單位 equals dep.單位1
+                    join m in _context.修改人 on s.修改人 equals m.修改人1 into mleftjoin
+                    from _m in mleftjoin.DefaultIfEmpty()
+                    select new TR_01_分部DisplayViewModel
+                    {
+                        // select 需要的欄位
+                        // 這裡使用`部門`資料表舉例
+                        // 顯示用欄位，通常包含代碼+名稱格式
+                        //單位顯示 = CustomSqlFunctions.ConcatCodeAndName(s.單位, dep.單位名稱),
+                        //部門顯示 = CustomSqlFunctions.ConcatCodeAndName(s.部門, div.部門名稱),
+
+                        // 保留原始欄位，供後續操作使用，例如參數傳遞、權限管理等
+                        單位 = s.單位,
+                        部門 = s.部門,
+                        分部 = s.分部1,
+                        分部名稱 = s.分部名稱,
+                        組織狀態 = s.組織狀態,
+                        修改人 = s.修改人,
+                        修改日期時間 = s.修改日期時間,
+                        //單位 = s.單位,
+                        //單位顯示 = s.單位 + "_" + dep.單位名稱,
+                        //這樣寫不好, 因為有可能變成"總管理處_" (left join時單位名稱可能為空值)
+                        //單位顯示 = CustomSqlFunctions.ConcatCodeAndName(s.單位, dep.單位名稱),
+                        //單位顯示 = CustomSqlFunctions.ConcatCodeAndName(s.單位, s.單位Navigation.單位名稱),
+                        //部門 = s.部門1,
+                        //部門名稱 = s.部門名稱,
+                        //組織狀態 = s.組織狀態,
+                        //組織狀態顯示 = s.組織狀態 ? "是" : "否",
+                        //修改人 = s.修改人,
+                        //修改人 = CustomSqlFunctions.ConcatCodeAndName(
+                        //        s.修改人, CustomSqlFunctions.DecryptToString(_m.姓名)),
+                        //修改日期時間 = s.修改日期時間
+                        // 其他欄位，如"組織狀態"等
+                        //其他欄位 = s.其他欄位,
+
+                        // 顯示最近一次修改資訊
+                        //修改人 = CustomSqlFunctions.ConcatCodeAndName(s.修改人, CustomSqlFunctions.DecryptToString(_m.姓名)),
+
+                    }
+                   ).AsNoTracking(); // 使用AsNoTracking()提升效能
+        }
+        [HttpPost, ActionName("GetDetailDataPost")]
+        [ValidateAntiForgeryToken]
+        [NeglectActionFilter]
+        public async Task<IActionResult> GetDetails([FromBody] TR_01_分部DisplayViewModel keys)
+        {
+            if (keys.單位 == null || keys.部門 == null)
+            {
+                return NotFound();
+            }
+
+            IQueryable<TR_01_分部DisplayViewModel> sql = GetDetailBaseQuery()
+                .Where(s => s.單位 == keys.單位 && s.部門 == keys.部門);
+
+            PaginatedList<TR_01_分部DisplayViewModel> queryedData
+                = await PaginatedList<TR_01_分部DisplayViewModel>.CreateAsync(sql);
+
+            return CreatedAtAction(nameof(GetDetails), new ReturnData(ReturnState.ReturnCode.OK)
+            {
+                data = queryedData
+            });
+        }
+
+        #endregion
     }
+
 }

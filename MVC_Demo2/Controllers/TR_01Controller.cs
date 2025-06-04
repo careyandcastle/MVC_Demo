@@ -232,6 +232,8 @@ namespace MVC_Demo2.Controllers
             return (true, "");
         }
 
+        
+
 
         // GET: TR_01/Edit/5
         //public async Task<IActionResult> Edit(string id)
@@ -284,7 +286,7 @@ namespace MVC_Demo2.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Update)]
-        public async Task<IActionResult> Edit([Bind("單位,部門,部門名稱")] TR_01_部門EditViewModel postData)
+        public async Task<IActionResult> Edit([Bind("單位,部門,部門名稱,組織狀態")] TR_01_部門EditViewModel postData)
         {
             // 檢查Model驗證
             if (!ModelState.IsValid)
@@ -299,7 +301,7 @@ namespace MVC_Demo2.Controllers
             {
 
                 // 驗證
-                //await ValidateForEdit(postData);
+                await ValidateForEdit(postData);
 
                 if (!ModelState.IsValid)
                 {
@@ -356,6 +358,34 @@ namespace MVC_Demo2.Controllers
             });
         }
         // GET: TR_01/Delete/5
+
+        /* 以Create舉例 */
+        private async Task ValidateForEdit(TR_01_部門EditViewModel postData)
+        {
+            // 執行各種驗證，例如驗證資料是否已存在於DB中
+            (bool result, string errorMsg) = await Edit驗證部門是否撤除Asyn(postData);
+
+            // 如果驗證失敗，將錯誤訊息加入ModelState
+            if (!result)
+            {
+                ModelState.AddModelError("部門", errorMsg);
+                //討論到這部分與showvalidateErrorMessage有關係
+            }
+        }
+
+        //0604
+        private async Task<(bool result, string errorMsg)> Edit驗證部門是否撤除Asyn(TR_01_部門EditViewModel postData)
+        {
+
+            if (await _context.部門.AnyAsync(
+           s => s.單位 == postData.單位
+           && s.部門1 == postData.部門
+           && s.組織狀態 == false))
+            {
+                return (false, "部門已撤除");
+            }
+            return (true, "");
+        }
         public async Task<IActionResult> Delete(string id)
         {
             if (id == null)

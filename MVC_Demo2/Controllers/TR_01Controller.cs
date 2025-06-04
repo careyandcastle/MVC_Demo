@@ -597,10 +597,12 @@ namespace MVC_Demo2.Controllers
 
                         // 保留原始欄位，供後續操作使用，例如參數傳遞、權限管理等
                         單位 = s.單位,
+                        //單位顯示 = CustomSqlFunctions.ConcatCodeAndName(s.單位, s.部門Navigation.單位名稱),
                         部門 = s.部門,
                         分部 = s.分部1,
                         分部名稱 = s.分部名稱,
                         組織狀態 = s.組織狀態,
+                        組織狀態顯示 = s.組織狀態 ? "是" : "否", //新增這個
                         修改人 = s.修改人,
                         修改日期時間 = s.修改日期時間,
                         //單位 = s.單位,
@@ -646,6 +648,49 @@ namespace MVC_Demo2.Controllers
                 data = queryedData
             });
         }
+
+
+        public async Task<IActionResult> CreateDetail(string 單位, string 部門)
+        {
+
+            if (單位 == null || 部門 == null)
+            {
+                return NotFound();
+            }
+
+
+            var 部門資料 = await _context.部門
+                .Include(s => s.單位Navigation)
+                .Where(s => s.單位 == 單位 && s.部門1 == 部門 && s.組織狀態)
+                .SingleOrDefaultAsync();
+
+            if (部門資料 == null) // 部門資料 就是model
+            {
+                ViewBag.部門是否存在 = false;
+                return PartialView();
+            }
+
+                ViewBag.部門是否存在 = true;
+
+            ViewBag.單位名稱 = 部門資料.單位 + "_" + 部門資料.單位Navigation.單位名稱;
+            ViewBag.部門名稱 = 部門資料.部門1 + "_" + 部門資料.部門名稱;
+
+            return PartialView();
+        }
+        //private async Task<List<SelectListItem>> Get分部選項(UserAccountForSession ua)
+        //{
+        //    var options = await _context.分部
+        //        .Where(s => (ua.DataRang > 1 ? s.單位 == ua.DepartmentNo : true) && s.組織狀態)
+        //        .Select(s => new SelectListItem
+        //        {
+        //            Text = HttpUtility.HtmlEncode(s.分部 + "_" + s.分部名稱),
+        //            Value = HttpUtility.HtmlEncode(s.分部),
+        //        }).ToListAsync();
+
+        //    options.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
+        //    return options;
+        //}
+
 
         #endregion
     }

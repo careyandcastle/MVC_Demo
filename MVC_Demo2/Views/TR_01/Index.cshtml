@@ -94,6 +94,14 @@
                     <fetched-page-modal url="Edit" :param="slot.data.selectedMasterRow?.param" id="master-table-edit-modal" size="lg" close-on-success="true" title="修改資料"></fetched-page-modal>
                     <fetched-page-modal url="Delete" :param="slot.data.selectedMasterRow?.param" id="master-table-del-modal" size="lg" close-on-success="true" title="刪除資料"></fetched-page-modal>
                     <query-page-modal id="master-table-query-modal" title="進階查詢" :queryfields="slot.data.mTableFields" :is_filtered="slot.data.isFiltered"></query-page-modal>
+
+                    <!--Detail OP Page-->
+                    <fetched-page-modal url="CreateDetail" :param="slot.data.selectedMasterRow?.param" close-on-success="true"
+                                        id="detail-table-create-modal" title="新增明細"></fetched-page-modal>
+                    <fetched-page-modal url="EditDetail" :param="slot.data.selectedDetailRow?.param" close-on-success="true"
+                                        id="detail-table-edit-modal" title="修改明細"></fetched-page-modal>
+                    <fetched-page-modal url="DeleteDetail" :param="slot.data.selectedDetailRow?.param" close-on-success="true"
+                                        id="detail-table-del-modal" title="刪除明細"></fetched-page-modal>
                 </b-col>
             </b-row>
         </template>

@@ -1,0 +1,54 @@
+﻿@*@model  @using MVC_Demo2.Models.ViewModel.TR_01_部門CreateViewModel*@
+@using MVC_Demo2.Models.ViewModel;
+@model TR_01_分部CreateViewModel
+@*if (!Viewbag.部門是否存在){
+    <h1>部門不存在</h1>
+    <form id="dummy"></form>
+}
+else{*@
+    <div>
+        <div class="row">
+            <div class="col">
+                <form asp-action="Create">
+                    @*這裡會顯示錯誤訊息，或沒有指定欄位的驗證失敗訊息 *@
+                    <div id="ModelErrorDiv" class="validation-summary-valid text-danger">
+                        <ul>
+                        </ul>
+                    </div>
+
+                    <input asp-for="單位" type="hidden" />
+                    <input asp-for="部門" type="hidden" />
+
+                    <div class="form-group">
+                        <label asp-for="單位" class="control-label"></label>
+                        <input asp-for="單位" class="form-control" readonly disabled value="@ViewBag.單位名稱">
+                        <span asp-validation-for="單位" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="部門" class="control-label"></label>
+                        <input asp-for="部門" class="form-control" readonly disabled value="@ViewBag.部門名稱" />
+                        <span asp-validation-for="部門" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="分部" class="control-label"></label>
+                        <input asp-for="分部" class="form-control" />
+                        <span asp-validation-for="分部" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="分部名稱" class="control-label"></label>
+                        <input asp-for="分部名稱" class="form-control" />
+                        <span asp-validation-for="分部名稱" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="submit" value="送出" class="btn btn-primary" :disabled="isWaitting" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+@*}*@

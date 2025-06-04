@@ -14,7 +14,8 @@ namespace MVC_Demo2.Models.ViewModel
         //[StringLength(2)]
         [HiddenForView]
         public string 單位 { get; set; }
-        [DisplayName("單位")]
+        //[DisplayName("單位")]
+        [HiddenForView]
         public string 單位顯示 { get; set; }
         [Key]
         //[StringLength(2)]
@@ -22,7 +23,9 @@ namespace MVC_Demo2.Models.ViewModel
         [Key]
         //[Column("分部")]
         //[StringLength(2)]
+        [HiddenForView]
         public string 分部 { get; set; }
+        //public string 分部代號 { get; set; }
         //public string 分部1 { get; set; }
         //[Required]
         //[StringLength(12)]

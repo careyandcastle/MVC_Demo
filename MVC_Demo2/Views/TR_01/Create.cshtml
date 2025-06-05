@@ -1,61 +1,35 @@
 ﻿@*@model  @using MVC_Demo2.Models.ViewModel.TR_01_部門CreateViewModel*@
 @using MVC_Demo2.Models.ViewModel;
-@model TR_01_部門EditViewModel
+@model TR_01_部門CreateViewModel
 <div>
     <div class="row">
         <div class="col">
-            <form asp-action="Edit">
+            <form asp-action="Create">
                 @*這裡會顯示錯誤訊息，或沒有指定欄位的驗證失敗訊息 *@
                 <div id="ModelErrorDiv" class="validation-summary-valid text-danger">
                     <ul>
                     </ul>
                 </div>
 
-                @*新增下列兩行PK，這兩個PK是作為傳遞參數用的，user看不到*@
-                <input asp-for="單位" type="hidden" />
-                <input asp-for="部門" type="hidden" />
-
-                @*顯示用的欄位*@
                 <div class="form-group">
                     <label asp-for="單位" class="control-label"></label>
-                    <input asp-for="單位" class="form-control" value="@ViewBag.單位名稱" />
-
-                    @*我們不再給user去select，只提供label(也就是input readonly diabled)的欄位，給user閱讀*@
-                    @*<select asp-for="單位" class="form-control" asp-items="@ViewBag.單位選項">*@
-                    @*</select>*@
-                    @*<span asp-validation-for="單位" class="text-danger"></span>*@
+                    <select asp-for="單位" class="form-control" asp-items="@ViewBag.單位選項">
+                    </select>
+                    @*<--我們透過viewbag輸入單位-->*@
+                    @*一個單位底下有很多部門(eg 總管理處下方有資訊處、會計處...，所以會是一個select選單。選項來自viewbag.單位選項。)*@
+                    <span asp-validation-for="單位" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
                     <label asp-for="部門" class="control-label"></label>
-                    <input asp-for="部門" class="form-control" readonly disabled />
-                    @*<span asp-validation-for="部門" class="text-danger"></span>*@
-                    @*0604*@
+                    <input asp-for="部門" class="form-control" />
+                    <span asp-validation-for="部門" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
                     <label asp-for="部門名稱" class="control-label"></label>
                     <input asp-for="部門名稱" class="form-control" />
                     <span asp-validation-for="部門名稱" class="text-danger"></span>
-                </div>
-
-                @**@
-                @*<div class="form-group">
-                        <label asp-for="部門名稱" class="control-label"></label>
-                        <input asp-for="部門名稱" class="form-control" readonly disabled />
-                        <span asp-validation-for="部門名稱" class="text-danger"></span>
-                    </div>*@
-
-                @*新增組織狀態欄位*@
-                @*實作為RadioButton*@
-                <div class="form-group">
-                    <label asp-for="組織狀態" class="control-label"></label>
-                    <input asp-for="組織狀態" type="radio" class="custom-radio" value="true" id="orgStatusTrue" />
-                    <label for="orgStatusTrue">是</label>
-
-                    <input asp-for="組織狀態" type="radio" class="custom-radio" value="false" id="orgStatusFalse" />
-                    <label for="orgStatusFalse">否</label>
-                    <span asp-validation-for="組織狀態" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">

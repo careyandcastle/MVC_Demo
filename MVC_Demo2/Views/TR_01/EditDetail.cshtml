@@ -1,0 +1,76 @@
+﻿@*@model  @using MVC_Demo2.Models.ViewModel.TR_01_部門CreateViewModel*@
+@using MVC_Demo2.Models.ViewModel;
+@model TR_01_分部EditViewModel
+
+@if (!ViewBag.分部是否存在){
+    
+    <h1>分部不存在</h1>
+ 
+}
+else{
+    <div>
+        <div class="row">
+            <div class="col">
+                <form asp-action="EditDetail">
+                    @*這裡會顯示錯誤訊息，或沒有指定欄位的驗證失敗訊息 *@
+                    <div id="ModelErrorDiv" class="validation-summary-valid text-danger">
+                        <ul>
+                        </ul>
+                    </div>
+
+                    @*<input asp-for="單位" type="hidden" />
+        <input asp-for="部門" type="hidden" />*@
+
+                    @*新增下列兩行PK，這兩個PK是作為傳遞參數用的，user看不到*@
+                    <input asp-for="單位" type="hidden" />
+                    <input asp-for="部門" type="hidden" />
+                    <input asp-for="分部" type="hidden" />
+
+                    <div class="form-group">
+                        <label asp-for="單位" class="control-label"></label>
+                        <input asp-for="單位" class="form-control" >
+                        <span asp-validation-for="單位" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="部門" class="control-label"></label>
+                        <input asp-for="部門" class="form-control" />
+                        <span asp-validation-for="部門" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="分部" class="control-label"></label>
+                        <input asp-for="分部" class="form-control" />
+                        <span asp-validation-for="分部" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="分部名稱" class="control-label"></label>
+                        <input asp-for="分部名稱" class="form-control" />
+                        <span asp-validation-for="分部名稱" class="text-danger"></span>
+                    </div>
+
+                    @*<div class="form-group">
+            <label asp-for="組織狀態" class="control-label"></label>
+            <input asp-for="組織狀態" class="form-control" />
+            <span asp-validation-for="組織狀態" class="text-danger"></span>
+        </div>*@
+                    <div class="form-group">
+                        <label asp-for="組織狀態" class="control-label"></label>
+                        <input asp-for="組織狀態" type="radio" class="custom-radio" value="true" id="orgStatusTrue" />
+                        <label for="orgStatusTrue">是</label>
+
+                        <input asp-for="組織狀態" type="radio" class="custom-radio" value="false" id="orgStatusFalse" />
+                        <label for="orgStatusFalse">否</label>
+                        <span asp-validation-for="組織狀態" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="submit" value="送出" class="btn btn-primary" :disabled="isWaitting" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+}

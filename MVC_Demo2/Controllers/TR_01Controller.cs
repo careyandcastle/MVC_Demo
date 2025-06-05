@@ -116,17 +116,17 @@ namespace MVC_Demo2.Controllers
         public async Task<IActionResult> Create()
         {
             var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
- 
+
             var 單位選項 = await _context.單位 //<-新增
-                //限縮單位資料範圍
-                .Where(s => ua.DataRang > 1? s.單位1 == ua.DepartmentNo : true && s.組織狀態)
+                                         //限縮單位資料範圍
+                .Where(s => ua.DataRang > 1 ? s.單位1 == ua.DepartmentNo : true && s.組織狀態)
                 .Select(s => new SelectListItem
                 {
                     //Text = s.單位1 + "_" + s.單位名稱,
                     Text = HttpUtility.HtmlEncode(s.單位1 + "_" + s.單位名稱),
                     Value = HttpUtility.HtmlEncode(s.單位1),
                 }).ToListAsync();
- 
+
             //方法二
             單位選項.Insert(0, new SelectListItem
             {
@@ -252,7 +252,7 @@ namespace MVC_Demo2.Controllers
             return (true, "");
         }
 
-        
+
 
 
         // GET: TR_01/Edit/5
@@ -294,7 +294,7 @@ namespace MVC_Demo2.Controllers
             var viewModel = _mapper.Map<部門, TR_01_部門EditViewModel>(model);
 
             ViewBag.單位名稱 = model.單位 + "_" + model.單位Navigation.單位名稱;
- 
+
             return PartialView(viewModel);
         }
 
@@ -302,7 +302,7 @@ namespace MVC_Demo2.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
 
-         
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Update)]
@@ -446,9 +446,9 @@ namespace MVC_Demo2.Controllers
             return PartialView(viewModel);
         }
 
- 
 
-        
+
+
 
 
         [HttpPost, ActionName("GetDataPost")]
@@ -474,7 +474,7 @@ namespace MVC_Demo2.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Delete)]
-        public async Task<ActionResult> DeleteConfirmed([Bind("單位,部門,部門名稱,組織狀態,修改人,修改日期時間")] TR_01_部門DisplayViewModel postData)
+        public async Task<ActionResult> DeleteConfirmed([Bind("單位,部門,分部,分部名稱,組織狀態,修改人,修改日期時間")] TR_01_部門DisplayViewModel postData)
         {
             // 檢查參數是否正確傳遞
 
@@ -545,7 +545,7 @@ namespace MVC_Demo2.Controllers
             }
         }
 
-        
+
 
         private IQueryable<TR_01_部門DisplayViewModel> GetBaseQuery()
         {
@@ -555,8 +555,8 @@ namespace MVC_Demo2.Controllers
                         //on s.單位 equals dep.單位1                                              //註解掉這個
 
                         .Include(s => s.單位Navigation)
-                        join m in _context.修改人 on s.修改人 equals m.修改人1 into mleftjoin   //註解掉這個
-                        from _m in mleftjoin.DefaultIfEmpty()                                   //註解掉這個
+                    join m in _context.修改人 on s.修改人 equals m.修改人1 into mleftjoin   //註解掉這個
+                    from _m in mleftjoin.DefaultIfEmpty()                                   //註解掉這個
 
 
 
@@ -689,7 +689,7 @@ namespace MVC_Demo2.Controllers
                 return PartialView();
             }
 
-                ViewBag.部門是否存在 = true;
+            ViewBag.部門是否存在 = true;
 
             ViewBag.單位名稱 = 部門資料.單位 + "_" + 部門資料.單位Navigation.單位名稱;
             ViewBag.部門名稱 = 部門資料.部門1 + "_" + 部門資料.部門名稱;
@@ -700,7 +700,7 @@ namespace MVC_Demo2.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Add)]
-        public async Task<IActionResult> CreateDetail([Bind("單位,部門,分部,分部名稱,組織狀態")]
+        public async Task<IActionResult> CreateDetail([Bind("單位,部門,分部,分部名稱")]
                         TR_01_分部CreateViewModel postData)
         {
             //// 檢查Model驗證結果。如果有任何驗證未通過，則回傳錯誤。
@@ -777,19 +777,219 @@ namespace MVC_Demo2.Controllers
                 message = "發生未知的錯誤，請聯絡系統管理員"
             });
         }
-        //private async Task<List<SelectListItem>> Get分部選項(UserAccountForSession ua)
-        //{
-        //    var options = await _context.分部
-        //        .Where(s => (ua.DataRang > 1 ? s.單位 == ua.DepartmentNo : true) && s.組織狀態)
-        //        .Select(s => new SelectListItem
-        //        {
-        //            Text = HttpUtility.HtmlEncode(s.分部 + "_" + s.分部名稱),
-        //            Value = HttpUtility.HtmlEncode(s.分部),
-        //        }).ToListAsync();
 
-        //    options.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
-        //    return options;
-        //}
+
+        public async Task<IActionResult> EditDetail(string 單位, string 部門, string 分部)
+        {
+
+            if (單位 == null || 部門 == null || 分部 == null)
+            {
+                return NotFound();
+            }
+
+
+            var 分部資料 = await _context.分部
+                .Include(s => s.部門Navigation)
+                .Where(s => s.單位 == 單位 && s.部門 == 部門 && s.分部1 == 分部 && s.組織狀態)
+                .SingleOrDefaultAsync();
+
+            if (分部資料 == null) // 部門資料 就是model
+            {
+                ViewBag.分部是否存在 = false;
+                return PartialView();
+            }
+
+            ViewBag.分部是否存在 = true;
+
+            //ViewBag.單位名稱 = 分部資料.單位 + "_" + 分部資料.單位Navigation.單位名稱;
+            ViewBag.分部名稱 = 分部資料.分部1 + "_" + 分部資料.分部名稱;
+
+            var viewModel = _mapper.Map<分部, TR_01_分部EditViewModel>(分部資料);
+
+            //ViewBag.單位名稱 = viewModel.單位 + "_" + viewModel.單位Navigation.單位名稱;
+
+            return PartialView(viewModel);
+
+
+            //return PartialView();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ProcUseRang(ProcNo, ProcUseRang.Update)]
+        public async Task<IActionResult> EditDetail([Bind("單位,部門,分部,分部名稱,組織狀態")] TR_01_分部EditViewModel postData)
+        {
+            // 檢查Model驗證
+            if (!ModelState.IsValid)
+            {
+                //return Ok(new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+                //{
+                //    data = ModelState.ToErrorInfos()
+                //});
+                foreach (var entry in ModelState)
+                {
+                    var key = entry.Key;
+                    foreach (var error in entry.Value.Errors)
+                    {
+                        Console.WriteLine($"欄位：{key}，錯誤：{error.ErrorMessage}, Exception: {error.Exception?.Message}");
+                    }
+                }
+
+
+            }
+
+            try
+            {
+
+                // 驗證
+                //await ValidateForEdit(postData);
+
+                if (!ModelState.IsValid)
+                {
+                    return Ok(new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+                    {
+                        data = ModelState.ToErrorInfos()
+                    });
+                }
+
+                // 得到要編輯的資料
+                var model = _mapper.Map<TR_01_分部EditViewModel, 分部>(postData);
+
+                if (model == null)
+                {
+                    return NotFound();
+                }
+
+                //取得ua
+                var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+
+                // 設定修改人與修改時間
+                model.修改人 = ua.UserNo;
+                model.修改日期時間 = DateTime.Now;
+
+                // 告訴EF Core 我們要更新這筆資料
+                _context.分部.Update(model);
+
+                // 實際執行，並得到受影響的資料筆數(opCount)
+                int opCount = await _context.SaveChangesAsync();
+
+                if (opCount > 0)
+                {
+                    return Ok(new ReturnData(ReturnState.ReturnCode.OK)
+                    {
+                        data = postData
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                // 處理例外
+                Exception realEx = ex.GetOriginalException();
+
+                return CreatedAtAction(nameof(Edit), new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+                {
+                    message = realEx.ToMeaningfulMessage()
+                });
+            }
+
+            // 如果opCount <= 0 的話，就會回傳這個錯誤。
+            return CreatedAtAction(nameof(Edit), new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+            {
+                message = "發生未知錯誤，請聯絡管理員"
+            });
+        }
+
+        //[ProcUseRang(ProcNo, ProcUseRang.Delete)]
+        public async Task<ActionResult> DeleteDetail(string 單位, string 部門, string 分部)
+        {
+            // 檢查參數
+            if (單位 == null || 部門 == null || 分部 == null)
+            {
+                return NotFound();
+            }
+
+            // 查詢要刪除的資料，得到DisplayViewModel
+            // 可以注意到我們使用與GetData中相同的GetBaseQuery()方法，來取得基底查詢語法
+            var all = await GetDetailBaseQuery().ToListAsync(); // 設斷點看 all 裡有哪些資料
+
+            var viewModel = await GetDetailBaseQuery()
+                .Where(s => s.單位 == 單位 && s.部門 == 部門 && s.分部 == 分部)
+                .SingleOrDefaultAsync();
+
+            if (viewModel == null)
+            {
+                return NotFound();
+            }
+
+            return PartialView(viewModel);
+        }
+
+
+        [HttpPost, ActionName("DeleteDetail")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ProcUseRang(ProcNo, ProcUseRang.Delete)]
+        public async Task<ActionResult> DeleteDetailConfirmed([Bind("單位,部門,分部,分部名稱,組織狀態,修改人,修改日期時間")] TR_01_分部EditViewModel postData)
+        {
+            // 檢查參數是否正確傳遞
+
+            if (postData.單位 == null || postData.部門 == null || postData.部門 == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                //await ValidateForDelete(postData);
+
+                if (!ModelState.IsValid)
+                {
+
+                    return Ok(new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+                    {
+                        data = ModelState.ToErrorInfos()
+                    });
+                }
+
+                // 使用 mapper 會有一些問題 ， 所以我們直接從 DB 撈 model 就好
+                // var model = _mapper.Map<資料表DisplayViewModel, 資料表>(postData);
+                var model = await _context.分部
+                    //.Include(s => s.單位Navigation)
+                    .Where(s => s.單位 == postData.單位
+                           && s.部門 == postData.部門
+                           && s.分部1 == postData.分部)
+                    .SingleOrDefaultAsync();
+
+                if (model == null)
+                {
+                    return NotFound();
+                }
+
+                // 刪除資料並儲存
+                _context.分部.Remove(model);
+                var opCount = await _context.SaveChangesAsync();
+
+                if (opCount > 0)
+                {
+                    return Ok(new ReturnData(ReturnState.ReturnCode.OK));
+                }
+            }
+            catch (Exception ex)
+            {
+                // 處理例外
+                Exception realEx = ex.GetOriginalException();
+
+                return CreatedAtAction(nameof(DeleteConfirmed), new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
+                {
+                    message = realEx.ToMeaningfulMessage()
+                });
+            }
+
+            return CreatedAtAction(nameof(DeleteConfirmed), new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
+            {
+                message = "資料已不存在"
+            });
+        }
 
 
         #endregion

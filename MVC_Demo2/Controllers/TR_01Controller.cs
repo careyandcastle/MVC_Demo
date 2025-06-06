@@ -406,22 +406,7 @@ namespace MVC_Demo2.Controllers
             }
             return (true, "");
         }
-        //public async Task<IActionResult> Delete(string id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var 部門 = await _context.部門
-        //        .FirstOrDefaultAsync(m => m.單位 == id);
-        //    if (部門 == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(部門);
-        //}
+ 
 
         [ProcUseRang(ProcNo, ProcUseRang.Delete)]
         public async Task<ActionResult> Delete(string 單位, string 部門)
@@ -600,10 +585,9 @@ namespace MVC_Demo2.Controllers
         {
 
             // 從部門表 (_context.部門) 查詢資料，並使用 Include 預先載入與部門關聯的 單位Navigation (多對一或一對一的關聯)
-            return (from s in _context.分部.Include(s => s.部門Navigation)
-                        //新的include寫法 ^^^
-                        //原本的JOIN寫法:
-                        //join dep in _context.單位 on s.單位 equals dep.單位1
+            return (from s in _context.分部
+                     .Include(s => s.部門Navigation)
+                        .ThenInclude(b => b.單位Navigation)
                     join m in _context.修改人 on s.修改人 equals m.修改人1 into mleftjoin
                     from _m in mleftjoin.DefaultIfEmpty()
                     select new TR_01_分部DisplayViewModel
@@ -616,24 +600,21 @@ namespace MVC_Demo2.Controllers
 
                         // 保留原始欄位，供後續操作使用，例如參數傳遞、權限管理等
                         單位 = s.單位,
-                        //單位顯示 = CustomSqlFunctions.ConcatCodeAndName(s.單位, s.部門Navigation.單位名稱),
+                        單位顯示 = CustomSqlFunctions.ConcatCodeAndName(s.單位, s.部門Navigation.單位Navigation.單位名稱),
                         部門 = s.部門,
+                        部門顯示 = CustomSqlFunctions.ConcatCodeAndName(s.部門, s.部門Navigation.部門名稱),
                         分部 = s.分部1,
                         分部名稱 = s.分部名稱,
+                        分部顯示 = CustomSqlFunctions.ConcatCodeAndName(s.分部1, s.分部名稱),
                         組織狀態 = s.組織狀態,
                         組織狀態顯示 = s.組織狀態 ? "是" : "否", //新增這個
                         修改人 = s.修改人,
+                        修改人顯示 = CustomSqlFunctions.ConcatCodeAndName(s.修改人, CustomSqlFunctions.DecryptToString(_m.姓名)),
                         修改日期時間 = s.修改日期時間,
-                        //單位 = s.單位,
                         //單位顯示 = s.單位 + "_" + dep.單位名稱,
                         //這樣寫不好, 因為有可能變成"總管理處_" (left join時單位名稱可能為空值)
                         //單位顯示 = CustomSqlFunctions.ConcatCodeAndName(s.單位, dep.單位名稱),
                         //單位顯示 = CustomSqlFunctions.ConcatCodeAndName(s.單位, s.單位Navigation.單位名稱),
-                        //部門 = s.部門1,
-                        //部門名稱 = s.部門名稱,
-                        //組織狀態 = s.組織狀態,
-                        //組織狀態顯示 = s.組織狀態 ? "是" : "否",
-                        //修改人 = s.修改人,
                         //修改人 = CustomSqlFunctions.ConcatCodeAndName(
                         //        s.修改人, CustomSqlFunctions.DecryptToString(_m.姓名)),
                         //修改日期時間 = s.修改日期時間
@@ -651,7 +632,7 @@ namespace MVC_Demo2.Controllers
         [NeglectActionFilter]
         public async Task<IActionResult> GetDetails([FromBody] TR_01_分部DisplayViewModel keys)
         {
-            if (keys.單位 == null || keys.部門 == null)
+            if (keys.單位 == null || keys.部門 == null )
             {
                 return NotFound();
             }
@@ -910,11 +891,13 @@ namespace MVC_Demo2.Controllers
 
             // 查詢要刪除的資料，得到DisplayViewModel
             // 可以注意到我們使用與GetData中相同的GetBaseQuery()方法，來取得基底查詢語法
-            var all = await GetDetailBaseQuery().ToListAsync(); // 設斷點看 all 裡有哪些資料
+            //var all = await GetDetailBaseQuery().ToListAsync(); // 設斷點看 all 裡有哪些資料
 
             var viewModel = await GetDetailBaseQuery()
                 .Where(s => s.單位 == 單位 && s.部門 == 部門 && s.分部 == 分部)
                 .SingleOrDefaultAsync();
+
+            //ViewBag.修改人顯示 = viewModel.修改人 + "_" + viewModel.修改人Navigation.姓名;
 
             if (viewModel == null)
             {
@@ -929,7 +912,7 @@ namespace MVC_Demo2.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Delete)]
-        public async Task<ActionResult> DeleteDetailConfirmed([Bind("單位,部門,分部,分部名稱,組織狀態,修改人,修改日期時間")] TR_01_分部EditViewModel postData)
+        public async Task<ActionResult> DeleteDetailConfirmed([Bind("單位,部門,分部")] TR_01_分部DisplayViewModel postData)
         {
             // 檢查參數是否正確傳遞
 

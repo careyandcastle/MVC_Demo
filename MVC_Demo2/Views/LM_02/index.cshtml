@@ -88,6 +88,11 @@
                     <b-button v-if="slot.data.operatePermissions.canDelete" v-b-modal.master-table-del-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow" class="mr-1" variant="detail3">刪除</b-button>
                     <b-button v-if="slot.data.operatePermissions.canExport" class="mr-1" variant="detail3" v-on:click="slot.data.onDataExport" isWaitting="!isWaitting">匯出</b-button>
                     <b-button v-if="slot.data.operatePermissions.canQuery" v-b-modal.master-table-query-modal class="mr-1" variant="detail3">進階查詢</b-button>
+                    <b-button class="mr-1" variant="detail3" @@click="slot.data.comeSomeAlert">來個alert</b-button> 
+                    @*注意用slot.data取資料，這是底層*@
+
+                    @*這邊的兩個@，一個是C#Razor語法，一個是@click語法*@
+                    @*這些按鈕會去呼叫User自訂的函式，也就是說，真正執行對象是_function*@
                     <!--Master OP Page-->
                     <fetched-page-modal url="CreateMulti" id="master-table-create-multi-modal" title="批次新增單檔資料" :classes="['max-width-90-pt']"></fetched-page-modal>
                     <fetched-page-modal url="Create" id="master-table-create-modal" title="新增單檔資料"></fetched-page-modal>
@@ -157,7 +162,7 @@
 
             //主檔 data source 傳給 Server的參數
             let dsMasterProviderParams = {
-                searchBy: null
+                searchBy: null 
             };
 
             const dateTimePropertyName = @Json.Serialize(@dateTimePropertyName);
@@ -165,9 +170,13 @@
             //主檔 data source
             const _dsMasterProvider = async function (ctx) {
                 try {
+                    @*這邊都是 LM_02 的 qc*@
                     dsMasterProviderParams.pageSize = ctx.perPage;
+                    @*每一頁要有多少筆資料*@ 
                     dsMasterProviderParams.pageIndex = ctx.currentPage;
+                    @*目前已經點到第幾頁 ?*@
                     dsMasterProviderParams.sortBy = ctx.sortBy;
+                    @*正序或反序*@
                     dsMasterProviderParams.isDesc = ctx.sortDesc || false;
                     let response = await axios.post('GetDataPost', dsMasterProviderParams, {
                         headers: {
@@ -175,12 +184,17 @@
                             "RequestVerificationToken": "@requestToken"
                         }
                     });
+                    @*post actoin與你要送給網址的參數*@
+                    @*不用指定controller，因為本view就在LM_02下*@
+
+                    @*[http,ActionName("GetDataPost")] 優先於 Action的實質名稱(GetData)*@
 
                     this.totalRows = response.data.total;
 
+                    @*把response丟進latestData*@
                     let latestData = TSCC.Utility.Table.GetDataSource.call(this, masterTableKeys, response, ctx);
 
-                    //轉成台灣時間
+                    //轉成台灣時間 //這一段可以去瀏覽器的F12去看內容
                     latestData.forEach(data => {
                         Object.entries(dateTimePropertyName[TableType.MasterTable]).forEach(([propName, dateType]) => {
                             let dateISOstring = data[propName];
@@ -364,16 +378,17 @@
                 console.log("_onFiltered customize: ", event);
             }
 
-            const _serverReturned = function (retData) {
+            const _serverReturned = function (retData) { //增刪修失敗時，都會log
                 console.log("serverReturned customize: ", retData);
             }
 
-            const _onBeforeMount = function (tableInstance) {
+            //life cycle hook? 每有一個生命週期，我就掛個鉤子，以後可以獲得其他生命週期取得該週期相關資料?
+            const _onBeforeMount = function (tableInstance) { //掛載前，會... (轉圈圈，還沒有掛載table之前)
                 //tableInstance.stickyHeaderHeight = `${200}px`
                 console.log("onBeforeMount customize");
             }
 
-            const _onMounted = function (tableInstance) {
+            const _onMounted = function (tableInstance) { //掛載後，會...(table已經出來了)
                 console.log("_onMounted customize");
             }
 
@@ -385,7 +400,7 @@
                 dTableFieldDesc: _dTableFieldDesc,
                 operatePermissions: _opPermiss,
                 isFiltered: false,
-                isNewItemOnTop: true,
+                isNewItemOnTop: true, //就是把剛剛增刪修的data放置於table最上方，方便user閱覽
                 事業: '',
                 單位: '',
                 部門: '',
@@ -393,8 +408,9 @@
                 案號: '',
             }
             params.methods = {
-                //系統覆寫
+                //系統覆寫 //這些東西會被底層拿來使用(table.js)，table.js簡單來說就是bootstrap的b-table，接收一個item，從server拿過來。例如:items=
                 dsMasterProvider: _dsMasterProvider,
+                //D:\SVN\TscLibCore\wwwroot\js\commons\ui\vue\table.js 第930為底層                
                 onMasterRowSelect: _onMasterRowSelect,
                 serverReturned: _serverReturned,
                 onFiltered: _onFiltered,
@@ -405,12 +421,26 @@
                 onToggleRowDetail: _onToggleRowDetail,
                 //User自訂
                 onFilterValueUpdate: _onFilterValueUpdate,
-                onAdvanceSearch: _onAdvanceSearch,
+                onAdvanceSearch: _onAdvanceSearch, //這個在351行
                 onCleanFilter: _onCleanFilter,
                 onDataExport: _onDataExport,
+
+                comeSomeAlert: function () { alert("I am an alert"); },//0611
+                //覆寫擴充功能
+                @*getClassForMasterContent: function (rowData) {
+                    debugger;
+                }//20 lines}*@ 
+                
+                
+                getClassForMasterContent: function (rowData) {
+                    if (rowData.field.key === '承租人編號'
+                        && ['00001', '00002'].some(val => val === rowData.value)) {
+                        return 'text-info';
+                    }
+                }
             };
             //掛載Table
-            TSC_NS.CreateVue(params).$mount('#lm_02-index');
+            TSC_NS.CreateVue(params).$mount('#lm_02-index'); //跟vue一樣需要掛載
         })();
     </script>
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

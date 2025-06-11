@@ -52,10 +52,13 @@ namespace MVC_Demo2.Controllers
         [HttpPost, ActionName("GetDataPost")]
         [ValidateAntiForgeryToken]
         [NeglectActionFilter]
-        public async Task<IActionResult> GetData([FromBody] QueryConditions qc)
+        public async Task<IActionResult> GetData([FromBody] QueryConditions qc) 
         {
+            //qc位於index.cshtml
             var sql = (from s in _context.租約主檔
                        select s).AsNoTracking().ProjectTo<租約主檔ViewModel>(_config);
+            //ProjectTo是 先new一個"租約主檔ViewModel"，會拿一筆"租約主檔" 把"租約主檔"的數值給他("租約主檔ViewModel")
+            //租約主檔尚未解密? 請了解一下.formember語法
 
             PaginatedList<租約主檔ViewModel> queryedData = null;
             queryedData = await PaginatedList<租約主檔ViewModel>.CreateAsync(sql, qc);

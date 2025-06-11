@@ -105,6 +105,21 @@
             </b-row>
         </template>
         <template #filter-row="slot">
+            <b-col cols="auto">
+                <!-- :field-key-desc="{案名: '案名', 案號:'案號'}" -->
+                <sticky-fields-selector :field-key-desc="slot.data.mTableFieldDesc"
+                                        selected-indic-limit=3
+                                        ref="stickySelector">
+                </sticky-fields-selector>
+            </b-col>
+
+            <b-col cols="auto">
+                <b-button class="ml-1" variant="detail3"
+                          v-show="slot.data.$parent?.$refs?.stickySelector?.selected"
+                          @@click="()=>slot.data.$parent.$refs.stickySelector.selectedClear()">
+                    取消凍結
+                </b-button>
+            </b-col>
             <b-row class="mb-2">
                 @*把不要顯示的欄位名稱放進b-col的v-if陣列中，預設僅顯示主鍵欄位，'table-actions', '__rowIndex__'不可移除*@
                 <b-col style="max-width:14em;"

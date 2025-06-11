@@ -24,7 +24,7 @@ namespace MVC_Demo2.Controllers
     public class LM_02Controller : Controller
     {
         private readonly MvcDemoContext _context;
-        private const string ProcNo = "LM02";
+        private const string ProcNo = "LM_02";
 
         private static IConfigurationProvider _config;
         private static IMapper _mapper;

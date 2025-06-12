@@ -28,7 +28,8 @@
     var dateTimePropertyName = new
     {
         MasterTable = new Dictionary<string, string>(),
-        DetailTable = new Dictionary<string, string>(),
+        DetailTable = new Dictionary<string, string>
+    (),
     };
     var dateType = (datetime: "datetime", date: "date");
     foreach (var propName in ((TableFieldDescDictionary)tablesField)[TableType.MasterTable.ToString()])
@@ -73,26 +74,26 @@
     }
 }
 
+@section MvcDemoHeadSection{
+    <script src="~/js/site_lm_02.js"></script>
+}
+
 <h1 class="mt-1">@ViewData["Title"]</h1>
 <div id="lm_02-index">
     <table-component id="lm_02-master-table"
-                     @*sticky-header-height="642px"*@
+                     @*sticky-header-height="642px" *@
                      ref="lm_02-master-table">
         <template #default="slot">
             <!--OP Button-->
             <b-row class="mb-2">
-                <b-col>
-                    <b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-1" variant="detail3">多筆建立</b-button>
+                <b-col cols="auto">
+                    <b-button v-if="slot.data.canClick && slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-1" variant="detail3">多筆建立</b-button>
                     <b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-modal class="mr-1" variant="detail3">建立</b-button>
                     <b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-edit-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">編輯</b-button>
                     <b-button v-if="slot.data.operatePermissions.canDelete" v-b-modal.master-table-del-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow" class="mr-1" variant="detail3">刪除</b-button>
                     <b-button v-if="slot.data.operatePermissions.canExport" class="mr-1" variant="detail3" v-on:click="slot.data.onDataExport" isWaitting="!isWaitting">匯出</b-button>
                     <b-button v-if="slot.data.operatePermissions.canQuery" v-b-modal.master-table-query-modal class="mr-1" variant="detail3">進階查詢</b-button>
-                    <b-button class="mr-1" variant="detail3" @@click="slot.data.comeSomeAlert">來個alert</b-button> 
-                    @*注意用slot.data取資料，這是底層*@
-
-                    @*這邊的兩個@，一個是C#Razor語法，一個是@click語法*@
-                    @*這些按鈕會去呼叫User自訂的函式，也就是說，真正執行對象是_function*@
+                    <b-button class="mr-1" variant="detail3" @@click="slot.data.comeSomeAlert">btn</b-button>
                     <!--Master OP Page-->
                     <fetched-page-modal url="CreateMulti" id="master-table-create-multi-modal" title="批次新增單檔資料" :classes="['max-width-90-pt']"></fetched-page-modal>
                     <fetched-page-modal url="Create" id="master-table-create-modal" title="新增單檔資料"></fetched-page-modal>
@@ -107,38 +108,40 @@
                     <fetched-page-modal url="DeleteDetail" :param="slot.data.selectedDetailRow?.param"
                                         id="detail-table-del-modal" title="刪除操作"></fetched-page-modal>
                 </b-col>
-            </b-row>
-        </template>
-        <template #filter-row="slot">
-            <b-col cols="auto">
-                <!-- :field-key-desc="{案名: '案名', 案號:'案號'}" -->
-                <sticky-fields-selector :field-key-desc="slot.data.mTableFieldDesc"
-                                        selected-indic-limit=3
-                                        ref="stickySelector">
-                </sticky-fields-selector>
-            </b-col>
-
-            <b-col cols="auto">
-                <b-button class="ml-1" variant="detail3"
-                          v-show="slot.data.$parent?.$refs?.stickySelector?.selected"
-                          @@click="()=>slot.data.$parent.$refs.stickySelector.selectedClear()">
-                    取消凍結
-                </b-button>
-            </b-col>
-            <b-row class="mb-2">
-                @*把不要顯示的欄位名稱放進b-col的v-if陣列中，預設僅顯示主鍵欄位，'table-actions', '__rowIndex__'不可移除*@
-                <b-col style="max-width:14em;"
-                       v-for="field in slot.data.mTableFields" :key="field.key"
-                       v-if="['m-table-actions', '__rowIndex__', '承租人','租賃方式','保證金種類','租約終止原因','案名','承租人編號','租賃方式編號','租賃用途','簽約日期','租約起始日期','本租期起始日期','本租期終止日期','租期月數','續約次數限制','累計租期限制','開始計算租金日期','計租間隔月數','下次計租日期','每期租金含稅','每期繳款期限日','履約保證金','保證金種類編號','保證金票證號','租約終止日期','租約終止原因編號','累計租期月數','累計續約次數','懸記帳分戶','備註','契約年租金含稅','契約年租金未稅','浮動年租金未稅','固定年租金未稅','本年期月數','下年期月數','房屋地址','房地坐落','承租建物總面積','承租土地總面積','修改人','修改時間','保證金種類編號Navigation','承租人檔','租約終止原因編號Navigation','租賃方式編號Navigation','租約保險檔','租約明細檔','租約水電檔'].some(item => item === field.key) === false">
-                    <b-input :placeholder="field.label"
-                             :name="field.key"
-                             v-b-tooltip.bottom.v-secondary="field.label"
-                             @@keyup="slot.data.onFilterValueUpdate"
-                             :ref="'filter_input_' + field.key">
-                    </b-input>
+                <b-col cols="auto">
+                    <!-- :field-key-desc="{案名: '案名', 案號:'案號'}" -->
+                    <sticky-fields-selector :field-key-desc="slot.data.mTableFieldDesc"
+                                            selected-indic-limit=3
+                                            ref="stickySelector">
+                    </sticky-fields-selector>
                 </b-col>
-                <b-col>
-                    <b-button @@click="slot.data.onCleanFilter" style="max-height:62px;" class="float-right" variant="detail3" :disabled="!slot.data.isFiltered">清除過濾</b-button>
+
+                <b-col cols="auto">
+                    <b-button class="ml-1" variant="detail3"
+                              v-show="slot.data.$parent?.$refs?.stickySelector?.selected"
+                              @@click="()=>slot.data.$parent.$refs.stickySelector.selectedClear()">
+                        取消凍結
+                    </b-button>
+                </b-col>
+                <b-col cols="auto">
+                    <multi-selector name="事業"
+                                    ref="ref事業Comp"
+                                    :searchable="true"
+                                    :options="slot.data.businessOptions"
+                                    :change-handler="slot.data.multiSelectHandlerBuss">
+                    </multi-selector>
+                </b-col>
+
+                <b-col cols="auto">
+                    <multi-selector name="單位"
+                                    ref="ref單位Comp"
+                                    :searchable="true"
+                                    :options="slot.data.depOptions"
+                                    :change-handler="slot.data.multiSelectHandlerDep">
+                    </multi-selector>
+                </b-col>
+                <b-col cols="auto">
+                    <b-button class="mr-1" variant="detail3" @@click="slot.data.comeSomeAlert">送出</b-button>
                 </b-col>
             </b-row>
         </template>
@@ -162,7 +165,7 @@
 
             //主檔 data source 傳給 Server的參數
             let dsMasterProviderParams = {
-                searchBy: null 
+                searchBy: null
             };
 
             const dateTimePropertyName = @Json.Serialize(@dateTimePropertyName);
@@ -170,13 +173,9 @@
             //主檔 data source
             const _dsMasterProvider = async function (ctx) {
                 try {
-                    @*這邊都是 LM_02 的 qc*@
                     dsMasterProviderParams.pageSize = ctx.perPage;
-                    @*每一頁要有多少筆資料*@ 
                     dsMasterProviderParams.pageIndex = ctx.currentPage;
-                    @*目前已經點到第幾頁 ?*@
                     dsMasterProviderParams.sortBy = ctx.sortBy;
-                    @*正序或反序*@
                     dsMasterProviderParams.isDesc = ctx.sortDesc || false;
                     let response = await axios.post('GetDataPost', dsMasterProviderParams, {
                         headers: {
@@ -184,17 +183,12 @@
                             "RequestVerificationToken": "@requestToken"
                         }
                     });
-                    @*post actoin與你要送給網址的參數*@
-                    @*不用指定controller，因為本view就在LM_02下*@
-
-                    @*[http,ActionName("GetDataPost")] 優先於 Action的實質名稱(GetData)*@
 
                     this.totalRows = response.data.total;
 
-                    @*把response丟進latestData*@
                     let latestData = TSCC.Utility.Table.GetDataSource.call(this, masterTableKeys, response, ctx);
 
-                    //轉成台灣時間 //這一段可以去瀏覽器的F12去看內容
+                    //轉成台灣時間
                     latestData.forEach(data => {
                         Object.entries(dateTimePropertyName[TableType.MasterTable]).forEach(([propName, dateType]) => {
                             let dateISOstring = data[propName];
@@ -262,7 +256,7 @@
                 }
             }
             //點擊時發生呼叫事件
-            const _onMasterRowSelect = function (rowData) {
+            const _onMasterRowSelect = async function (rowData) {
                 var selectParam = {
                     事業: null,
                     單位: null,
@@ -287,6 +281,16 @@
                             selectParam[propName] = this[propName] = Date.parse_zhTW_string(dateLocalestring).toISOString();
                         }
                     });
+
+                    @* this.canClick = rowData[0].__rowIndex__ % 2 == 0;*@
+                    const canClickRet = await axios.get("CanClickCreate",
+                        {
+                            params: {
+                                index: rowData[0].__rowIndex__
+                            }
+                        });
+
+                    this.canClick = canClickRet.data; //true or false
                 }
             }
 
@@ -317,7 +321,9 @@
                 let shouldRefresh = this.isFiltered || (filterData && Object.keys(filterData).length > 0);
                 this.isFiltered = !!filterData && Object.keys(filterData).length > 0;
                 dsMasterProviderParams.searchBy = filterData;
+                debugger;
                 shouldRefresh && this.refreshMasterTable();
+
             }
 
             //匯出ods
@@ -378,39 +384,56 @@
                 console.log("_onFiltered customize: ", event);
             }
 
-            const _serverReturned = function (retData) { //增刪修失敗時，都會log
+            const _serverReturned = function (retData) {
                 console.log("serverReturned customize: ", retData);
             }
-
-            //life cycle hook? 每有一個生命週期，我就掛個鉤子，以後可以獲得其他生命週期取得該週期相關資料?
-            const _onBeforeMount = function (tableInstance) { //掛載前，會... (轉圈圈，還沒有掛載table之前)
+            //life cycle hook
+            const _onBeforeMount = function (tableInstance) {
                 //tableInstance.stickyHeaderHeight = `${200}px`
                 console.log("onBeforeMount customize");
+                this.$set(this.customVariable, 'bussSel', '');
+                this.$set(this.customVariable, 'depSel', '');
             }
 
-            const _onMounted = function (tableInstance) { //掛載後，會...(table已經出來了)
-                console.log("_onMounted customize");
+            const _onMounted = function (tableInstance) {
             }
 
             //要注入的自訂參數
             let _opPermiss = { canCreate: @canCreate, canUpdate: @canUpdate, canDelete: @canDelete, canQuery: @canQuery, canExport: @canExport };
             const params = { data: null, methods: null };
-            params.data = {
+            params.data =  {
                 mTableFieldDesc: _mTableFieldDesc,
                 dTableFieldDesc: _dTableFieldDesc,
                 operatePermissions: _opPermiss,
                 isFiltered: false,
-                isNewItemOnTop: true, //就是把剛剛增刪修的data放置於table最上方，方便user閱覽
+                isNewItemOnTop: true,
+                canClick: true,
                 事業: '',
                 單位: '',
                 部門: '',
                 分部: '',
                 案號: '',
+                businessOptions:
+                    [
+                        { text: 'A1', value: 'A1' },
+                        { text: 'F1', value: 'F1' },
+                        { text: 'J1', value: 'J1' },
+                        { text: 'K1', value: 'K1' },
+                        { text: 'L1', value: 'L1' },
+
+                    ],
+
+                depOptions:
+                    [
+                        { text: '54', value: '54' },
+                        { text: '42', value: '42' },
+                        { text: '59', value: '42' },
+                        { text: '01', value: '01' },
+                    ],
             }
             params.methods = {
-                //系統覆寫 //這些東西會被底層拿來使用(table.js)，table.js簡單來說就是bootstrap的b-table，接收一個item，從server拿過來。例如:items=
+                //系統覆寫
                 dsMasterProvider: _dsMasterProvider,
-                //D:\SVN\TscLibCore\wwwroot\js\commons\ui\vue\table.js 第930為底層                
                 onMasterRowSelect: _onMasterRowSelect,
                 serverReturned: _serverReturned,
                 onFiltered: _onFiltered,
@@ -421,26 +444,47 @@
                 onToggleRowDetail: _onToggleRowDetail,
                 //User自訂
                 onFilterValueUpdate: _onFilterValueUpdate,
-                onAdvanceSearch: _onAdvanceSearch, //這個在351行
+                onAdvanceSearch: _onAdvanceSearch,
                 onCleanFilter: _onCleanFilter,
                 onDataExport: _onDataExport,
+                comeSomeAlert: function () {
+                    dsMasterProviderParams.searchBy = {
+                        事業: {
+                            condit: "eq",
+                            value: this.customVariable.bussSel //A1 or F1
+                        },
 
-                comeSomeAlert: function () { alert("I am an alert"); },//0611
+                        單位: {
+                            "condit": "eq",
+                            "value": this.customVariable.depSel // 01 or 53
+                        }
+                    };
+                    this.refreshMasterTable();
+                },
                 //覆寫擴充功能
-                @*getClassForMasterContent: function (rowData) {
-                    debugger;
-                }//20 lines}*@ 
-                
-                
                 getClassForMasterContent: function (rowData) {
                     if (rowData.field.key === '承租人編號'
                         && ['00001', '00002'].some(val => val === rowData.value)) {
                         return 'text-info';
                     }
-                }
+                },
+                willShowMasterTableButton1: (rowData) => {
+                    return {
+                        buttonText: '我是按鈕',
+                        buttonVariant: 'outline-danger'
+                    };
+                },
+                button1EventHandler: function (event, row) {/* http request to server to close.*/ },
+                multiSelectHandlerBuss: function (userSel) {
+                    this.customVariable.bussSel = userSel.value;
+                },
+                multiSelectHandlerDep: function (userSel) {
+                    this.customVariable.depSel = userSel.value;
+                },
             };
             //掛載Table
-            TSC_NS.CreateVue(params).$mount('#lm_02-index'); //跟vue一樣需要掛載
+            const vueInst = TSC_NS.CreateVue(params);
+            vueInst.$mount('#lm_02-index');
         })();
     </script>
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

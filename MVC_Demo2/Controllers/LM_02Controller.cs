@@ -36,6 +36,9 @@ namespace MVC_Demo2.Controllers
             {
                 cfg.CreateProjection<租約主檔, 租約主檔ViewModel>();
                 cfg.CreateMap<租約主檔ViewModel, 租約主檔>();
+                cfg.CreateMap<租約明細檔ViewModel, 租約明細檔>();
+                cfg.CreateMap<租約明細檔, 租約明細檔ViewModel>();
+                cfg.CreateMap<租約主檔, 租約主檔ViewModel>();
             });
 
             _mapper ??= _config.CreateMapper();
@@ -44,21 +47,24 @@ namespace MVC_Demo2.Controllers
         public IActionResult Index()
         {
             ViewBag.TableFieldDescDict = new CreateTableFieldsDescription()
-                   .Create<租約主檔ViewModel, 租約明細檔>();
+                   .Create<租約主檔ViewModel, 租約明細檔ViewModel>();
 
             return View();
+        }
+
+        [NeglectActionFilter]
+        public bool CanClickCreate(int index)
+        {
+            return index % 2 == 0;
         }
 
         [HttpPost, ActionName("GetDataPost")]
         [ValidateAntiForgeryToken]
         [NeglectActionFilter]
-        public async Task<IActionResult> GetData([FromBody] QueryConditions qc) 
+        public async Task<IActionResult> GetData([FromBody] QueryConditions qc)
         {
-            //qc位於index.cshtml
             var sql = (from s in _context.租約主檔
                        select s).AsNoTracking().ProjectTo<租約主檔ViewModel>(_config);
-            //ProjectTo是 先new一個"租約主檔ViewModel"，會拿一筆"租約主檔" 把"租約主檔"的數值給他("租約主檔ViewModel")
-            //租約主檔尚未解密? 請了解一下.formember語法
 
             PaginatedList<租約主檔ViewModel> queryedData = null;
             queryedData = await PaginatedList<租約主檔ViewModel>.CreateAsync(sql, qc);
@@ -365,7 +371,7 @@ namespace MVC_Demo2.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Add)]
-        public async Task<IActionResult> CreateDetail([Bind("事業,單位,部門,分部,案號,商品編號,單價,數量,金額,修改人,修改時間")] 租約明細檔 postData)
+        public async Task<IActionResult> CreateDetail([Bind("商品類別編號,建物編號,商品類別,商品名稱,租約起始日期,租約終止日期,租賃方式,租賃用途,案名,事業,單位,部門,分部,案號,商品編號,單價,數量,金額,修改人,修改時間")] 租約明細檔ViewModel postData)
         {
             if (ModelState.IsValid == false)
                 return BadRequest(new ReturnData(ReturnState.ReturnCode.CREATE_ERROR));
@@ -374,7 +380,8 @@ namespace MVC_Demo2.Controllers
              *  Put Your Code Here.
              */
 
-            _context.Add(postData);
+            租約明細檔 filledData = _mapper.Map<租約明細檔ViewModel, 租約明細檔>(postData);
+            _context.Add(filledData);
 
             try
             {
@@ -403,7 +410,7 @@ namespace MVC_Demo2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateMultiDetails(List<租約明細檔> postData)
+        public async Task<IActionResult> CreateMultiDetails(List<租約明細檔ViewModel> postData)
         {
             if (ModelState.IsValid == false)
                 return BadRequest(new ReturnData(ReturnState.ReturnCode.CREATE_ERROR));
@@ -413,7 +420,8 @@ namespace MVC_Demo2.Controllers
                 /*
                  *  Put Your Code Here.
                  */
-                _context.Add(item);
+                租約明細檔 filledData = _mapper.Map<租約明細檔ViewModel, 租約明細檔>(item);
+                _context.Add(filledData);
             }
 
             try
@@ -457,7 +465,7 @@ namespace MVC_Demo2.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Update)]
-        public async Task<IActionResult> EditDetail(string 事業, string 單位, string 部門, string 分部, string 案號, string 商品編號, [Bind("事業,單位,部門,分部,案號,商品編號,單價,數量,金額,修改人,修改時間")] 租約明細檔 postData)
+        public async Task<IActionResult> EditDetail(string 事業, string 單位, string 部門, string 分部, string 案號, string 商品編號, [Bind("商品類別編號,建物編號,商品類別,商品名稱,租約起始日期,租約終止日期,租賃方式,租賃用途,案名,事業,單位,部門,分部,案號,商品編號,單價,數量,金額,修改人,修改時間")] 租約明細檔ViewModel postData)
         {
             if (ModelState.IsValid == false)
                 return CreatedAtAction(nameof(EditDetail), new ReturnData(ReturnState.ReturnCode.EDIT_ERROR));
@@ -469,7 +477,8 @@ namespace MVC_Demo2.Controllers
              *  Put Your Code Here.
              */
 
-            _context.Update(postData);
+            租約明細檔 filledData = _mapper.Map<租約明細檔ViewModel, 租約明細檔>(postData);
+            _context.Update(filledData);
 
             try
             {

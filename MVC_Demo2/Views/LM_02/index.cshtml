@@ -481,6 +481,34 @@
                 multiSelectHandlerDep: function (userSel) {
                     this.customVariable.depSel = userSel.value;
                 },
+                getMasterTableActionButtonConfig: function (rowData) {
+                    return [
+                        {
+                            text: '按鈕1',
+                            willShow: false,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 1'); }
+                        },
+                        {
+                            text: '按鈕2',
+                            willShow: true,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 2'); }
+                        },
+                        {
+                            text: '按鈕3',
+                            willShow: true,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 3'); }
+                        },
+                        {
+                            text: '按鈕4',
+                            willShow: true,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 4'); }
+                        }
+                    ];
+                }
             };
             //掛載Table
             const vueInst = TSC_NS.CreateVue(params);

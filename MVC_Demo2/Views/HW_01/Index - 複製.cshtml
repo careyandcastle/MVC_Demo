@@ -1,6 +1,5 @@
 ﻿@using MVC_Demo2.Models.ViewModel
-@model 庫存盤點主檔ViewModel
-@using System.Diagnostics;
+@model HW_01_庫存盤點主檔DisplayViewModel
 @using TscLibCore.Commons;
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @using Microsoft.AspNetCore.Http;
@@ -11,62 +10,49 @@
 @using TableFieldDescDictionary =
     System.Collections.Generic.Dictionary<System.String, System.Collections.Generic.Dictionary<System.String, System.String>>;
 @{ ViewData["Title"] = "庫存盤點作業";
-    var tablesField = ViewBag.TableFieldDescDict;
-    var masterTableDescHTML = Html.Raw(CreateTableFieldsDescription.TableFieldDescToHTML(tablesField, TableType.MasterTable));
-    var detailTableDescHTML = Html.Raw(CreateTableFieldsDescription.TableFieldDescToHTML(tablesField, TableType.DetailTable));
+                var tablesField = ViewBag.TableFieldDescDict;
+                var masterTableDescHTML = Html.Raw(CreateTableFieldsDescription.TableFieldDescToHTML(tablesField, TableType.MasterTable));
+                var detailTableDescHTML = Html.Raw(CreateTableFieldsDescription.TableFieldDescToHTML(tablesField, TableType.DetailTable));
 
-    var requestToken = Html.Raw(Antiforgery.GetAndStoreTokens(Context).RequestToken);
-    UserAccountForSession sess = HttpContextAccessor.HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+                var requestToken = Html.Raw(Antiforgery.GetAndStoreTokens(Context).RequestToken);
+                UserAccountForSession sess = HttpContextAccessor.HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
 
-    var canCreate = Html.Raw(sess.AddYn).ToString().ToLower();
-    var canUpdate = Html.Raw(sess.UpdateYn).ToString().ToLower();
-    var canDelete = Html.Raw(sess.DeleteYn).ToString().ToLower();
-    var canQuery = Html.Raw(sess.QueryYn).ToString().ToLower();
-    var canExport = Html.Raw(sess.ExportYn).ToString().ToLower();
+                var canCreate = Html.Raw(sess.AddYn).ToString().ToLower();
+                var canUpdate = Html.Raw(sess.UpdateYn).ToString().ToLower();
+                var canDelete = Html.Raw(sess.DeleteYn).ToString().ToLower();
+                var canQuery = Html.Raw(sess.QueryYn).ToString().ToLower();
+                var canExport = Html.Raw(sess.ExportYn).ToString().ToLower();
 
-    var dateTimePropertyName = new
-    {
-        MasterTable = new Dictionary<string, string>(),
-        DetailTable = new Dictionary<string, string>()
-    };
-    var dateType = (datetime: "datetime", date: "date");
-    foreach (var propName in ((TableFieldDescDictionary)tablesField)[TableType.MasterTable.ToString()])
-    {
-        var prop = typeof(HW_01_庫存盤點主檔DisplayViewModel).GetProperty(propName.Key);
-        if (prop == null)
-        {
-            Debug.WriteLine($"找不到屬性：{propName.Key}");
-            continue; // 欄位名稱在 ViewModel 裡不存在，略過
-        }
-
-
-        Type propertyType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-        if (propertyType == typeof(DateTime))
-        {
-            var att = (DataTypeAttribute)prop.GetCustomAttributes(typeof(DataTypeAttribute), false).FirstOrDefault();
-            var dateTimeFormat = att != null && att.DataType == DataType.Date ? dateType.date : dateType.datetime;
-            dateTimePropertyName.MasterTable.Add(propName.Key, dateTimeFormat);
-        }
-    }
-    foreach (var propName in ((TableFieldDescDictionary)tablesField)[TableType.DetailTable.ToString()])
-    {
-        var prop = typeof(HW_01_庫存盤點明細檔DisplayViewModel).GetProperty(propName.Key);
-        if (prop == null)
-        {
-            // 可選：印出是哪個欄位名稱找不到（幫助你排錯）
-            Debug.WriteLine($"⚠️ 無法對應 ViewModel 屬性：{propName.Key}");
-            continue; // 跳過這個屬性
-        }
-        Type propertyType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-        if (propertyType == typeof(DateTime))
-        {
-            var att = (DataTypeAttribute)prop.GetCustomAttributes(typeof(DataTypeAttribute), false).FirstOrDefault();
-            var dateTimeFormat = att != null && att.DataType == DataType.Date ? dateType.date : dateType.datetime;
-            dateTimePropertyName.DetailTable.Add(propName.Key, dateTimeFormat);
-        }
-    } }
+                var dateTimePropertyName = new
+                {
+                    MasterTable = new Dictionary<string, string>(),
+                    DetailTable = new Dictionary<string, string>()
+                };
+                var dateType = (datetime: "datetime", date: "date");
+                foreach (var propName in ((TableFieldDescDictionary)tablesField)[TableType.MasterTable.ToString()])
+                {
+                    var prop = typeof(庫存盤點主檔ViewModel).GetProperty(propName.Key);
+                    Type propertyType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                    if (propertyType == typeof(DateTime))
+                    {
+                        var att = (DataTypeAttribute)prop.GetCustomAttributes(typeof(DataTypeAttribute), false).FirstOrDefault();
+                        var dateTimeFormat = att != null && att.DataType == DataType.Date ? dateType.date : dateType.datetime;
+                        dateTimePropertyName.MasterTable.Add(propName.Key, dateTimeFormat);
+                    }
+                }
+                foreach (var propName in ((TableFieldDescDictionary)tablesField)[TableType.DetailTable.ToString()])
+                {
+                    var prop = typeof(庫存盤點明細ViewModel).GetProperty(propName.Key);
+                    Type propertyType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                    if (propertyType == typeof(DateTime))
+                    {
+                        var att = (DataTypeAttribute)prop.GetCustomAttributes(typeof(DataTypeAttribute), false).FirstOrDefault();
+                        var dateTimeFormat = att != null && att.DataType == DataType.Date ? dateType.date : dateType.datetime;
+                        dateTimePropertyName.DetailTable.Add(propName.Key, dateTimeFormat);
+                    }
+                } }
 @section MvcDemoHeadSection{
-    <script src="~/js/site_hw_01.js"></script>
+    <script src="~/js/site.js"></script>
 }
 <h1 class="mt-1">@ViewData["Title"]</h1>
 <div id="hw_01-index">
@@ -125,7 +111,7 @@
                 }
             }
 
-            const _onMasterRowSelect = async function (rowData) {
+            @*const _onMasterRowSelect = async function (rowData) {
                 if (rowData.length === 0) return;
                 const data = rowData[0];
                 const selectParam = Object.fromEntries(masterTableKeys.map(k => [k, this[k] = data[k]]));
@@ -135,7 +121,33 @@
                 this.selectedMasterRow.param = selectParam;
                 const ret = await axios.get("CanClickCreate", { params: { index: data.__rowIndex__ } });
                 this.canClick = ret.data;
+            }*@
+
+            const _onMasterRowSelect = async function (rowData) {
+                if (rowData.length === 0) return;
+                const data = rowData[0];
+
+                // ✅ 請改成這樣，確保只取出主鍵
+                const masterTableKeys = ['進銷存組織', '單據別', '日期', '流水號'];
+                const selectParam = {};
+                masterTableKeys.forEach(k => {
+                    selectParam[k] = this[k] = data[k];
+                });
+
+                // ✅ 處理日期轉換後也只加到主鍵欄位 param 裡
+                Object.entries(dateTimePropertyName[TableType.MasterTable]).forEach(([k, v]) => {
+                    if (data[k] && masterTableKeys.includes(k)) {
+                        selectParam[k] = this[k] = Date.parse_zhTW_string(data[k]).toISOString();
+                    }
+                });
+
+                this.selectedMasterRow.param = selectParam;
+
+                // ⏬ 你原本的權限查詢不變
+                const ret = await axios.get("CanClickCreate", { params: { index: data.__rowIndex__ } });
+                this.canClick = ret.data;
             }
+
 
             const _dsDetailProvider = async function () {
                 const postData = Object.fromEntries(masterTableKeys.map(k => [k, this[k]]));

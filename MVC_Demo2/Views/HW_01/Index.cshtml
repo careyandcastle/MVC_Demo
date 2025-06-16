@@ -1,119 +1,519 @@
-﻿@model IEnumerable<MVC_Demo2.Models.庫存盤點主檔>
-
+﻿@using MVC_Demo2.Models.ViewModel;
+@model 庫存盤點主檔ViewModel
+@using TscLibCore.Commons;
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@using Microsoft.AspNetCore.Http;
+@inject IHttpContextAccessor HttpContextAccessor
+@using TscLibCore.Modules;
+@using TscLibCore.Authority;
+@using System.ComponentModel.DataAnnotations;
+@using TableFieldDescDictionary =
+    System.Collections.Generic.Dictionary<System.String, System.Collections.Generic.Dictionary<System.String, System.String>>;
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "@@@改成你要的標題@@@";
+    //產生欄位名稱中文定義
+    var tablesField = ViewBag.TableFieldDescDict;
+    var masterTableDescHTML = Html.Raw(CreateTableFieldsDescription.TableFieldDescToHTML(tablesField, TableType.MasterTable));
+    var detailTableDescHTML = Html.Raw(CreateTableFieldsDescription.TableFieldDescToHTML(tablesField, TableType.DetailTable));
+
+    var requestToken = Html.Raw(Antiforgery.GetAndStoreTokens(Context).RequestToken);
+    UserAccountForSession sess = HttpContextAccessor.HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+
+    var canCreate = Html.Raw(sess.AddYn).ToString().ToLower();
+    var canUpdate = Html.Raw(sess.UpdateYn).ToString().ToLower();
+    var canDelete = Html.Raw(sess.DeleteYn).ToString().ToLower();
+    var canQuery = Html.Raw(sess.QueryYn).ToString().ToLower();
+    var canExport = Html.Raw(sess.ExportYn).ToString().ToLower();
+
+    var dateTimePropertyName = new
+    {
+        MasterTable = new Dictionary<string, string>(),
+        DetailTable = new Dictionary<string, string>
+    (),
+    };
+    var dateType = (datetime: "datetime", date: "date");
+    foreach (var propName in ((TableFieldDescDictionary)tablesField)[TableType.MasterTable.ToString()])
+    {
+        var prop = typeof(租約主檔ViewModel).GetProperty(propName.Key);
+        Type propertyType = prop.PropertyType;
+        Type typeWithNullable = Nullable.GetUnderlyingType(propertyType);
+        propertyType = typeWithNullable ?? propertyType;
+        if (propertyType == typeof(DateTime))
+        {
+            var att = (DataTypeAttribute)prop.GetCustomAttributes(typeof(DataTypeAttribute), false).FirstOrDefault();
+
+            var dateTimeFormat = dateType.datetime;
+
+            if (att != null && ((DataTypeAttribute)att).DataType == DataType.Date)
+            {
+                dateTimeFormat = dateType.date;
+            }
+
+            dateTimePropertyName.MasterTable.Add(propName.Key, dateTimeFormat);
+        }
+    }
+    foreach (var propName in ((TableFieldDescDictionary)tablesField)[TableType.DetailTable.ToString()])
+    {
+        var prop = typeof(租約明細檔ViewModel).GetProperty(propName.Key);
+        Type propertyType = prop.PropertyType;
+        Type typeWithNullable = Nullable.GetUnderlyingType(propertyType);
+        propertyType = typeWithNullable ?? propertyType;
+        if (propertyType == typeof(DateTime))
+        {
+            var att = (DataTypeAttribute)prop.GetCustomAttributes(typeof(DataTypeAttribute), false).FirstOrDefault();
+
+            var dateTimeFormat = dateType.datetime;
+
+            if (att != null && ((DataTypeAttribute)att).DataType == DataType.Date)
+            {
+                dateTimeFormat = dateType.date;
+            }
+
+            dateTimePropertyName.DetailTable.Add(propName.Key, dateTimeFormat);
+        }
+    }
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.盤點人)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.盤點日期)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.備註)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.盤點狀態)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.核准人)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.核准日期)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.是否註記刪除)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.修改人)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.修改日期時間)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.倉庫基本檔)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.單據別Navigation)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.庫存異動狀態Navigation)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.災害別Navigation)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.盤點種類Navigation)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.進銷存組織Navigation)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.盤點人)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.盤點日期)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.備註)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.盤點狀態)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.核准人)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.核准日期)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.是否註記刪除)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.修改人)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.修改日期時間)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.倉庫基本檔.倉庫組織)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.單據別Navigation.單據別1)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.庫存異動狀態Navigation.庫存異動狀態1)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.災害別Navigation.災害別1)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.盤點種類Navigation.盤點種類1)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.進銷存組織Navigation.進銷存組織1)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-            </td>
-        </tr>
+@section MvcDemoHeadSection{
+    <script src="~/js/site_lm_02.js"></script>
 }
-    </tbody>
-</table>
+
+<h1 class="mt-1">@ViewData["Title"]</h1>
+<div id="lm_02-index">
+    <table-component id="lm_02-master-table"
+                     @*sticky-header-height="642px" *@
+                     ref="lm_02-master-table">
+        <template #default="slot">
+            <!--OP Button-->
+            <b-row class="mb-2">
+                <b-col cols="auto">
+                    <b-button v-if="slot.data.canClick && slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-1" variant="detail3">多筆建立</b-button>
+                    <b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-modal class="mr-1" variant="detail3">建立</b-button>
+                    <b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-edit-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">編輯</b-button>
+                    <b-button v-if="slot.data.operatePermissions.canDelete" v-b-modal.master-table-del-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow" class="mr-1" variant="detail3">刪除</b-button>
+                    <b-button v-if="slot.data.operatePermissions.canExport" class="mr-1" variant="detail3" v-on:click="slot.data.onDataExport" isWaitting="!isWaitting">匯出</b-button>
+                    <b-button v-if="slot.data.operatePermissions.canQuery" v-b-modal.master-table-query-modal class="mr-1" variant="detail3">進階查詢</b-button>
+                    <b-button class="mr-1" variant="detail3" @@click="slot.data.comeSomeAlert">btn</b-button>
+                    <!--Master OP Page-->
+                    <fetched-page-modal url="CreateMulti" id="master-table-create-multi-modal" title="批次新增單檔資料" :classes="['max-width-90-pt']"></fetched-page-modal>
+                    <fetched-page-modal url="Create" id="master-table-create-modal" title="新增單檔資料"></fetched-page-modal>
+                    <fetched-page-modal url="Edit" :param="slot.data.selectedMasterRow?.param" id="master-table-edit-modal" title="更新資料"></fetched-page-modal>
+                    <fetched-page-modal url="Delete" :param="slot.data.selectedMasterRow?.param" id="master-table-del-modal" title="刪除操作"></fetched-page-modal>
+                    <query-page-modal id="master-table-query-modal" title="進階查詢" :queryfields="slot.data.mTableFields" :is_filtered="slot.data.isFiltered"></query-page-modal>
+                    <!--Detail OP Page-->
+                    <fetched-page-modal url="CreateDetail" :param="slot.data.selectedMasterRow?.param"
+                                        id="detail-table-create-modal" title="新增明細檔"></fetched-page-modal>
+                    <fetched-page-modal url="EditDetail" :param="slot.data.selectedDetailRow?.param"
+                                        id="detail-table-edit-modal" title="更新資料"></fetched-page-modal>
+                    <fetched-page-modal url="DeleteDetail" :param="slot.data.selectedDetailRow?.param"
+                                        id="detail-table-del-modal" title="刪除操作"></fetched-page-modal>
+                </b-col>
+                <b-col cols="auto">
+                    <!-- :field-key-desc="{案名: '案名', 案號:'案號'}" -->
+                    <sticky-fields-selector :field-key-desc="slot.data.mTableFieldDesc"
+                                            selected-indic-limit=3
+                                            ref="stickySelector">
+                    </sticky-fields-selector>
+                </b-col>
+
+                <b-col cols="auto">
+                    <b-button class="ml-1" variant="detail3"
+                              v-show="slot.data.$parent?.$refs?.stickySelector?.selected"
+                              @@click="()=>slot.data.$parent.$refs.stickySelector.selectedClear()">
+                        取消凍結
+                    </b-button>
+                </b-col>
+                <b-col cols="auto">
+                    <multi-selector name="事業"
+                                    ref="ref事業Comp"
+                                    :searchable="true"
+                                    :options="slot.data.businessOptions"
+                                    :change-handler="slot.data.multiSelectHandlerBuss">
+                    </multi-selector>
+                </b-col>
+
+                <b-col cols="auto">
+                    <multi-selector name="單位"
+                                    ref="ref單位Comp"
+                                    :searchable="true"
+                                    :options="slot.data.depOptions"
+                                    :change-handler="slot.data.multiSelectHandlerDep">
+                    </multi-selector>
+                </b-col>
+                <b-col cols="auto">
+                    <b-button class="mr-1" variant="detail3" @@click="slot.data.comeSomeAlert">送出</b-button>
+                </b-col>
+            </b-row>
+        </template>
+    </table-component>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            //主檔 Table 欄位名稱中文定義
+            const _mTableFieldDesc = @masterTableDescHTML;
+
+            //主檔 Table Key 欄位名稱
+            const masterTableKeys = [
+                '事業',
+                '單位',
+                '部門',
+                '分部',
+                '案號',
+            ];
+
+            //主檔 data source 傳給 Server的參數
+            let dsMasterProviderParams = {
+                searchBy: null
+            };
+
+            const dateTimePropertyName = @Json.Serialize(@dateTimePropertyName);
+
+            //主檔 data source
+            const _dsMasterProvider = async function (ctx) {
+                try {
+                    dsMasterProviderParams.pageSize = ctx.perPage;
+                    dsMasterProviderParams.pageIndex = ctx.currentPage;
+                    dsMasterProviderParams.sortBy = ctx.sortBy;
+                    dsMasterProviderParams.isDesc = ctx.sortDesc || false;
+                    let response = await axios.post('GetDataPost', dsMasterProviderParams, {
+                        headers: {
+                            'content-type': 'application/json',
+                            "RequestVerificationToken": "@requestToken"
+                        }
+                    });
+
+                    this.totalRows = response.data.total;
+
+                    let latestData = TSCC.Utility.Table.GetDataSource.call(this, masterTableKeys, response, ctx);
+
+                    //轉成台灣時間
+                    latestData.forEach(data => {
+                        Object.entries(dateTimePropertyName[TableType.MasterTable]).forEach(([propName, dateType]) => {
+                            let dateISOstring = data[propName];
+                            if (data.hasOwnProperty(propName) && dateISOstring) {
+                                data[propName] = new Date(dateISOstring).to_zhTW_string(dateType);
+                            }
+                        });
+                    });
+
+                    return latestData;
+                } catch (error) {
+                    debugger;
+                    console.log(error);
+                    return [];
+                }
+            }
+
+            //明細檔 Table 欄位名稱中文定義
+            const _dTableFieldDesc = @detailTableDescHTML;
+
+            //明細檔 Table Key 欄位名稱
+            const detailTableKeys = [
+                '事業',
+                '單位',
+                '部門',
+                '分部',
+                '案號',
+                '商品編號',
+            ];
+
+            //明細檔 data source
+            const _dsDetailProvider = async function (ctx) {
+                try {
+                    let postData = {
+                        事業: this.事業,
+                        單位: this.單位,
+                        部門: this.部門,
+                        分部: this.分部,
+                        案號: this.案號,
+                    };
+                    let response = await axios.post('GetDetailDataPost', postData, {
+                        headers: {
+                            'content-type': 'application/json',
+                            "RequestVerificationToken": "@requestToken"
+                        }
+                    });
+
+                    let latestData = TSCC.Utility.Table.GetDataSource.call(this, detailTableKeys, response);
+
+                    //轉成台灣時間
+                    latestData.forEach(data => {
+                        Object.entries(dateTimePropertyName[TableType.DetailTable]).forEach(([propName, dateType]) => {
+                            let dateISOstring = data[propName];
+                            if (data.hasOwnProperty(propName) && dateISOstring) {
+                                data[propName] = new Date(dateISOstring).to_zhTW_string(dateType);
+                            }
+                        });
+                    });
+
+                    return latestData;
+                } catch (error) {
+                    debugger;
+                    console.log(error);
+                    return [];
+                }
+            }
+            //點擊時發生呼叫事件
+            const _onMasterRowSelect = async function (rowData) {
+                var selectParam = {
+                    事業: null,
+                    單位: null,
+                    部門: null,
+                    分部: null,
+                    案號: null,
+                };
+
+                if (rowData.length > 0) {
+                    let data = rowData[0];
+                    selectParam.事業 = this.事業 = data.事業;
+                    selectParam.單位 = this.單位 = data.單位;
+                    selectParam.部門 = this.部門 = data.部門;
+                    selectParam.分部 = this.分部 = data.分部;
+                    selectParam.案號 = this.案號 = data.案號;
+                    this.selectedMasterRow.param = selectParam;
+
+                    //傳送給server時, 轉ISO時間
+                    Object.entries(dateTimePropertyName[TableType.MasterTable]).forEach(([propName, dateType]) => {
+                        let dateLocalestring = data[propName];
+                        if (selectParam.hasOwnProperty(propName) && data.hasOwnProperty(propName) && dateLocalestring) {
+                            selectParam[propName] = this[propName] = Date.parse_zhTW_string(dateLocalestring).toISOString();
+                        }
+                    });
+
+                    @* this.canClick = rowData[0].__rowIndex__ % 2 == 0;*@
+                    const canClickRet = await axios.get("CanClickCreate",
+                        {
+                            params: {
+                                index: rowData[0].__rowIndex__
+                            }
+                        });
+
+                    this.canClick = canClickRet.data; //true or false
+                }
+            }
+
+            const _onDetailRowSelect = function (rowData) {
+                var selectParam = {};
+                let data = rowData[0];
+                selectParam.事業 = this.事業 = data.事業;
+                selectParam.單位 = this.單位 = data.單位;
+                selectParam.部門 = this.部門 = data.部門;
+                selectParam.分部 = this.分部 = data.分部;
+                selectParam.案號 = this.案號 = data.案號;
+                selectParam.商品編號 = this.商品編號 = data.商品編號;
+                this.selectedDetailRow.param = selectParam;
+
+                //傳送給server時, 轉ISO時間
+                Object.entries(dateTimePropertyName[TableType.DetailTable]).forEach(([propName, dateType]) => {
+                    let dateLocalestring = data[propName];
+                    if (selectParam.hasOwnProperty(propName) && data.hasOwnProperty(propName) && dateLocalestring) {
+                        selectParam[propName] = this[propName] = Date.parse_zhTW_string(dateLocalestring).toISOString();
+                    }
+                });
+            }
+
+            const _onToggleRowDetail = function (event, row) {
+                 row.selectRow();
+            }
+            const _assignFilter = function (filterData) {
+                let shouldRefresh = this.isFiltered || (filterData && Object.keys(filterData).length > 0);
+                this.isFiltered = !!filterData && Object.keys(filterData).length > 0;
+                dsMasterProviderParams.searchBy = filterData;
+                debugger;
+                shouldRefresh && this.refreshMasterTable();
+
+            }
+
+            //匯出ods
+            const _onDataExport = async function () {
+                let response = await axios.post('@Url.Action("Export","LM_02")', dsMasterProviderParams, {
+                    responseType: 'blob',
+                    headers: {
+                        RequestVerificationToken: "@requestToken"
+                    },
+                });
+
+                const url = window.URL.createObjectURL(new Blob([response.data], {
+                    type: response.headers['content-type']
+                }));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'LM_02.ods');
+                document.body.appendChild(link);
+                link.click();
+            }
+
+            //覆寫欄位尋找與清除事件
+            const _onFilterValueUpdate = function (event) {
+                const keyCodeAllowRegExp = /\b(8|4[6-9]|5[0-7]|6[5-9]|[7|8]\d|90|9[6-9]|10[0-5]|10[7-9]|11[0-1]|18[7-9]|13)\b/;
+                if (typeof(event) == 'KeyboardEvent' && keyCodeAllowRegExp.test(event.keyCode.toString()) == false) return;
+                let filterDataObj = {};
+                for (let inputRef in this.$parent.$refs) {
+                    let [inputInst, val] = [this.$parent.$refs[inputRef][0], ""];
+                    if (inputRef.includes('filter_input_') && (val = inputInst.vModelValue).length > 0) {
+                        filterDataObj[inputInst.name] = { condit: 'eq', value: val};
+                    }
+                }
+                _assignFilter.call(this, filterDataObj);
+            }
+
+            const _onAdvanceSearch = function(qParams) {
+                let filterDataObj = {};
+                for (const [key, searchParam] of Object.entries(qParams)) {
+                    console.log(`${key}: ${searchParam.condit},  ${searchParam.value}`);
+                    filterDataObj[key] = searchParam;
+                }
+                _assignFilter.call(this, filterDataObj);
+            }
+
+            const _onCleanFilter = function () {
+                dsMasterProviderParams.searchBy = null;
+                for (let inputRef in this.$parent.$refs) {
+                    let inputInst = this.$parent.$refs[inputRef][0];
+                    if (inputRef.includes('filter_input_')) {
+                        inputInst.vModelValue = "";
+                        inputInst.$el.value = "";
+                    }
+                }
+                _assignFilter.call(this, null);
+            }
+
+            const _onFiltered = function (event) {
+                console.log("_onFiltered customize: ", event);
+            }
+
+            const _serverReturned = function (retData) {
+                console.log("serverReturned customize: ", retData);
+            }
+            //life cycle hook
+            const _onBeforeMount = function (tableInstance) {
+                //tableInstance.stickyHeaderHeight = `${200}px`
+                console.log("onBeforeMount customize");
+                this.$set(this.customVariable, 'bussSel', '');
+                this.$set(this.customVariable, 'depSel', '');
+            }
+
+            const _onMounted = function (tableInstance) {
+            }
+
+            //要注入的自訂參數
+            let _opPermiss = { canCreate: @canCreate, canUpdate: @canUpdate, canDelete: @canDelete, canQuery: @canQuery, canExport: @canExport };
+            const params = { data: null, methods: null };
+            params.data =  {
+                mTableFieldDesc: _mTableFieldDesc,
+                dTableFieldDesc: _dTableFieldDesc,
+                operatePermissions: _opPermiss,
+                isFiltered: false,
+                isNewItemOnTop: true,
+                canClick: true,
+                事業: '',
+                單位: '',
+                部門: '',
+                分部: '',
+                案號: '',
+                businessOptions:
+                    [
+                        { text: 'A1', value: 'A1' },
+                        { text: 'F1', value: 'F1' },
+                        { text: 'J1', value: 'J1' },
+                        { text: 'K1', value: 'K1' },
+                        { text: 'L1', value: 'L1' },
+
+                    ],
+
+                depOptions:
+                    [
+                        { text: '54', value: '54' },
+                        { text: '42', value: '42' },
+                        { text: '59', value: '42' },
+                        { text: '01', value: '01' },
+                    ],
+            }
+            params.methods = {
+                //系統覆寫
+                dsMasterProvider: _dsMasterProvider,
+                onMasterRowSelect: _onMasterRowSelect,
+                serverReturned: _serverReturned,
+                onFiltered: _onFiltered,
+                onBeforeMount: _onBeforeMount,
+                onMounted: _onMounted,
+                dsDetailProvider: _dsDetailProvider,
+                onDetailRowSelect: _onDetailRowSelect,
+                onToggleRowDetail: _onToggleRowDetail,
+                //User自訂
+                onFilterValueUpdate: _onFilterValueUpdate,
+                onAdvanceSearch: _onAdvanceSearch,
+                onCleanFilter: _onCleanFilter,
+                onDataExport: _onDataExport,
+                comeSomeAlert: function () {
+                    dsMasterProviderParams.searchBy = {
+                        事業: {
+                            condit: "eq",
+                            value: this.customVariable.bussSel //A1 or F1
+                        },
+
+                        單位: {
+                            "condit": "eq",
+                            "value": this.customVariable.depSel // 01 or 53
+                        }
+                    };
+                    this.refreshMasterTable();
+                },
+                //覆寫擴充功能
+                getClassForMasterContent: function (rowData) {
+                    if (rowData.field.key === '承租人編號'
+                        && ['00001', '00002'].some(val => val === rowData.value)) {
+                        return 'text-info';
+                    }
+                },
+                willShowMasterTableButton1: (rowData) => {
+                    return {
+                        buttonText: '我是按鈕',
+                        buttonVariant: 'outline-danger'
+                    };
+                },
+                button1EventHandler: function (event, row) {/* http request to server to close.*/ },
+                multiSelectHandlerBuss: function (userSel) {
+                    this.customVariable.bussSel = userSel.value;
+                },
+                multiSelectHandlerDep: function (userSel) {
+                    this.customVariable.depSel = userSel.value;
+                },
+                getMasterTableActionButtonConfig: function (rowData) {
+                    return [
+                        {
+                            text: '按鈕1',
+                            willShow: false,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 1'); }
+                        },
+                        {
+                            text: '按鈕2',
+                            willShow: true,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 2'); }
+                        },
+                        {
+                            text: '按鈕3',
+                            willShow: true,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 3'); }
+                        },
+                        {
+                            text: '按鈕4',
+                            willShow: true,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 4'); }
+                        }
+                    ];
+                }
+            };
+            //掛載Table
+            const vueInst = TSC_NS.CreateVue(params);
+            vueInst.$mount('#lm_02-index');
+        })();
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

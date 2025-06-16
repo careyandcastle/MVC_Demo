@@ -1,0 +1,94 @@
+﻿@model MVC_Demo2.Models.庫存盤點主檔
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>庫存盤點主檔</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="進銷存組織" />
+            <input type="hidden" asp-for="單據別" />
+            <input type="hidden" asp-for="日期" />
+            <input type="hidden" asp-for="流水號" />
+            <div class="form-group">
+                <label asp-for="倉庫代號" class="control-label"></label>
+                <select asp-for="倉庫代號" class="form-control" asp-items="ViewBag.倉庫代號"></select>
+                <span asp-validation-for="倉庫代號" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="盤點種類" class="control-label"></label>
+                <select asp-for="盤點種類" class="form-control" asp-items="ViewBag.盤點種類"></select>
+                <span asp-validation-for="盤點種類" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="災害別" class="control-label"></label>
+                <select asp-for="災害別" class="form-control" asp-items="ViewBag.災害別"></select>
+                <span asp-validation-for="災害別" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="盤點人" class="control-label"></label>
+                <input asp-for="盤點人" class="form-control" />
+                <span asp-validation-for="盤點人" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="盤點日期" class="control-label"></label>
+                <input asp-for="盤點日期" class="form-control" />
+                <span asp-validation-for="盤點日期" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="備註" class="control-label"></label>
+                <input asp-for="備註" class="form-control" />
+                <span asp-validation-for="備註" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="盤點狀態" class="control-label"></label>
+                <input asp-for="盤點狀態" class="form-control" />
+                <span asp-validation-for="盤點狀態" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="核准人" class="control-label"></label>
+                <input asp-for="核准人" class="form-control" />
+                <span asp-validation-for="核准人" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="核准日期" class="control-label"></label>
+                <input asp-for="核准日期" class="form-control" />
+                <span asp-validation-for="核准日期" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="庫存異動狀態" class="control-label"></label>
+                <select asp-for="庫存異動狀態" class="form-control" asp-items="ViewBag.庫存異動狀態"></select>
+                <span asp-validation-for="庫存異動狀態" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="是否註記刪除" /> @Html.DisplayNameFor(model => model.是否註記刪除)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="修改人" class="control-label"></label>
+                <input asp-for="修改人" class="form-control" />
+                <span asp-validation-for="修改人" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="修改日期時間" class="control-label"></label>
+                <input asp-for="修改日期時間" class="form-control" />
+                <span asp-validation-for="修改日期時間" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

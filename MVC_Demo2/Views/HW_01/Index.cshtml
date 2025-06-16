@@ -1,0 +1,119 @@
+﻿@model IEnumerable<MVC_Demo2.Models.庫存盤點主檔>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.盤點人)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.盤點日期)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.備註)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.盤點狀態)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.核准人)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.核准日期)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.是否註記刪除)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.修改人)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.修改日期時間)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.倉庫基本檔)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.單據別Navigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.庫存異動狀態Navigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.災害別Navigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.盤點種類Navigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.進銷存組織Navigation)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.盤點人)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.盤點日期)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.備註)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.盤點狀態)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.核准人)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.核准日期)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.是否註記刪除)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.修改人)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.修改日期時間)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.倉庫基本檔.倉庫組織)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.單據別Navigation.單據別1)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.庫存異動狀態Navigation.庫存異動狀態1)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.災害別Navigation.災害別1)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.盤點種類Navigation.盤點種類1)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.進銷存組織Navigation.進銷存組織1)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

@@ -16,10 +16,10 @@ namespace MVC_Demo2.Models.ViewModel
         public DateTime 日期 { get; set; }
 
         [Key]
-        public int 流水號 { get; set; }
+        public decimal 流水號 { get; set; }
 
         [Key]
-        public int 項次 { get; set; }
+        public decimal 項次 { get; set; }
 
         [CTRequired]
         public string 商品編號 { get; set; }

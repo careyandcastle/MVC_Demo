@@ -13,7 +13,7 @@ namespace MVC_Demo2.Models.ViewModel
         public 庫存盤點主檔ViewModel() : base()
         {
             // 預設值（視系統需求可調整）
-            盤點狀態 = "N";         // 尚未完成
+            //盤點狀態 = "N";         // 尚未完成
             庫存異動狀態 = "0";     // 尚未異動
             是否註記刪除 = false;
             修改日期時間 = DateTime.Now;

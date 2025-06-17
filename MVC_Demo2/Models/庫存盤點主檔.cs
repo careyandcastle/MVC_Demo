@@ -43,9 +43,9 @@ namespace MVC_Demo2.Models
         [Required]
         [StringLength(50)]
         public string 備註 { get; set; }
-        [Required]
-        [StringLength(1)]
-        public string 盤點狀態 { get; set; }
+        //[Required]
+        //[StringLength(1)]
+        //public string 盤點狀態 { get; set; }
         [StringLength(5)]
         public string 核准人 { get; set; }
         [Column(TypeName = "date")]

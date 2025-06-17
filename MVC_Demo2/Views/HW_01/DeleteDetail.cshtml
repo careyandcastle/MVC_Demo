@@ -1,0 +1,28 @@
+﻿@model MVC_Demo2.Models.ViewModel.HW_01_庫存盤點明細檔DisplayViewModel
+@using TscLibCore.Commons
+
+<form asp-action="DeleteDetailConfirmed" method="post" data-ajax="true" data-ajax-method="post"
+      data-ajax-update="#hw_01-master-table" data-ajax-success="onModalSuccess">
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.進銷存組織)
+    @Html.HiddenFor(model => model.單據別)
+    @Html.HiddenFor(model => model.日期)
+    @Html.HiddenFor(model => model.流水號)
+    @Html.HiddenFor(model => model.項次)
+    @Html.HiddenFor(model => model.商品編號)
+
+    <div class="form-group">
+        <p class="text-danger font-weight-bold">請確認是否刪除此筆盤點明細？</p>
+        <ul class="list-unstyled">
+            <li><strong>商品編號：</strong>@Model.商品編號</li>
+            <li><strong>商品名稱：</strong>@Model.商品名稱</li>
+            <li><strong>項次：</strong>@Model.項次</li>
+            <li><strong>盤點數量：</strong>@Model.盤點數量</li>
+        </ul>
+    </div>
+
+    <div class="form-group text-right">
+        <button type="submit" class="btn btn-danger">確認刪除</button>
+    </div>
+</form>

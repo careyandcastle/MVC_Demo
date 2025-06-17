@@ -570,9 +570,9 @@ namespace MVC_Demo2.Models
                     .IsUnicode(false)
                     .IsFixedLength(true);
 
-                entity.Property(e => e.盤點狀態)
-                    .IsUnicode(false)
-                    .IsFixedLength(true);
+                //entity.Property(e => e.盤點狀態)
+                //    .IsUnicode(false)
+                //    .IsFixedLength(true);
 
                 entity.Property(e => e.盤點種類)
                     .IsUnicode(false)

@@ -1,0 +1,28 @@
+﻿@model MVC_Demo2.Models.ViewModel.HW_01_庫存盤點明細檔EditViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@using TscLibCore.Commons
+
+<form asp-action="EditDetail" method="post" data-ajax="true" data-ajax-method="post"
+      data-ajax-update="#hw_01-master-table" data-ajax-success="onModalSuccess">
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    @* --- 主鍵隱藏欄位 --- *@
+    @Html.HiddenFor(model => model.進銷存組織)
+    @Html.HiddenFor(model => model.單據別)
+    @Html.HiddenFor(model => model.日期)
+    @Html.HiddenFor(model => model.流水號)
+    @Html.HiddenFor(model => model.項次)
+    @Html.HiddenFor(model => model.商品編號)
+
+    <div class="form-group">
+        <label asp-for="盤點數量" class="control-label"></label>
+        <input asp-for="盤點數量" class="form-control" />
+        <span asp-validation-for="盤點數量" class="text-danger"></span>
+    </div>
+
+    <div class="form-group text-right">
+        <button type="submit" class="btn btn-primary">儲存</button>
+    </div>
+</form>

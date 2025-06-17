@@ -1,108 +1,63 @@
-﻿@model MVC_Demo2.Models.庫存盤點主檔
+﻿@model MVC_Demo2.Models.ViewModel.HW_01_庫存盤點主檔DisplayViewModel
 
 @{
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<h1>盤點紀錄明細</h1>
 
 <div>
     <h4>庫存盤點主檔</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.盤點人)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.盤點人)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.盤點日期)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.盤點日期)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.備註)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.備註)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.盤點狀態)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.盤點狀態)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.核准人)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.核准人)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.核准日期)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.核准日期)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.是否註記刪除)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.是否註記刪除)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.修改人)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.修改人)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.修改日期時間)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.修改日期時間)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.倉庫基本檔)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.倉庫基本檔.倉庫組織)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.單據別Navigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.單據別Navigation.單據別1)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.庫存異動狀態Navigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.庫存異動狀態Navigation.庫存異動狀態1)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.災害別Navigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.災害別Navigation.災害別1)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.盤點種類Navigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.盤點種類Navigation.盤點種類1)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.進銷存組織Navigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.進銷存組織Navigation.進銷存組織1)
-        </dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.盤點人姓名)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.盤點人姓名)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.盤點日期)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.盤點日期)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.備註)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.備註)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.庫存異動狀態名稱)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.庫存異動狀態名稱)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.是否註記刪除顯示)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.是否註記刪除顯示)</dd>
+
+        @*<dt class="col-sm-2">@Html.DisplayNameFor(model => model.核准人)</dt>
+            <dd class="col-sm-10">@Html.DisplayFor(model => model.核准人)</dd>
+
+            <dt class="col-sm-2">@Html.DisplayNameFor(model => model.核准日期)</dt>
+            <dd class="col-sm-10">@Html.DisplayFor(model => model.核准日期)</dd>*@
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.倉庫名稱)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.倉庫名稱)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.盤點種類名稱)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.盤點種類名稱)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.災害別名稱)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.災害別名稱)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.進銷存組織)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.進銷存組織)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.修改人)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.修改人)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.修改時間)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.修改時間)</dd>
     </dl>
 </div>
+
 <div>
-    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
-    <a asp-action="Index">Back to List</a>
+    @Html.ActionLink("編輯", "Edit", new
+    {
+        進銷存組織 = Model.進銷存組織,
+        單據別 = Model.單據別,
+        日期 = Model.日期,
+        流水號 = Model.流水號
+    }) |
+    <a asp-action="Index">返回清單</a>
 </div>

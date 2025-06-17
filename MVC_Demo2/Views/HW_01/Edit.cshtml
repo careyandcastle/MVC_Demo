@@ -1,94 +1,153 @@
-﻿@model MVC_Demo2.Models.庫存盤點主檔
+﻿@using MVC_Demo2.Models.ViewModel;
+@model HW_01_庫存盤點主檔EditViewModel
 
-@{
-    ViewData["Title"] = "Edit";
-}
+<div id="hw_01-edit">
+    <div class="row">
+        <div class="col">
+            <form asp-action="Edit">
+                @* 顯示驗證錯誤 *@
+                <div id="ModelErrorDiv" class="validation-summary-valid text-danger">
+                    <ul></ul>
+                </div>
 
-<h1>Edit</h1>
+                @* 主鍵隱藏欄位 *@
+                <input asp-for="進銷存組織" type="hidden" />
+                <input asp-for="單據別" type="hidden" />
+                <input asp-for="日期" type="hidden" />
+                <input asp-for="流水號" type="hidden" />
 
-<h4>庫存盤點主檔</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="進銷存組織" />
-            <input type="hidden" asp-for="單據別" />
-            <input type="hidden" asp-for="日期" />
-            <input type="hidden" asp-for="流水號" />
-            <div class="form-group">
-                <label asp-for="倉庫代號" class="control-label"></label>
-                <select asp-for="倉庫代號" class="form-control" asp-items="ViewBag.倉庫代號"></select>
-                <span asp-validation-for="倉庫代號" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="盤點種類" class="control-label"></label>
-                <select asp-for="盤點種類" class="form-control" asp-items="ViewBag.盤點種類"></select>
-                <span asp-validation-for="盤點種類" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="災害別" class="control-label"></label>
-                <select asp-for="災害別" class="form-control" asp-items="ViewBag.災害別"></select>
-                <span asp-validation-for="災害別" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="盤點人" class="control-label"></label>
-                <input asp-for="盤點人" class="form-control" />
-                <span asp-validation-for="盤點人" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="盤點日期" class="control-label"></label>
-                <input asp-for="盤點日期" class="form-control" />
-                <span asp-validation-for="盤點日期" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="備註" class="control-label"></label>
-                <input asp-for="備註" class="form-control" />
-                <span asp-validation-for="備註" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="盤點狀態" class="control-label"></label>
-                <input asp-for="盤點狀態" class="form-control" />
-                <span asp-validation-for="盤點狀態" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="核准人" class="control-label"></label>
-                <input asp-for="核准人" class="form-control" />
-                <span asp-validation-for="核准人" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="核准日期" class="control-label"></label>
-                <input asp-for="核准日期" class="form-control" />
-                <span asp-validation-for="核准日期" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="庫存異動狀態" class="control-label"></label>
-                <select asp-for="庫存異動狀態" class="form-control" asp-items="ViewBag.庫存異動狀態"></select>
-                <span asp-validation-for="庫存異動狀態" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="是否註記刪除" /> @Html.DisplayNameFor(model => model.是否註記刪除)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="修改人" class="control-label"></label>
-                <input asp-for="修改人" class="form-control" />
-                <span asp-validation-for="修改人" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="修改日期時間" class="control-label"></label>
-                <input asp-for="修改日期時間" class="form-control" />
-                <span asp-validation-for="修改日期時間" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+                @* 顯示主鍵欄位（只讀） *@
+                <div class="form-group">
+                    <label asp-for="進銷存組織" class="control-label"></label>
+                    <input class="form-control" value="@Model.進銷存組織" readonly disabled />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="單據別" class="control-label"></label>
+                    <input class="form-control" value="@Model.單據別" readonly disabled />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="日期" class="control-label"></label>
+                    <input class="form-control" value="@Model.日期.ToString("yyyy-MM-dd")" readonly disabled />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="流水號" class="control-label"></label>
+                    <input class="form-control" value="@Model.流水號" readonly disabled />
+                </div>
+
+                @* 下拉選單 - 倉庫代號 *@
+                <div class="form-group">
+                    <label asp-for="倉庫代號" class="control-label"></label>
+                    <select asp-for="倉庫代號" class="form-control" asp-items="ViewBag.倉庫代號選項"></select>
+                    <span asp-validation-for="倉庫代號" class="text-danger"></span>
+                </div>
+
+                @* 下拉選單 - 盤點種類 *@
+                <!--<div class="form-group">
+                    <label asp-for="盤點種類" class="control-label"></label>
+                    <select asp-for="盤點種類" class="form-control" v-on:change="on盤點種類變更" asp-items="ViewBag.盤點種類選項"></select>
+                    <span asp-validation-for="盤點種類" class="text-danger"></span>
+                </div>-->
+                @* 下拉選單 - 災害別（視盤點種類決定顯示） *@
+                <!--<div class="form-group" v-show="show災害別">
+                    <label asp-for="災害別" class="control-label"></label>
+                    <select asp-for="災害別" class="form-control" v-bind:disabled="!災害別選項.length" asp-items="ViewBag.災害別選項"></select>
+                    <span asp-validation-for="災害別" class="text-danger"></span>
+                </div>-->
+                <div class="form-group">
+                    <label asp-for="盤點種類" class="control-label"></label>
+                    <select asp-for="盤點種類"
+                            class="form-control"
+                            asp-items="ViewBag.盤點種類選項"
+                            v-on:change="on盤點種類變更">
+                    </select>
+                </div>
+
+                <div class="form-group" v-if="show災害別">
+                    <label asp-for="災害別" class="control-label"></label>
+                    <select asp-for="災害別" class="form-control">
+                        <option v-for="opt in 災害別選項" :value="opt.Value">{{ opt.Text }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="盤點人" class="control-label"></label>
+                    <input asp-for="盤點人" class="form-control" readonly disabled />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="盤點日期" class="control-label"></label>
+                    <input asp-for="盤點日期" class="form-control" readonly disabled />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="備註" class="control-label"></label>
+                    <textarea asp-for="備註" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="備註" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="送出" class="btn btn-primary" :disabled="isWaitting" />
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+@section Scripts {
+    <script>
+        // 將後端提供的下拉選單資料轉為前端 JavaScript 變數
+        const 初始盤點種類選項 = @Html.Raw(Json.Serialize(ViewBag.盤點種類選項));
+        const 初始災害別選項 = @Html.Raw(Json.Serialize(ViewBag.災害別選項));
+
+        const vm = new Vue({
+            el: '#hw_01-edit',
+            data: {
+                show災害別: @((Model.災害別 != null).ToString().ToLower()), // 根據是否已選擇災害別預設顯示與否
+                災害別選項: 初始災害別選項 // 初始載入的災害別下拉資料
+            },
+            methods: {
+                async on盤點種類變更(event) {
+                    const selected = event.target.value;
+
+                    // 若未選擇盤點種類，則隱藏災害別並清空選項
+                    if (!selected) {
+                        this.show災害別 = false;
+                        this.災害別選項 = [];
+                        this.clear災害別欄位();
+                        return;
+                    }
+
+                    try {
+                        // 呼叫後端 API 載入災害別資料
+                        const res = await axios.get('@Url.Action("Get災害別選項", "HW_01")', {
+                            params: { 盤點種類: selected }
+                        });
+
+                        this.災害別選項 = res.data.options || [];
+                        this.show災害別 = res.data.show;
+
+                        // 若災害別不顯示，清除欄位值
+                        if (!this.show災害別) {
+                            this.clear災害別欄位();
+                        }
+                    } catch (err) {
+                        console.error("❌ 災害別載入失敗：", err);
+                        this.show災害別 = false;
+                        this.災害別選項 = [];
+                        this.clear災害別欄位();
+                    }
+                },
+                clear災害別欄位() {
+                    const el = this.$el.querySelector('[name="災害別"]');
+                    if (el) el.value = '';
+                }
+            }
+        });
+    </script>
+
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
 

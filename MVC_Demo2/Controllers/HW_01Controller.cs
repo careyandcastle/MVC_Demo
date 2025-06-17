@@ -86,7 +86,8 @@ namespace MVC_Demo2.Controllers
                     select new HW_01_庫存盤點主檔DisplayViewModel
                     {
                         進銷存組織 = m.進銷存組織,
-                        單據別名稱 = m.單據別,
+                        單據別 = m.單據別,
+                        //單據別名稱 = m.單據別,
                         日期 = m.日期,
                         流水號 = m.流水號,
                         倉庫代號 = m.倉庫代號,
@@ -95,7 +96,7 @@ namespace MVC_Demo2.Controllers
                         盤點種類名稱 = m.盤點種類Navigation.盤點種類1,
                         災害別 = m.災害別,
                         災害別名稱 = m.災害別 + "_" + m.災害別Navigation.災害別名稱,
-                        盤點人 = m.盤點人, 
+                        盤點人 = m.盤點人,
                         盤點人姓名 = m.盤點人 + "_" + CustomSqlFunctions.DecryptToString(_u.姓名), // <- 若有帳號表可加入
                         備註 = m.備註,
                         盤點日期 = m.盤點日期,
@@ -107,6 +108,9 @@ namespace MVC_Demo2.Controllers
                     }).AsNoTracking();
         }
 
+        [NeglectActionFilter]
+        public bool CanClickCreate(int index) => index % 2 == 0;
+
         public async Task<IActionResult> Create()
         {
             var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
@@ -117,7 +121,7 @@ namespace MVC_Demo2.Controllers
 
             var viewModel = new HW_01_庫存盤點主檔BasicViewModel
             {
-                進銷存組織 =  ua.BusinessNo,
+                進銷存組織 = ua.BusinessNo,
                 單據別 = "INV", // 固定 INV
                 日期 = 列帳日期
             };
@@ -191,7 +195,8 @@ namespace MVC_Demo2.Controllers
                     {
                         data = await GetBaseQuery().Where(x =>
                             x.進銷存組織 == model.進銷存組織 &&
-                            x.單據別名稱 == model.單據別 &&
+                            //x.單據別名稱 == model.單據別 &&
+                            x.單據別 == model.單據別 &&
                             x.日期 == model.日期 &&
                             x.流水號 == model.流水號
                         ).SingleOrDefaultAsync()
@@ -223,6 +228,113 @@ namespace MVC_Demo2.Controllers
             if (exists)
                 ModelState.AddModelError("倉庫代號", "相同日期與倉庫的盤點紀錄已存在");
         }
+
+        public async Task<IActionResult> Edit(string 進銷存組織, string 單據別, DateTime 日期, int 流水號)
+        {
+            if (string.IsNullOrEmpty(進銷存組織) || string.IsNullOrEmpty(單據別) || 日期 == default || 流水號 == 0)
+            {
+                return NotFound();
+            }
+
+            // 讀取主檔資料
+            var model = await _context.庫存盤點主檔
+    .Include(x => x.倉庫基本檔)
+    .Include(x => x.盤點種類Navigation)
+    .Include(x => x.災害別Navigation)
+    .Include(x => x.庫存異動狀態Navigation)
+    .Include(x => x.進銷存組織Navigation)
+    .Where(x =>
+        x.進銷存組織 == 進銷存組織 &&
+        x.單據別 == 單據別 &&
+        x.日期 == 日期 &&
+        x.流水號 == 流水號)
+    .SingleOrDefaultAsync();
+
+
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            // 使用 AutoMapper 映射到 EditViewModel
+            var viewModel = _mapper.Map<庫存盤點主檔, HW_01_庫存盤點主檔EditViewModel>(model);
+
+            // 預備下拉選單資料
+            ViewBag.倉庫代號選項 = await _context.倉庫基本檔
+                //.Where(w => w.是否裁撤 == false && w.是否暫停使用 == false)
+                .OrderBy(o => o.倉庫代號)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.倉庫代號 + "_" + s.倉庫名稱,
+                    Value = s.倉庫代號
+                })
+                .ToListAsync();
+
+            ViewBag.盤點種類選項 = await _context.盤點種類
+    .Where(w => !w.是否停用)
+    .Select(s => new SelectListItem
+    {
+        Text = s.盤點種類1 + "_" + s.盤點種類名稱,
+        Value = s.盤點種類1
+    }).ToListAsync();
+
+
+            var 選取的盤點種類值 = model.盤點種類;
+
+            // 根據盤點種類，判斷是否需要災害別下拉
+            var 是否災害盤點 = await _context.盤點種類
+                .Where(x => x.盤點種類1 == 選取的盤點種類值)
+                .Select(x => x.是否災害盤點)
+                .FirstOrDefaultAsync();
+
+            if (是否災害盤點)
+            {
+                // 載入災害別下拉選單
+                var 災害別選項 = await _context.災害別
+                    .Where(x => !x.是否停用)
+                    .Select(x => new SelectListItem
+                    {
+                        Text = x.災害別1 + "_" + x.災害別名稱,
+                        Value = x.災害別1
+                    }).ToListAsync();
+
+                災害別選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
+                ViewBag.災害別選項 = 災害別選項;
+            }
+            else
+            {
+                ViewBag.災害別選項 = new List<SelectListItem> { new SelectListItem { Text = "(無)", Value = "" } };
+            }
+
+            return PartialView(viewModel);
+        }
+
+        [HttpGet]
+        [NeglectActionFilter]
+        [HttpGet]
+        public async Task<IActionResult> Get災害別選項(string 盤點種類)
+        {
+            var 是否災害盤點 = await _context.盤點種類
+                .Where(x => x.盤點種類1 == 盤點種類)
+                .Select(x => x.是否災害盤點)
+                .FirstOrDefaultAsync();
+
+            if (是否災害盤點)
+            {
+                var 災害別選項 = await _context.災害別
+                    .Where(x => !x.是否停用)
+                    .Select(x => new { Value = x.災害別1, Text = x.災害別1 + "_" + x.災害別名稱 })
+                    .ToListAsync();
+
+                return Json(new { show = true, options = 災害別選項 });
+            }
+            else
+            {
+                return Json(new { show = false, options = new object[0] });
+            }
+        }
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -262,9 +374,10 @@ namespace MVC_Demo2.Controllers
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Delete)]
-        public async Task<IActionResult> DeleteConfirmed([Bind("進銷存組織,單據別名稱,日期,流水號")] HW_01_庫存盤點主檔DisplayViewModel postData)
+        public async Task<IActionResult> DeleteConfirmed([Bind("進銷存組織,單據別,日期,流水號")] HW_01_庫存盤點主檔DisplayViewModel postData)
         {
-            if (postData.進銷存組織 == null || postData.單據別名稱 == null)
+            //if (postData.進銷存組織 == null || postData.單據別名稱 == null)
+            if (postData.進銷存組織 == null || postData.單據別 == null)
                 return NotFound();
 
             try
@@ -272,7 +385,8 @@ namespace MVC_Demo2.Controllers
                 var model = await _context.庫存盤點主檔
                     .Where(x =>
                         x.進銷存組織 == postData.進銷存組織 &&
-                        x.單據別 == postData.單據別名稱 &&
+                        //x.單據別 == postData.單據別名稱 &&
+                        x.單據別 == postData.單據別 &&
                         x.日期 == postData.日期 &&
                         x.流水號 == postData.流水號)
                     .SingleOrDefaultAsync();
@@ -306,12 +420,14 @@ namespace MVC_Demo2.Controllers
         [NeglectActionFilter]
         public async Task<IActionResult> GetDetailData([FromBody] HW_01_庫存盤點主檔DisplayViewModel keys)
         {
-            if (keys.進銷存組織 == null || keys.單據別名稱 == null)
+            if (keys.進銷存組織 == null || keys.單據別 == null)
+            //if (keys.進銷存組織 == null || keys.單據別名稱 == null)
                 return NotFound();
 
             IQueryable<HW_01_庫存盤點明細檔DisplayViewModel> sql = GetDetailBaseQuery()
                 .Where(x => x.進銷存組織 == keys.進銷存組織
-                         && x.單據別 == keys.單據別名稱
+                         && x.單據別 == keys.單據別
+                         //&& x.單據別 == keys.單據別名稱
                          && x.日期 == keys.日期
                          && x.流水號 == keys.流水號);
 

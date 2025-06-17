@@ -13,7 +13,7 @@ namespace MVC_Demo2.Models.ViewModel
 
         [Key]
         [HiddenForView]
-        public string 單據別名稱 { get; set; }
+        public string 單據別 { get; set; }
 
         [Key]
         public DateTime 日期 { get; set; }

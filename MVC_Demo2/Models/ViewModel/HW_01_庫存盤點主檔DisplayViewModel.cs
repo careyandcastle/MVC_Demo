@@ -19,26 +19,30 @@ namespace MVC_Demo2.Models.ViewModel
         public DateTime 日期 { get; set; }
 
         [Key]
-        public decimal 流水號 { get; set; } 
+        public decimal 流水號 { get; set; }
 
-        [DisplayName("倉庫")]
+        [HiddenForView]
         public string 倉庫代號 { get; set; }
 
+        [DisplayName("倉庫")]
         public string 倉庫名稱 { get; set; }
 
-        [DisplayName("盤點種類")]
+        [HiddenForView]
         public string 盤點種類 { get; set; }
 
+        [DisplayName("盤點種類")]
         public string 盤點種類名稱 { get; set; }
 
-        [DisplayName("災害別")]
+        [HiddenForView]
         public string 災害別 { get; set; }
 
+        [DisplayName("災害別")]
         public string 災害別名稱 { get; set; }
 
-        [DisplayName("盤點人")]
+        [HiddenForView]
         public string 盤點人 { get; set; }
 
+        [DisplayName("盤點人")]
         public string 盤點人姓名 { get; set; }
 
         [DisplayName("盤點日期")]

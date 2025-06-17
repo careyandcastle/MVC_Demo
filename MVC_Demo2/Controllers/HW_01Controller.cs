@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -89,13 +90,13 @@ namespace MVC_Demo2.Controllers
                         日期 = m.日期,
                         流水號 = m.流水號,
                         倉庫代號 = m.倉庫代號,
-                        倉庫名稱 = m.倉庫基本檔.倉庫組織 + "_" + m.倉庫基本檔.倉庫代號,
+                        倉庫名稱 = m.倉庫基本檔.倉庫代號 + "_" + m.倉庫基本檔.倉庫組織,
                         盤點種類 = m.盤點種類,
                         盤點種類名稱 = m.盤點種類Navigation.盤點種類1,
                         災害別 = m.災害別,
-                        災害別名稱 = m.災害別Navigation.災害別1,
-                        盤點人 = m.盤點人,
-                        盤點人姓名 = "", // <- 若有帳號表可加入
+                        災害別名稱 = m.災害別 + "_" + m.災害別Navigation.災害別名稱,
+                        盤點人 = m.盤點人, 
+                        盤點人姓名 = m.盤點人 + "_" + CustomSqlFunctions.DecryptToString(_u.姓名), // <- 若有帳號表可加入
                         備註 = m.備註,
                         盤點日期 = m.盤點日期,
                         庫存異動狀態 = m.庫存異動狀態,
@@ -105,6 +106,59 @@ namespace MVC_Demo2.Controllers
                         修改時間 = m.修改日期時間
                     }).AsNoTracking();
         }
+
+        public async Task<IActionResult> Create()
+        {
+            var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+
+            // 取得列帳日（假設你已存在方法或變數）
+            //DateTime 列帳日期 = await Get列帳日期Async(); // 可自行實作，也可以用 DateTime.Today;
+            DateTime 列帳日期 = DateTime.Today; // 可自行實作，也可以用 DateTime.Today;
+
+            var viewModel = new HW_01_庫存盤點主檔BasicViewModel
+            {
+                進銷存組織 =  ua.BusinessNo,
+                單據別 = "INV", // 固定 INV
+                日期 = 列帳日期
+            };
+
+            // ===== 倉庫代號下拉選單 =====
+            var 倉庫選項 = await _context.倉庫基本檔
+                //.Where(s => s.是否暫停 == false && s.是否裁撤 == false)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.倉庫代號 + "_" + s.倉庫名稱,
+                    Value = s.倉庫代號
+                }).ToListAsync();
+            倉庫選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
+            ViewBag.倉庫選項 = 倉庫選項;
+
+            // ===== 盤點種類下拉 =====
+            var 盤點種類選項 = await _context.盤點種類
+                .Select(s => new SelectListItem
+                {
+                    Text = s.盤點種類1 + "_" + s.盤點種類名稱,
+                    Value = s.盤點種類1
+                }).ToListAsync();
+            盤點種類選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
+            ViewBag.盤點種類選項 = 盤點種類選項;
+
+            // ===== 災害別：預設為空，依盤點種類動態載入 =====
+            ViewBag.災害別選項 = new List<SelectListItem> { new SelectListItem { Text = "--請先選擇盤點種類--", Value = "" } };
+
+            // ===== 盤點人下拉：從修改人資料表轉換 byte[] 姓名 =====
+            var 盤點人選項 = await _context.修改人
+                .Select(s => new SelectListItem
+                {
+                    Text = s.修改人1 + "_" + System.Text.Encoding.UTF8.GetString(s.姓名),
+                    Value = s.修改人1
+                }).ToListAsync();
+            盤點人選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
+            ViewBag.盤點人選項 = 盤點人選項;
+
+            return PartialView(viewModel);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Add)]

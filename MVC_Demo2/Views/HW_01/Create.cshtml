@@ -1,104 +1,76 @@
-﻿@model MVC_Demo2.Models.庫存盤點主檔
-
-@{
-    ViewData["Title"] = "Create";
-}
-
-<h1>Create</h1>
-
-<h4>庫存盤點主檔</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="進銷存組織" class="control-label"></label>
-                <select asp-for="進銷存組織" class ="form-control" asp-items="ViewBag.進銷存組織"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="單據別" class="control-label"></label>
-                <select asp-for="單據別" class ="form-control" asp-items="ViewBag.單據別"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="日期" class="control-label"></label>
-                <input asp-for="日期" class="form-control" />
-                <span asp-validation-for="日期" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="流水號" class="control-label"></label>
-                <input asp-for="流水號" class="form-control" />
-                <span asp-validation-for="流水號" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="倉庫代號" class="control-label"></label>
-                <select asp-for="倉庫代號" class ="form-control" asp-items="ViewBag.倉庫代號"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="盤點種類" class="control-label"></label>
-                <select asp-for="盤點種類" class ="form-control" asp-items="ViewBag.盤點種類"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="災害別" class="control-label"></label>
-                <select asp-for="災害別" class ="form-control" asp-items="ViewBag.災害別"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="盤點人" class="control-label"></label>
-                <input asp-for="盤點人" class="form-control" />
-                <span asp-validation-for="盤點人" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="盤點日期" class="control-label"></label>
-                <input asp-for="盤點日期" class="form-control" />
-                <span asp-validation-for="盤點日期" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="備註" class="control-label"></label>
-                <input asp-for="備註" class="form-control" />
-                <span asp-validation-for="備註" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="盤點狀態" class="control-label"></label>
-                <input asp-for="盤點狀態" class="form-control" />
-                <span asp-validation-for="盤點狀態" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="核准人" class="control-label"></label>
-                <input asp-for="核准人" class="form-control" />
-                <span asp-validation-for="核准人" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="核准日期" class="control-label"></label>
-                <input asp-for="核准日期" class="form-control" />
-                <span asp-validation-for="核准日期" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="庫存異動狀態" class="control-label"></label>
-                <select asp-for="庫存異動狀態" class ="form-control" asp-items="ViewBag.庫存異動狀態"></select>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="是否註記刪除" /> @Html.DisplayNameFor(model => model.是否註記刪除)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="修改人" class="control-label"></label>
-                <input asp-for="修改人" class="form-control" />
-                <span asp-validation-for="修改人" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="修改日期時間" class="control-label"></label>
-                <input asp-for="修改日期時間" class="form-control" />
-                <span asp-validation-for="修改日期時間" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+﻿@using MVC_Demo2.Models.ViewModel;
+@model HW_01_庫存盤點主檔BasicViewModel
 
 <div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="row">
+        <div class="col">
+            <form asp-action="Create">
+                @* 全域錯誤訊息區塊 *@
+                <div id="ModelErrorDiv" class="validation-summary-valid text-danger">
+                    <ul></ul>
+                </div>
 
+                @* 固定填入進銷存組織與單據別 *@
+                <div class="form-group">
+                    <label asp-for="進銷存組織" class="control-label"></label>
+                    <input asp-for="進銷存組織" class="form-control" disabled />
+                    @Html.HiddenFor(model => model.進銷存組織)
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="單據別" class="control-label"></label>
+                    <input asp-for="單據別" class="form-control" disabled />
+                    @Html.HiddenFor(model => model.單據別)
+                </div>
+
+                @*其他*@
+
+                <div class="form-group">
+                    <label asp-for="日期" class="control-label"></label>
+                    <input asp-for="日期" class="form-control" />
+                    <span asp-validation-for="日期" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="倉庫代號" class="control-label"></label>
+                    <select asp-for="倉庫代號" class="form-control" asp-items="@ViewBag.倉庫選項"></select>
+                    <span asp-validation-for="倉庫代號" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="盤點種類" class="control-label"></label>
+                    <select asp-for="盤點種類" class="form-control" asp-items="@ViewBag.盤點種類選項"></select>
+                    <span asp-validation-for="盤點種類" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="災害別" class="control-label"></label>
+                    <select asp-for="災害別" class="form-control" asp-items="@ViewBag.災害別選項"></select>
+                    <span asp-validation-for="災害別" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="盤點人" class="control-label"></label>
+                    <select asp-for="盤點人" class="form-control" asp-items="@ViewBag.盤點人選項"></select>
+                    <span asp-validation-for="盤點人" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="盤點日期" class="control-label"></label>
+                    <input asp-for="盤點日期" class="form-control" />
+                    <span asp-validation-for="盤點日期" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="備註" class="control-label"></label>
+                    <textarea asp-for="備註" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="備註" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="送出" class="btn btn-primary" :disabled="isWaitting" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

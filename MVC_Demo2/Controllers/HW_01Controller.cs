@@ -370,6 +370,28 @@ namespace MVC_Demo2.Controllers
                 message = "更新失敗"
             });
         }
+        [ProcUseRang(ProcNo, ProcUseRang.Delete)]
+        public async Task<ActionResult> Delete(string 進銷存組織, string 單據別, DateTime 日期, decimal 流水號)
+        {
+            if (string.IsNullOrEmpty(進銷存組織) || string.IsNullOrEmpty(單據別) || 日期 == default || 流水號 == default)
+            {
+                return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
+            }
+
+            var viewModel = await GetBaseQuery()
+                .Where(s => s.進銷存組織 == 進銷存組織
+                         && s.單據別 == 單據別
+                         && s.日期 == 日期
+                         && s.流水號 == 流水號)
+                .SingleOrDefaultAsync();
+
+            if (viewModel == null)
+            {
+                return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
+            }
+
+            return PartialView(viewModel); // 回傳 Delete.cshtml 的 PartialView
+        }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]

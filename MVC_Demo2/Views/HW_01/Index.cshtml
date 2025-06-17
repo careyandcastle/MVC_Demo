@@ -434,7 +434,31 @@
                 onFilterValueUpdate: _onFilterValueUpdate,
                 onAdvanceSearch: _onAdvanceSearch,
                 onCleanFilter: _onCleanFilter,
-                onDataExport: _onDataExport
+                onDataExport: _onDataExport,
+                getClassForMasterContent: function (rowData) {
+                    console.log('🚩 getClassForMasterContent 呼叫，rowData =', rowData);
+
+                    // 完整資料在 rowData.item
+                    const item = rowData.item;
+
+                    // 判斷是否註記刪除（顯示紅色）
+                    if (item['是否註記刪除'] === true || item['是否註記刪除'] === '1' || item['是否註記刪除顯示'] === '是') {
+                        console.log('🛑 註記刪除 → text-danger');
+                        return 'text-danger';
+                    }
+
+                    // 判斷是否完成異動（灰色）
+                    if (item['庫存異動狀態'] === 3 || item['庫存異動狀態'] === '3' || item['庫存異動狀態名稱'] === '完成異動') {
+                        console.log('➡️ 完成異動 → text-muted');
+                        return 'text-muted';
+                    }
+
+                    // 預設樣式（無色）
+                    return '';
+                }
+
+                
+
             };
 
             // 掛載 Vue 組件（至 #hw_01-index）

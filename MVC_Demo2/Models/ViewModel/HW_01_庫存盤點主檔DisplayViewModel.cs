@@ -8,15 +8,21 @@ namespace MVC_Demo2.Models.ViewModel
     public class HW_01_庫存盤點主檔DisplayViewModel
     {
         [Key]
-        [HiddenForView]
+        //[HiddenForView]
         public string 進銷存組織 { get; set; }
 
         [Key]
         [HiddenForView]
         public string 單據別 { get; set; }
+        [DisplayName("單據別")]
+        public string 單據別名稱 { get; set; }
 
         [Key]
+        [HiddenForView]
         public DateTime 日期 { get; set; }
+
+        [DisplayName("日期")]
+        public string 日期顯示 => 日期.ToString("yyyy/MM/dd");
 
         [Key]
         public decimal 流水號 { get; set; }
@@ -45,8 +51,11 @@ namespace MVC_Demo2.Models.ViewModel
         [DisplayName("盤點人")]
         public string 盤點人姓名 { get; set; }
 
-        [DisplayName("盤點日期")]
+        [HiddenForView]
         public DateTime? 盤點日期 { get; set; }
+
+        [DisplayName("盤點日期")]
+        public string 盤點日期顯示 => 盤點日期.HasValue ? 盤點日期.Value.ToString("yyyy/MM/dd") : "";
 
         [DisplayName("備註")]
         public string 備註 { get; set; }

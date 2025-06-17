@@ -112,8 +112,9 @@ namespace MVC_Demo2.Controllers
                     {
                         進銷存組織 = m.進銷存組織,
                         單據別 = m.單據別,
-                        //單據別名稱 = m.單據別,
+                        單據別名稱 = m.單據別 + "_" + m.單據別Navigation.單據別名稱,
                         日期 = m.日期,
+                        //日期 = m.日期,
                         流水號 = m.流水號,
                         倉庫代號 = m.倉庫代號,
                         倉庫名稱 = m.倉庫基本檔.倉庫代號 + "_" + m.倉庫基本檔.倉庫組織,
@@ -127,7 +128,8 @@ namespace MVC_Demo2.Controllers
                         盤點日期 = m.盤點日期,
                         庫存異動狀態 = m.庫存異動狀態,
                         庫存異動狀態名稱 = m.庫存異動狀態Navigation.庫存異動狀態1,
-                        是否註記刪除 = false, // 若有欄位再加
+                        是否註記刪除 = m.是否註記刪除, // 若有欄位再加
+                        是否註記刪除顯示 = m.是否註記刪除 ? "是" : "否",
                         修改人 = CustomSqlFunctions.ConcatCodeAndName(m.修改人, CustomSqlFunctions.DecryptToString(_u.姓名)),
                         修改時間 = m.修改日期時間
                     }).AsNoTracking();

@@ -195,7 +195,8 @@
                             const ss = ('0' + d.getSeconds()).slice(-2);
                             return `${yyyy}-${MM}-${dd} ${HH}:${mm}:${ss}`;
                         })(),*@
-                        日期: new Date(this.日期).toISOString(), // ← 用標準格式轉換
+                        日期: this.日期, // ← 用標準格式轉換
+                        @*日期: new Date(this.日期).toISOString(), // ← 用標準格式轉換*@
                         流水號: this.流水號
                     };
                     debugger;

@@ -17,10 +17,18 @@
                 @*<input asp-for="流水號" type="hidden" />*@
 
                 @* 顯示主鍵欄位（只讀） *@
+                @*<div class="form-group">
+            <label asp-for="進銷存組織" class="control-label"></label>
+            <input asp-for="進銷存組織" class="form-control" disabled />
+        </div>*@
+
                 <div class="form-group">
                     <label asp-for="進銷存組織" class="control-label"></label>
-                    <input asp-for="進銷存組織" class="form-control"  disabled />
+                    <input class="form-control" value="@Model.進銷存組織" disabled />
+                    <input type="hidden" asp-for="進銷存組織" />
                 </div>
+
+
                 <div class="form-group">
                     <label class="control-label">列帳年月</label>
                     <input class="form-control" value="@ViewBag.var列帳年月" disabled />
@@ -52,23 +60,49 @@
                     <span asp-validation-for="倉庫代號" class="text-danger"></span>
                 </div>
 
+                @*<div class="form-group">
+            <label asp-for="盤點種類" class="control-label"></label>
+            <select asp-for="盤點種類" class="form-control" asp-items="ViewBag.盤點種類選項" v-on:change="on盤點種類變更"></select>
+            <span asp-validation-for="盤點種類" class="text-danger"></span>
+        </div>*@
+
+                @*<div class="form-group" v-if="show災害別">
+            <label asp-for="災害別" class="control-label"></label>
+            <select asp-for="災害別" class="form-control">
+                <option v-for="opt in 災害別選項" :value="opt.Value">{{ opt.Text }}</option>
+            </select>
+        </div>*@
+
+                @*來自Create.cshtml*@
+
                 <div class="form-group">
                     <label asp-for="盤點種類" class="control-label"></label>
-                    <select asp-for="盤點種類" class="form-control" asp-items="ViewBag.盤點種類選項" v-on:change="on盤點種類變更"></select>
+                    <select asp-for="盤點種類" class="form-control" asp-items="@ViewBag.盤點種類選項" id="inventory-type-sel"></select>
                     <span asp-validation-for="盤點種類" class="text-danger"></span>
                 </div>
 
-                <div class="form-group" v-if="show災害別">
+
+                <div class="form-group">
                     <label asp-for="災害別" class="control-label"></label>
-                    <select asp-for="災害別" class="form-control">
-                        <option v-for="opt in 災害別選項" :value="opt.Value">{{ opt.Text }}</option>
-                    </select>
+                    <select asp-for="災害別" class="form-control" asp-items="@ViewBag.災害別選項" id="disaster-sel"></select>
+                    <span asp-validation-for="災害別" class="text-danger"></span>
                 </div>
 
+                @*<div class="form-group">
+            <label asp-for="盤點人" class="control-label"></label>
+            <input asp-for="盤點人" class="form-control" readonly />
+        </div>*@
+
+                @*<div class="form-group">
+            <label asp-for="盤點人" class="control-label"></label>
+            <input class="form-control" value="@Model.盤點人" disabled />
+            <input type="hidden" asp-for="盤點人" />
+        </div>*@
                 <div class="form-group">
                     <label asp-for="盤點人" class="control-label"></label>
                     <input asp-for="盤點人" class="form-control" readonly />
                 </div>
+
 
                 <div class="form-group">
                     <label asp-for="盤點日期" class="control-label"></label>
@@ -89,52 +123,44 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        const 初始盤點種類選項 = @Html.Raw(Json.Serialize(ViewBag.盤點種類選項));
-        const 初始災害別選項 = @Html.Raw(Json.Serialize(ViewBag.災害別選項));
+<script>
+this.$on('fetched-page-modal::ready', () => {
+    console.log("[Modal Ready] 綁定盤點種類下拉選單 change 事件");
 
-        const vm = new Vue({
-            el: '#hw_01-edit',
-            data: {
-                show災害別: @((Model.災害別 != null).ToString().ToLower()),
-                災害別選項: 初始災害別選項
-            },
-            methods: {
-                async on盤點種類變更(event) {
-                    const selected = event.target.value;
-                    if (!selected) {
-                        this.show災害別 = false;
-                        this.災害別選項 = [];
-                        this.clear災害別欄位();
-                        return;
-                    }
+    $('#inventory-type-sel').change(function () {
+        const selectedType = $(this).val();
+        console.log(`[ChangeEvent] 使用者選擇盤點種類：${selectedType}`);
 
-                    try {
-                        const res = await axios.get('@Url.Action("Get災害別選項", "HW_01")', {
-                            params: { 盤點種類: selected }
-                        });
+        const apiUrl = '@Url.Action("依盤點種類取得災害別", "HW_01")';
+        console.log(`[API] 呼叫 URL：${apiUrl}，參數：{ 盤點種類: "${selectedType}" }`);
 
-                        this.災害別選項 = res.data.options || [];
-                        this.show災害別 = res.data.show;
+        $.get(apiUrl, { 盤點種類: selectedType }, function (data) {
+            const $disasterSel = $('#disaster-sel');
+            $disasterSel.empty();
+            console.log(`[DOM] 已清空災害別下拉選單`);
 
-                        if (!this.show災害別) {
-                            this.clear災害別欄位();
-                        }
-                    } catch (err) {
-                        console.error("❌ 災害別載入失敗：", err);
-                        this.show災害別 = false;
-                        this.災害別選項 = [];
-                        this.clear災害別欄位();
-                    }
-                },
-                clear災害別欄位() {
-                    const el = this.$el.querySelector('[name="災害別"]');
-                    if (el) el.value = '';
-                }
+            if (data.length === 0) {
+                console.log(`[API Response] 此盤點種類無災害別（data.length = 0）`);
+                $disasterSel.append($('<option>').val("").text("（此盤點類型無需選擇災害別）"));
+            } else {
+                console.log(`[API Response] 成功載入災害別選項，共 ${data.length} 筆`);
+                $disasterSel.append($('<option>').val("").text("請選擇災害別"));
+
+                $.each(data, function (_, item) {
+                    $disasterSel.append($('<option></option>')
+                        .val(item.Value)
+                        .text(item.Text));
+                });
+
+                console.log(`[DOM] 已更新災害別選單`);
             }
+        }).fail(function (xhr, status, error) {
+            console.error(`[API Error] 呼叫失敗：${status} - ${error}`);
         });
-    </script>
+    });
+});
+</script>
 
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+@{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); 
 }

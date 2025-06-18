@@ -194,17 +194,24 @@ namespace MVC_Demo2.Controllers
 
         public async Task<IActionResult> Create()
         {
-
             var (org, period, date) = InitInventoryDefaultValues();
             ViewBag.var進銷存組織 = org;
             ViewBag.var列帳年月 = period;
             ViewBag.var列帳日期 = date;
 
+            Debug.WriteLine($"[Create] ▶ 初始化組織參數：org={org}, period={period}, date={date}");
+
             var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
-            //DateTime 列帳日期a = DateTime.Now; // 可自行實作，也可以用 DateTime.Today;
+            Debug.WriteLine($"[Create] ▶ 使用者帳號：{ua?.UserNo}");
+
             var viewModel = new HW_01_庫存盤點主檔BasicViewModel
             {
-                //日期 = DateTime.Now
+                日期 = date,
+                庫存異動狀態 = "0",   // ✅ 初始狀態為「未異動」
+                是否註記刪除 = false,
+                進銷存組織 = org,
+                單據別 = "INV",
+                流水號 = 0
             };
 
             // ===== 倉庫代號下拉選單 =====
@@ -215,6 +222,8 @@ namespace MVC_Demo2.Controllers
                     Text = s.倉庫代號 + "_" + s.倉庫名稱,
                     Value = s.倉庫代號
                 }).ToListAsync();
+
+            if (!倉庫選項.Any()) Debug.WriteLine("[Create] ⚠️ 倉庫基本檔為空");
             倉庫選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
             ViewBag.倉庫選項 = 倉庫選項;
 
@@ -225,25 +234,27 @@ namespace MVC_Demo2.Controllers
                     Text = s.盤點種類1 + "_" + s.盤點種類名稱,
                     Value = s.盤點種類1
                 }).ToListAsync();
+
+            if (!盤點種類選項.Any()) Debug.WriteLine("[Create] ⚠️ 盤點種類資料為空");
             盤點種類選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
             ViewBag.盤點種類選項 = 盤點種類選項;
 
             // ===== 災害別：預設為空，依盤點種類動態載入 =====
-            ViewBag.災害別選項 = new List<SelectListItem> { new SelectListItem { Text = "--請先選擇盤點種類--", Value = "" } };
+            ViewBag.災害別選項 = new List<SelectListItem> {
+        new SelectListItem { Text = "--請先選擇盤點種類--", Value = "" }
+    };
 
-            // ===== 盤點人下拉：從修改人資料表轉換 byte[] 姓名 =====
+            // ===== 盤點人下拉選單：從 byte[] 轉為字串 =====
             var 盤點人選項 = await _context.修改人
                 .Select(s => new SelectListItem
                 {
-                    //Text = s.修改人1 + "_" + System.Text.Encoding.UTF8.GetString(s.姓名),
                     Text = s.修改人1 + "_" + CustomSqlFunctions.DecryptToString(s.姓名),
-                     //System.Text.Encoding.UTF8.GetString(s.姓名),
                     Value = s.修改人1
                 }).ToListAsync();
+
+            if (!盤點人選項.Any()) Debug.WriteLine("[Create] ⚠️ 無盤點人選項（修改人表為空）");
             盤點人選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
             ViewBag.盤點人選項 = 盤點人選項;
-
-            
 
             return PartialView(viewModel);
         }
@@ -281,22 +292,60 @@ namespace MVC_Demo2.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Add)]
-        public async Task<IActionResult> Create([Bind("進銷存組織,日期,倉庫代號,盤點種類,災害別,盤點人,盤點日期,備註")] HW_01_庫存盤點主檔CreateViewModel postData)
+        public async Task<IActionResult> Create([Bind("進銷存組織,單據別,日期,倉庫代號,盤點種類,災害別,盤點人,盤點日期,備註")] HW_01_庫存盤點主檔CreateViewModel postData)
         {
+            Debug.WriteLine("[Create] ▶ 收到建立請求，表單內容如下：");
+            Debug.WriteLine($"        進銷存組織 = {postData.進銷存組織}");
+            Debug.WriteLine($"        單據別     = {postData.單據別}");
+            Debug.WriteLine($"        日期       = {postData.日期:yyyy-MM-dd}");
+            Debug.WriteLine($"        倉庫代號   = {postData.倉庫代號}");
+            Debug.WriteLine($"        盤點種類   = {postData.盤點種類}");
+            Debug.WriteLine($"        災害別     = {postData.災害別 ?? "[null]"}");
+            Debug.WriteLine($"        盤點人     = {postData.盤點人}");
+            Debug.WriteLine($"        盤點日期   = {postData.盤點日期:yyyy-MM-dd}");
+            Debug.WriteLine($"        備註       = {postData.備註 ?? "[null]"}");
+
             if (!ModelState.IsValid)
+            {
+                Debug.WriteLine("[Edit] [ERROR] ModelState 無效（初始驗證）");
+                foreach (var kv in ModelState.ToErrorInfos())
+                {
+                    foreach (var msg in kv.Value)
+                        Debug.WriteLine($"        ↳ 欄位：{kv.Key}，錯誤：{msg}");
+                }
+                //Debug.WriteLine("[Create] [ERROR] ModelState 初始驗證失敗");
                 return Ok(new ReturnData(ReturnState.ReturnCode.CREATE_ERROR) { data = ModelState.ToErrorInfos() });
+            }
 
             await ValidateForCreate(postData);
             if (!ModelState.IsValid)
+            {
+                Debug.WriteLine("[Create] [ERROR] 驗證邏輯後 ModelState 失敗");
                 return Ok(new ReturnData(ReturnState.ReturnCode.CREATE_ERROR) { data = ModelState.ToErrorInfos() });
+            }
 
             try
             {
                 var model = _mapper.Map<庫存盤點主檔>(postData);
+
+                // 補必要欄位（防止 NULL 或 FK 錯誤）
                 model.單據別 = "INV";
-                model.流水號 = await _context.庫存盤點主檔
-                    .Where(x => x.進銷存組織 == model.進銷存組織 && x.單據別 == "INV" && x.日期 == model.日期)
-                    .Select(x => x.流水號).DefaultIfEmpty(0).MaxAsync() + 1;
+                model.庫存異動狀態 = "0";           // ✅ 外鍵欄位，避免外鍵例外
+                model.是否註記刪除 = false;           // ✅ NOT NULL 欄位
+                model.備註 ??= string.Empty;         // ✅ 備註不能為 null
+
+                // 產生流水號（依組織＋單據別＋日期）
+                //model.流水號 = await _context.庫存盤點主檔
+                //    .Where(x => x.進銷存組織 == model.進銷存組織 && x.單據別 == "INV" && x.日期 == model.日期)
+                //    .Select(x => x.流水號)
+                //    .DefaultIfEmpty(0)
+                //    .MaxAsync() + 1;
+                var 流水號清單 = await _context.庫存盤點主檔
+    .Where(x => x.進銷存組織 == model.進銷存組織 && x.單據別 == "INV" && x.日期 == model.日期)
+    .Select(x => x.流水號)
+    .ToListAsync();
+
+                model.流水號 = (流水號清單.Any() ? 流水號清單.Max() : 0) + 1;
 
                 var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
                 model.修改人 = ua.UserNo;
@@ -304,33 +353,42 @@ namespace MVC_Demo2.Controllers
 
                 _context.庫存盤點主檔.Add(model);
                 int opCount = await _context.SaveChangesAsync();
+
+                Debug.WriteLine($"[Create] ▶ 建立成功，新增筆數：{opCount}，流水號：{model.流水號}");
+
                 if (opCount > 0)
                 {
-                    return Ok(new ReturnData(ReturnState.ReturnCode.OK)
-                    {
-                        data = await GetBaseQuery().Where(x =>
+                    var newData = await GetBaseQuery()
+                        .Where(x =>
                             x.進銷存組織 == model.進銷存組織 &&
-                            //x.單據別名稱 == model.單據別 &&
                             x.單據別 == model.單據別 &&
                             x.日期 == model.日期 &&
                             x.流水號 == model.流水號
-                        ).SingleOrDefaultAsync()
+                        ).SingleOrDefaultAsync();
+
+                    return Ok(new ReturnData(ReturnState.ReturnCode.OK)
+                    {
+                        data = newData
                     });
                 }
             }
             catch (Exception ex)
             {
+                var realEx = ex.GetOriginalException();
+                Debug.WriteLine($"[Create] [ERROR] 發生例外：{realEx.ToMeaningfulMessage()}");
                 return CreatedAtAction(nameof(Create), new ReturnData(ReturnState.ReturnCode.CREATE_ERROR)
                 {
-                    message = ex.GetOriginalException().ToMeaningfulMessage()
+                    message = realEx.ToMeaningfulMessage()
                 });
             }
 
+            Debug.WriteLine("[Create] [ERROR] 未知錯誤，未能儲存資料");
             return CreatedAtAction(nameof(Create), new ReturnData(ReturnState.ReturnCode.CREATE_ERROR)
             {
                 message = "發生未知錯誤，請聯絡管理員"
             });
         }
+
 
         private async Task ValidateForCreate(HW_01_庫存盤點主檔CreateViewModel postData)
         {
@@ -377,6 +435,8 @@ namespace MVC_Demo2.Controllers
             ViewBag.var進銷存組織 = org;
             ViewBag.var列帳年月 = period;
             ViewBag.var列帳日期 = date;
+
+            //viewModel.備註 ??= string.Empty;
 
             var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
 
@@ -437,6 +497,140 @@ namespace MVC_Demo2.Controllers
 
             return PartialView(viewModel);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ProcUseRang(ProcNo, ProcUseRang.Update)]
+        public async Task<IActionResult> Edit([Bind("進銷存組織,單據別,日期,流水號,倉庫代號,盤點種類,災害別,備註, 盤點人, 庫存異動狀態, 是否註記刪除")] HW_01_庫存盤點主檔EditViewModel postData)
+        {
+            //Debug.WriteLine($"[Edit] ▶ 收到編輯請求 - 組織：{postData.進銷存組織}, 單據別: {postData.單據別} ,日期：{postData.日期:yyyy-MM-dd}, 流水號：{postData.流水號}");
+            Debug.WriteLine("[Edit] ▶ 收到編輯請求內容：");
+            Debug.WriteLine($"        進銷存組織 = {postData.進銷存組織}");
+            Debug.WriteLine($"        單據別     = {postData.單據別}");
+            Debug.WriteLine($"        日期       = {postData.日期:yyyy-MM-dd}");
+            Debug.WriteLine($"        流水號     = {postData.流水號}");
+            Debug.WriteLine($"        倉庫代號   = {postData.倉庫代號}");
+            Debug.WriteLine($"        盤點種類   = {postData.盤點種類}");
+            Debug.WriteLine($"        災害別     = {postData.災害別 ?? "[null]"}");
+            Debug.WriteLine($"        備註       = {postData.備註 ?? "[null]"}");
+            Debug.WriteLine($"        盤點人     = {postData.盤點人}");
+            Debug.WriteLine($"        庫存異動狀態   = {postData.庫存異動狀態 ?? "[null]"}");
+            Debug.WriteLine($"        是否註記刪除   = {postData.是否註記刪除}");
+            if (!ModelState.IsValid)
+            {
+                Debug.WriteLine("[Edit] [ERROR] ModelState 無效（初始驗證）");
+                foreach (var kv in ModelState.ToErrorInfos())
+                {
+                    foreach (var msg in kv.Value)
+                        Debug.WriteLine($"        ↳ 欄位：{kv.Key}，錯誤：{msg}");
+                }
+
+                return Ok(new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+                {
+                    data = ModelState.ToErrorInfos()
+                });
+            }
+
+            try
+            {
+                //Debug.WriteLine("[Edit] ▶ 進行驗證邏輯...");
+                //await ValidateForEdit(postData);
+
+                if (!ModelState.IsValid)
+                {
+                    Debug.WriteLine("[Edit] [ERROR] ModelState 無效（驗證邏輯後）");
+                    foreach (var kv in ModelState.ToErrorInfos())
+                    {
+                        foreach (var msg in kv.Value)
+                            Debug.WriteLine($"        ↳ 欄位：{kv.Key}，錯誤：{msg}");
+                    }
+
+                    return Ok(new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+                    {
+                        data = ModelState.ToErrorInfos()
+                    });
+                }
+
+                var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+                Debug.WriteLine($"[Edit] ▶ 使用者帳號：{ua?.UserNo}");
+
+                // 讀取原本的資料庫記錄
+                var originalModel = await _context.庫存盤點主檔
+                    .AsNoTracking()
+                    .Where(x =>
+                        x.進銷存組織 == postData.進銷存組織 &&
+                        x.單據別 == postData.單據別 &&
+                        x.日期 == postData.日期 &&
+                        x.流水號 == postData.流水號)
+                    .Select(x => new { x.庫存異動狀態, x.是否註記刪除 })
+                    .FirstOrDefaultAsync();
+
+                if (originalModel == null)
+                {
+                    Debug.WriteLine("[Edit] [ERROR] 查無原始資料");
+                    return NotFound();
+                }
+
+                // 將 postData 映射為 model
+                var model = _mapper.Map<HW_01_庫存盤點主檔EditViewModel, 庫存盤點主檔>(postData);
+                if (model == null)
+                {
+                    Debug.WriteLine("[Edit] [ERROR] 映射失敗，model 為 null");
+                    return NotFound();
+                }
+
+                // 這裡是重點：強制回填資料庫查得的值（以避免被惡意改寫）
+                model.庫存異動狀態 = originalModel.庫存異動狀態;
+                model.是否註記刪除 = originalModel.是否註記刪除;
+
+                // 補上修改人與時間
+                model.修改人 = ua.UserNo;
+                model.修改日期時間 = DateTime.Now;
+                model.備註 ??= string.Empty;
+
+                // 寫入資料庫
+                _context.庫存盤點主檔.Update(model);
+                int opCount = await _context.SaveChangesAsync();
+
+                //model.庫存異動狀態 
+                //model.庫存異動狀態 ??= string.Empty;
+                //model.備註 ??= string.Empty;
+                //model.備註 ??= string.Empty;
+
+                _context.庫存盤點主檔.Update(model);
+                Debug.WriteLine("[Edit] ▶ 已加入 Update 追蹤");
+
+                //int opCount = await _context.SaveChangesAsync();
+                Debug.WriteLine($"[Edit] ▶ SaveChanges 完成，受影響筆數：{opCount}");
+
+                if (opCount > 0)
+                {
+                    Debug.WriteLine("[Edit] [OK] 資料更新成功");
+                    return Ok(new ReturnData(ReturnState.ReturnCode.OK)
+                    {
+                        data = postData
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                var realEx = ex.GetOriginalException();
+                Debug.WriteLine($"[Edit] [ERROR] 發生例外：{realEx.ToMeaningfulMessage()}");
+                return CreatedAtAction(nameof(Edit), new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+                {
+                    message = realEx.ToMeaningfulMessage()
+                });
+            }
+
+            Debug.WriteLine("[Edit] [ERROR] 未發生例外但未成功儲存任何資料");
+            return CreatedAtAction(nameof(Edit), new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+            {
+                message = "發生未知錯誤，請聯絡管理員"
+            });
+        }
+
+
+
         [HttpGet]
         [ProcUseRang(ProcNo, ProcUseRang.Update)]
         public async Task<IActionResult> EditDetail(string 進銷存組織, string 單據別, DateTime 日期, decimal 流水號, decimal 項次)
@@ -538,40 +732,40 @@ namespace MVC_Demo2.Controllers
 
 
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [ProcUseRang(ProcNo, ProcUseRang.Update)]
-        public async Task<IActionResult> Edit([Bind("進銷存組織,單據別,日期,流水號,倉庫代號,盤點種類,災害別,盤點人,盤點日期,備註")] HW_01_庫存盤點主檔EditViewModel postData)
-        {
-            if (!ModelState.IsValid)
-                return Ok(new ReturnData(ReturnState.ReturnCode.EDIT_ERROR) { data = ModelState.ToErrorInfos() });
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //[ProcUseRang(ProcNo, ProcUseRang.Update)]
+        //public async Task<IActionResult> Edit([Bind("進銷存組織,單據別,日期,流水號,倉庫代號,盤點種類,災害別,盤點人,盤點日期,備註")] HW_01_庫存盤點主檔EditViewModel postData)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return Ok(new ReturnData(ReturnState.ReturnCode.EDIT_ERROR) { data = ModelState.ToErrorInfos() });
 
-            try
-            {
-                var model = _mapper.Map<庫存盤點主檔>(postData);
-                var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
-                model.修改人 = ua.UserNo;
-                model.修改日期時間 = DateTime.Now;
+        //    try
+        //    {
+        //        var model = _mapper.Map<庫存盤點主檔>(postData);
+        //        var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+        //        model.修改人 = ua.UserNo;
+        //        model.修改日期時間 = DateTime.Now;
 
-                _context.庫存盤點主檔.Update(model);
-                int opCount = await _context.SaveChangesAsync();
+        //        _context.庫存盤點主檔.Update(model);
+        //        int opCount = await _context.SaveChangesAsync();
 
-                if (opCount > 0)
-                    return Ok(new ReturnData(ReturnState.ReturnCode.OK) { data = postData });
-            }
-            catch (Exception ex)
-            {
-                return CreatedAtAction(nameof(Edit), new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
-                {
-                    message = ex.GetOriginalException().ToMeaningfulMessage()
-                });
-            }
+        //        if (opCount > 0)
+        //            return Ok(new ReturnData(ReturnState.ReturnCode.OK) { data = postData });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return CreatedAtAction(nameof(Edit), new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+        //        {
+        //            message = ex.GetOriginalException().ToMeaningfulMessage()
+        //        });
+        //    }
 
-            return CreatedAtAction(nameof(Edit), new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
-            {
-                message = "更新失敗"
-            });
-        }
+        //    return CreatedAtAction(nameof(Edit), new ReturnData(ReturnState.ReturnCode.EDIT_ERROR)
+        //    {
+        //        message = "更新失敗"
+        //    });
+        //}
         [ProcUseRang(ProcNo, ProcUseRang.Delete)]
         public async Task<ActionResult> Delete(string 進銷存組織, string 單據別, DateTime 日期, decimal 流水號)
         {

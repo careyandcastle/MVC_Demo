@@ -30,6 +30,10 @@ namespace MVC_Demo2.Models.ViewModel
 
         public DateTime? 盤點日期 { get; set; }
 
+        //public string 備註 { get; set; }
         public string 備註 { get; set; }
+
+        public string 庫存異動狀態 { get; set; }
+        public bool 是否註記刪除 { get; set; }
     }
 }

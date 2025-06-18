@@ -248,6 +248,36 @@ namespace MVC_Demo2.Controllers
             return PartialView(viewModel);
         }
 
+        [HttpGet("HW_01/依盤點種類取得災害別")]
+        public JsonResult 依盤點種類取得災害別(string 盤點種類)
+        {
+            Debug.WriteLine($"[依盤點種類取得災害別] ▶ 收到盤點種類：{盤點種類}");
+
+            // 判斷此盤點種類是否屬於「災害盤點」
+            var isDisaster = _context.盤點種類
+                .Where(p => p.盤點種類1 == 盤點種類 && p.是否災害盤點)
+                .Any();
+
+            if (!isDisaster)
+            {
+                Debug.WriteLine("[依盤點種類取得災害別] ❌ 非災害盤點，不回傳災害別");
+                return Json(new List<SelectListItem>());
+            }
+
+            // 撈出「未停用」的災害別選項
+            var 災害別選項 = _context.災害別
+                .Where(z => z.是否停用 == false)
+                .Select(z => new SelectListItem
+                {
+                    Value = z.災害別1,
+                    Text = z.災害別1 + "_" + z.災害別名稱
+                })
+                .ToList();
+
+            Debug.WriteLine($"[依盤點種類取得災害別] ✅ 成功，筆數：{災害別選項.Count}");
+            return Json(災害別選項);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Add)]

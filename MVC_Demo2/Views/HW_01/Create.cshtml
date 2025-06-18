@@ -1,4 +1,5 @@
 ﻿@using MVC_Demo2.Models.ViewModel;
+@using MVC_Demo2.Controllers;
 @model HW_01_庫存盤點主檔BasicViewModel
 
 <div>
@@ -18,9 +19,9 @@
                 </div>
 
                 @*<div class="form-group">
-                    <label class="control-label">列帳年月</label>
-                    <input class="form-control" value="@ViewBag.var列帳年月" disabled />
-                </div>*@
+                        <label class="control-label">列帳年月</label>
+                        <input class="form-control" value="@ViewBag.var列帳年月" disabled />
+                    </div>*@
 
                 <div class="form-group">
                     <label class="control-label">日期</label>
@@ -30,15 +31,15 @@
                 @* 不顯示：單據別、流水號、修改人、修改時間 *@
                 <input type="hidden" asp-for="單據別" />
                 <input type="hidden" asp-for="流水號" />
- 
+
                 @*<input type="hidden" asp-for="修改人" />
-                <input type="hidden" asp-for="修改日期時間" />*@
+                    <input type="hidden" asp-for="修改日期時間" />*@
 
                 @*<div class="form-group">
-                    <label asp-for="日期" class="control-label"></label>
-                    <input asp-for="日期" class="form-control" />
-                    <span asp-validation-for="日期" class="text-danger"></span>
-                </div>*@
+                        <label asp-for="日期" class="control-label"></label>
+                        <input asp-for="日期" class="form-control" />
+                        <span asp-validation-for="日期" class="text-danger"></span>
+                    </div>*@
 
                 <div class="form-group">
                     <label asp-for="倉庫代號" class="control-label"></label>
@@ -46,17 +47,32 @@
                     <span asp-validation-for="倉庫代號" class="text-danger"></span>
                 </div>
 
+                @*<div class="form-group">
+                        <label asp-for="盤點種類" class="control-label"></label>
+                        <select asp-for="盤點種類" class="form-control" asp-items="@ViewBag.盤點種類選項"></select>
+                        <span asp-validation-for="盤點種類" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="災害別" class="control-label"></label>
+                        <select asp-for="災害別" class="form-control" asp-items="@ViewBag.災害別選項"></select>
+                        <span asp-validation-for="災害別" class="text-danger"></span>
+                    </div>*@
+
                 <div class="form-group">
                     <label asp-for="盤點種類" class="control-label"></label>
-                    <select asp-for="盤點種類" class="form-control" asp-items="@ViewBag.盤點種類選項"></select>
+                    <select asp-for="盤點種類" class="form-control" asp-items="@ViewBag.盤點種類選項" id="inventory-type-sel"></select>
                     <span asp-validation-for="盤點種類" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
                     <label asp-for="災害別" class="control-label"></label>
-                    <select asp-for="災害別" class="form-control" asp-items="@ViewBag.災害別選項"></select>
+                    @*<select asp-for="災害別" class="form-control" id="disaster-sel"></select>*@
+                    <select asp-for="災害別" class="form-control" asp-items="@ViewBag.災害別選項" id="disaster-sel"></select>
                     <span asp-validation-for="災害別" class="text-danger"></span>
                 </div>
+
+
 
                 <div class="form-group">
                     <label asp-for="盤點人" class="control-label"></label>
@@ -83,3 +99,40 @@
         </div>
     </div>
 </div>
+<script>
+this.$on('fetched-page-modal::ready', () => {
+    console.log("[Modal Ready] 綁定盤點種類下拉選單 change 事件");
+
+    $('#inventory-type-sel').change(function () {
+        const selectedType = $(this).val();
+        console.log(`[ChangeEvent] 使用者選擇盤點種類：${selectedType}`);
+
+        const apiUrl = '@Url.Action("依盤點種類取得災害別", "HW_01")';
+        console.log(`[API] 呼叫 URL：${apiUrl}，參數：{ 盤點種類: "${selectedType}" }`);
+
+        $.get(apiUrl, { 盤點種類: selectedType }, function (data) {
+            const $disasterSel = $('#disaster-sel');
+            $disasterSel.empty();
+            console.log(`[DOM] 已清空災害別下拉選單`);
+
+            if (data.length === 0) {
+                console.log(`[API Response] 此盤點種類無災害別（data.length = 0）`);
+                $disasterSel.append($('<option>').val("").text("（此盤點類型無需選擇災害別）"));
+            } else {
+                console.log(`[API Response] 成功載入災害別選項，共 ${data.length} 筆`);
+                $disasterSel.append($('<option>').val("").text("請選擇災害別"));
+
+                $.each(data, function (_, item) {
+                    $disasterSel.append($('<option></option>')
+                        .val(item.Value)
+                        .text(item.Text));
+                });
+
+                console.log(`[DOM] 已更新災害別選單`);
+            }
+        }).fail(function (xhr, status, error) {
+            console.error(`[API Error] 呼叫失敗：${status} - ${error}`);
+        });
+    });
+});
+</script>

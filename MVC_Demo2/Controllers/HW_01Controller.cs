@@ -111,13 +111,14 @@ namespace MVC_Demo2.Controllers
                     select new HW_01_庫存盤點主檔DisplayViewModel
                     {
                         進銷存組織 = m.進銷存組織,
+                        進銷存組織名稱 = m.進銷存組織 + "_" + m.進銷存組織Navigation.進銷存組織簡稱,
                         單據別 = m.單據別,
                         單據別名稱 = m.單據別 + "_" + m.單據別Navigation.單據別名稱,
                         日期 = m.日期,
                         //日期 = m.日期,
                         流水號 = m.流水號,
                         倉庫代號 = m.倉庫代號,
-                        倉庫名稱 = m.倉庫基本檔.倉庫代號 + "_" + m.倉庫基本檔.倉庫組織,
+                        倉庫代號名稱 = m.倉庫代號 + "_" + m.倉庫基本檔.倉庫簡稱,
                         盤點種類 = m.盤點種類,
                         盤點種類名稱 = m.盤點種類Navigation.盤點種類1,
                         災害別 = m.災害別,
@@ -839,7 +840,18 @@ namespace MVC_Demo2.Controllers
                 message = "資料已不存在"
             });
         }
+        [HttpPost]
+        public async Task<IActionResult> CheckHasDetail([FromBody] HW_01_庫存盤點主檔DisplayViewModel key)
+        {
+            var count = await _context.庫存盤點明細
+                .CountAsync(x =>
+                    x.進銷存組織 == key.進銷存組織 &&
+                    x.單據別 == key.單據別 &&
+                    x.日期.Date == key.日期.Date &&
+                    x.流水號 == key.流水號);
 
+            return Ok(new { count });
+        }
 
 
 

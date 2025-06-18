@@ -77,6 +77,8 @@
                     <b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-modal class="mr-1" variant="detail3">新增</b-button>
                     <b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-edit-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">修改</b-button>
                     <b-button v-if="slot.data.operatePermissions.canDelete" v-b-modal.master-table-del-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow" class="mr-1" variant="detail3">刪除</b-button>
+                    <b-button v-if="slot.data.canClick && slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-1" variant="detail3">輸入個資盤點品項</b-button>
+                    <b-button v-if="slot.data.canClick && slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-2" variant="detail3">產生個資盤點品項</b-button>
                     <b-button v-if="slot.data.operatePermissions.canExport" class="mr-1" variant="detail3" v-on:click="slot.data.onDataExport" isWaitting="!isWaitting" :disabled="!slot.data.operatePermissions.enExport">匯出</b-button>
                     <b-button v-if="slot.data.operatePermissions.canQuery" v-b-modal.master-table-query-modal class="mr-1" variant="detail3">進階查詢</b-button>
                     <!--Master OP Page-->
@@ -92,7 +94,7 @@
                                         id="detail-table-edit-modal" title="修改明細"></fetched-page-modal>
                     <fetched-page-modal url="DeleteDetail" :param="slot.data.selectedDetailRow?.param" close-on-success="true"
                                         id="detail-table-del-modal" title="刪除明細"></fetched-page-modal>
-                     
+
                 </b-col>
             </b-row>
         </template>
@@ -158,7 +160,7 @@
 
                     return latestData;
                 } catch (error) {
-                    debugger;
+                    @*debugger;*@
                     console.error("[DEBUG] 主檔資料來源 發生錯誤", error);
                     return [];
                 }
@@ -235,51 +237,82 @@
             };
 
             // 點擊主檔列觸發：設定明細查詢條件
-                const _onMasterRowSelect = function (rowData) {
-                    console.log("[DEBUG] onMasterRowSelect: 選取主檔", rowData);
-                    debugger;
-                    var selectParam = {
-                        進銷存組織: null,
-                        單據別: null,
-                        日期: null,
-                        流水號: null
-                    };
-
-
-                    @*let rawDate = new Date(data.日期); // 或 parse_zhTW_string(data.日期)
-                    let dateOnly = rawDate.toISOString().substring(0, 10);*@
-
-                    if (rowData.length > 0) {
-                        let data = rowData[0];
-                        console.log("[DEBUG] 傳送明細條件：", {
-                            進銷存組織: data.進銷存組織,
-                            單據別: data.單據別,
-                            @*日期: data.日期,*@
-                            日期: data.日期,
-                            流水號: data.流水號
-                        });
-                        selectParam.進銷存組織 = this.進銷存組織 = data.進銷存組織;
-                        selectParam.單據別 = this.單據別 = data.單據別;
-                        selectParam.日期 = this.日期 = data.日期;
-                        @*selectParam.日期 = this.日期 = dateOnly;*@
-                        selectParam.流水號 = this.流水號 = data.流水號;
-                        this.selectedMasterRow.param = selectParam;
-
-                        // 日期欄轉 ISO 傳送給 server
-                        Object.entries(dateTimePropertyName[TableType.MasterTable]).forEach(([propName, dateType]) => {
-                            let dateLocalestring = data[propName];
-                            if (selectParam.hasOwnProperty(propName) && data.hasOwnProperty(propName) && dateLocalestring) {
-                                selectParam[propName] = this[propName] = Date.parse_zhTW_string(dateLocalestring).toISOString();
-                            }
-                        });
-                    }
-                    else {
-                        console.warn("[DEBUG] 主檔未選擇任何列！");
-                    }
+            const _onMasterRowSelect = function (rowData) {
+                console.log("[DEBUG] onMasterRowSelect: 選取主檔", rowData);
+                @*debugger;*@
+                var selectParam = {
+                    進銷存組織: null,
+                    單據別: null,
+                    日期: null,
+                    流水號: null
                 };
 
+                if (rowData.length > 0) {
+                    let data = rowData[0];
+                    console.log("[DEBUG] 傳送明細條件：", {
+                        進銷存組織: data.進銷存組織,
+                        單據別: data.單據別,
+                        日期: data.日期,
+                        流水號: data.流水號
+                    });
+
+                    selectParam.進銷存組織 = this.進銷存組織 = data.進銷存組織;
+                    selectParam.單據別 = this.單據別 = data.單據別;
+                    selectParam.日期 = this.日期 = data.日期;
+                    selectParam.流水號 = this.流水號 = data.流水號;
+                    this.selectedMasterRow.param = selectParam;
+
+                    // ✅ 日期欄轉 ISO 傳送給 server
+                    Object.entries(dateTimePropertyName[TableType.MasterTable]).forEach(([propName, dateType]) => {
+                        let dateLocalestring = data[propName];
+                        if (selectParam.hasOwnProperty(propName) && data.hasOwnProperty(propName) && dateLocalestring) {
+                            selectParam[propName] = this[propName] = Date.parse_zhTW_string(dateLocalestring).toISOString();
+                        }
+                    });
+
+                    // ✅ 呼叫 API 判斷是否有明細
+
+                    @*axios.post('/HW_01/CheckHasDetail', {
+                        進銷存組織: selectParam.進銷存組織,
+                        單據別: selectParam.單據別,
+                        日期: selectParam.日期,
+                        流水號: selectParam.流水號
+                    }).then(res => {
+                        const count = res.data.count;
+                        const noDetail = count === 0;
+                        Vue.set(data, '無明細', noDetail); // Reactive 設定
+                        console.log(`[DEBUG] 主檔是否無明細：${noDetail ? '✅ 是' : '❌ 否'}（count=${count}）`);
+                         
+
+                    }).catch(err => {
+                        console.error('[ERROR] CheckHasDetail 發生錯誤：', err);
+                    });
+
+                } else {
+                    console.warn("[DEBUG] 主檔未選擇任何列！");
+                }*@
+                    axios.post('/HW_01/CheckHasDetail', selectParam)
+                        .then(res => {
+                            const count = res.data.count;
+                            const noDetail = count === 0;
+
+                            const rowIndex = data.__rowIndex__;
+                            if (rowIndex != null && this.masterData && this.masterData[rowIndex]) {
+                                Vue.set(this.masterData[rowIndex], '無明細', noDetail);
+                                console.log(`[DEBUG] 成功設定無明細：index=${rowIndex}, count=${count}`);
+                            } else {
+                                console.warn(`[WARN] 無法設定無明細，rowIndex 無效或資料不存在：${rowIndex}`);
+                            }
+                        })
+                        .catch(err => {
+                            console.error('[ERROR] CheckHasDetail 發生錯誤：', err);
+                        });
+                }
+            };
+
+
                 // 點擊明細列觸發（如需再利用，可自定後續處理）
-                const _onDetailRowSelect = function (rowData) {
+            const _onDetailRowSelect = function (rowData) {
                     var selectParam = {};
                     let data = rowData[0];
                     selectParam.進銷存組織 = this.進銷存組織 = data.進銷存組織;
@@ -407,6 +440,8 @@
                 isFiltered: false,
                 isNewItemOnTop: true,
 
+                canClick: true,
+
                 // 主檔查詢條件欄位
                 進銷存組織: '',
                 單據別: '',
@@ -436,26 +471,32 @@
                 onCleanFilter: _onCleanFilter,
                 onDataExport: _onDataExport,
                 getClassForMasterContent: function (rowData) {
-                    console.log('🚩 getClassForMasterContent 呼叫，rowData =', rowData);
-
-                    // 完整資料在 rowData.item
                     const item = rowData.item;
+                    @*debugger;*@
+                    @*console.log('🚩 getClassForMasterContent 呼叫', {
+                        key: rowData.field.key,
+                        value: rowData.value,
+                        無明細值: item['無明細'],
+                        全部欄位: item
+                    });*@
 
-                    // 判斷是否註記刪除（顯示紅色）
-                    if (item['是否註記刪除'] === true || item['是否註記刪除'] === '1' || item['是否註記刪除顯示'] === '是') {
-                        console.log('🛑 註記刪除 → text-danger');
-                        return 'text-danger';
+                    if (item['是否註記刪除'] === true || item['是否註記刪除顯示'] === '是') {
+                        return 'text-danger'; // 紅
                     }
 
-                    // 判斷是否完成異動（灰色）
-                    if (item['庫存異動狀態'] === 3 || item['庫存異動狀態'] === '3' || item['庫存異動狀態名稱'] === '完成異動') {
-                        console.log('➡️ 完成異動 → text-muted');
-                        return 'text-muted';
+                    if (item['庫存異動狀態'] === 3 || item['庫存異動狀態名稱'] === '完成異動') {
+                        return 'text-secondary'; // 灰
+                    }
+                    @*debugger;*@
+                    if (item['無明細'] === true) {
+                        return 'text-info'; // 藍
                     }
 
-                    // 預設樣式（無色）
                     return '';
                 }
+
+
+                    
 
                 
 

@@ -8,8 +8,10 @@ namespace MVC_Demo2.Models.ViewModel
     public class HW_01_庫存盤點主檔DisplayViewModel
     {
         [Key]
-        //[HiddenForView]
+        [HiddenForView]
         public string 進銷存組織 { get; set; }
+        [DisplayName("進銷存組織")]
+        public string 進銷存組織名稱 { get; set; }
 
         [Key]
         [HiddenForView]
@@ -30,8 +32,8 @@ namespace MVC_Demo2.Models.ViewModel
         [HiddenForView]
         public string 倉庫代號 { get; set; }
 
-        [DisplayName("倉庫")]
-        public string 倉庫名稱 { get; set; }
+        [DisplayName("倉庫代號")]
+        public string 倉庫代號名稱 { get; set; }
 
         [HiddenForView]
         public string 盤點種類 { get; set; }

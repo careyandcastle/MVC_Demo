@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using TscLibCore.BaseObject;
@@ -30,7 +31,7 @@ namespace MVC_Demo2
             const string syskind = "MVC_Demo";
             //const string syskind = "TRDB";
             ConnectionStrings cs = ConnectionStrings.CreateInstance(syskind);
-            services.AddDbContext<Models.TRDBContext>(builder => builder.UseSqlServer(cs.GetDbConnectionString("TRDB")));
+            //services.AddDbContext<Models.TRDBContext>(builder => builder.UseSqlServer(cs.GetDbConnectionString("TRDB")));
 
             TscLibCore.Startup.ConfigureServices(
               services,
@@ -54,6 +55,26 @@ namespace MVC_Demo2
                 b.AddInterceptors(new BaseDbCommandInterceptor(DB_Name, key.Name, key.PWD));
 
             });
+            services.AddDbContext<Models.TRDBContext>(b => //0528 10:15 修正底層，確保 User @@@11
+            {
+                var DB_Name = "TRDB";
+
+                Debug.WriteLine($"[DbContext註冊階段] ▶ 開始載入資料庫：{DB_Name}");
+
+                var connStr = cs.GetDbConnectionString(DB_Name);
+                Debug.WriteLine($"[DbContext註冊階段] ▶ 連線字串：{connStr}");
+
+                b.UseSqlServer(connStr);
+
+                SymmetricKey key = cs.GetDbSymmetricKey(DB_Name);
+                Debug.WriteLine($"[DbContext註冊階段] ▶ 金鑰名稱：{key.Name}, 密碼長度：{(key.PWD?.Length ?? 0)}");
+
+                b.AddInterceptors(new BaseDbCommandInterceptor(DB_Name, key.Name, key.PWD));
+                Debug.WriteLine($"[DbContext註冊階段] ▶ 已註冊 BaseDbCommandInterceptor 完成");
+            });
+
+
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

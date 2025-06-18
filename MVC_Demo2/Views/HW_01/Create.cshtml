@@ -17,27 +17,28 @@
                     <input type="hidden" asp-for="進銷存組織" />
                 </div>
 
-                <div class="form-group">
+                @*<div class="form-group">
                     <label class="control-label">列帳年月</label>
                     <input class="form-control" value="@ViewBag.var列帳年月" disabled />
-                </div>
+                </div>*@
 
                 <div class="form-group">
-                    <label class="control-label">列帳日期</label>
+                    <label class="control-label">日期</label>
                     <input class="form-control" value="@ViewBag.var列帳日期" disabled />
                 </div>
 
                 @* 不顯示：單據別、流水號、修改人、修改時間 *@
                 <input type="hidden" asp-for="單據別" />
                 <input type="hidden" asp-for="流水號" />
+ 
                 @*<input type="hidden" asp-for="修改人" />
                 <input type="hidden" asp-for="修改日期時間" />*@
 
-                <div class="form-group">
+                @*<div class="form-group">
                     <label asp-for="日期" class="control-label"></label>
                     <input asp-for="日期" class="form-control" />
                     <span asp-validation-for="日期" class="text-danger"></span>
-                </div>
+                </div>*@
 
                 <div class="form-group">
                     <label asp-for="倉庫代號" class="control-label"></label>

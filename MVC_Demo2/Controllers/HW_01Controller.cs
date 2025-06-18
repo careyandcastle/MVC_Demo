@@ -201,9 +201,11 @@ namespace MVC_Demo2.Controllers
             ViewBag.var列帳日期 = date;
 
             var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
-
+            //DateTime 列帳日期a = DateTime.Now; // 可自行實作，也可以用 DateTime.Today;
             var viewModel = new HW_01_庫存盤點主檔BasicViewModel
-            {};
+            {
+                //日期 = DateTime.Now
+            };
 
             // ===== 倉庫代號下拉選單 =====
             var 倉庫選項 = await _context.倉庫基本檔

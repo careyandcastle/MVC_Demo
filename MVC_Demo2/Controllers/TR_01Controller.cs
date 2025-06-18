@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -301,6 +302,35 @@ namespace MVC_Demo2.Controllers
         // POST: TR_01/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
+        public IActionResult 依單位取得部門選單(string 單位)
+        {
+            Debug.WriteLine($"[依單位取得部門選單] ▶ 收到單位參數：{單位}");
+
+            if (string.IsNullOrEmpty(單位))
+            {
+                Debug.WriteLine("[依單位取得部門選單] ⚠️ 傳入單位為空，回傳 404");
+                return NotFound();
+            }
+
+            var 部門選項 = _context.部門
+                .Where(s => s.單位 == 單位 && s.組織狀態)
+                .Select(s => new SelectListItem
+                {
+                    Value = s.部門1,
+                    Text = s.部門1 + "_" + s.部門名稱,
+                })
+                .ToList(); // ✅ 要 ToList() 才能正確判斷是否為空
+
+            if (部門選項 == null || !部門選項.Any())
+            {
+                Debug.WriteLine($"[依單位取得部門選單] ⚠️ 查無符合部門資料（單位：{單位}），回傳 404");
+                return NotFound();
+            }
+
+            Debug.WriteLine($"[依單位取得部門選單] ✅ 查詢成功，回傳部門數量：{部門選項.Count}");
+            return Json(部門選項);
+        }
 
 
         [HttpPost]

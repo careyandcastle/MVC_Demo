@@ -1,5 +1,6 @@
 ﻿@*@model  @using MVC_Demo2.Models.ViewModel.TR_01_部門CreateViewModel*@
 @using MVC_Demo2.Models.ViewModel;
+@using MVC_Demo2.Controllers
 @model TR_01_部門CreateViewModel
 <div>
     <div class="row">
@@ -13,16 +14,22 @@
 
                 <div class="form-group">
                     <label asp-for="單位" class="control-label"></label>
-                    <select asp-for="單位" class="form-control" asp-items="@ViewBag.單位選項">
+                    <select asp-for="單位" class="form-control" asp-items="@ViewBag.單位選項" id="dep-sel">
                     </select>
                     @*<--我們透過viewbag輸入單位-->*@
                     @*一個單位底下有很多部門(eg 總管理處下方有資訊處、會計處...，所以會是一個select選單。選項來自viewbag.單位選項。)*@
                     <span asp-validation-for="單位" class="text-danger"></span>
                 </div>
 
+                @*<div class="form-group">
+                        <label asp-for="部門" class="control-label"></label>
+                        <input asp-for="部門" class="form-control" />
+                        <span asp-validation-for="部門" class="text-danger"></span>
+                    </div>*@
                 <div class="form-group">
                     <label asp-for="部門" class="control-label"></label>
-                    <input asp-for="部門" class="form-control" />
+                    <select asp-for="部門" class="form-control" id="bra-sel"></select>
+                    @*<input asp-for="部門" class="form-control" />*@
                     <span asp-validation-for="部門" class="text-danger"></span>
                 </div>
 
@@ -39,3 +46,36 @@
         </div>
     </div>
 </div>
+<script>
+this.$on('fetched-page-modal::ready', (modalId) => {
+    console.log(`[Modal Ready] Modal ID: ${modalId} - 綁定部門下拉選單 change 事件`);
+
+    $('#dep-sel').change(function () {
+        let selectedUnit = $(this).val(); // ✅ 正確命名：單位
+        console.log(`[ChangeEvent] 使用者選擇單位：${selectedUnit}`);
+
+        let apiUrl = '@Url.Action("依單位取得部門選單", "TR_01")'; // ✅ 改為字串方式
+        console.log(`[API] 呼叫 URL：${apiUrl}，參數：{ 單位: ${selectedUnit} }`);
+
+        $.get(apiUrl,
+            { 單位: selectedUnit }, // ✅ 正確傳遞參數名稱
+            function (data) {
+                console.log(`[API Response] 回傳資料筆數：${data.length}`);
+                console.debug(data);
+
+                // 清空分部下拉選單
+                $('#bra-sel').empty();
+                $('#bra-sel').append($('<option></option>').val("").text("請選擇部門")); // ✅ 預設提示
+
+                // 加入查詢結果
+                $.each(data, function (_, item) {
+                    $('#bra-sel').append($('<option></option>')
+                        .val(item.Value)
+                        .text(item.Text));
+                });
+
+                console.log(`[DOM] 已更新部門選項完成`);
+            });
+    });
+});
+</script>

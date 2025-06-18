@@ -202,36 +202,8 @@ namespace MVC_Demo2.Controllers
 
             var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
 
-            // 取得列帳日（假設你已存在方法或變數）
-            //DateTime 列帳日期 = await Get列帳日期Async(); // 可自行實作，也可以用 DateTime.Today;
-            DateTime 列帳日期 = DateTime.Today; // 可自行實作，也可以用 DateTime.Today;
-
-            // 查詢資料
-            //var model = await _context.庫存盤點主檔
-            //    .Include(m => m.倉庫基本檔)
-            //    .Include(m => m.盤點種類Navigation)
-            //    .Include(m => m.災害別Navigation)
-            //    .Include(m => m.庫存異動狀態Navigation)
-            //    .Include(m => m.單據別Navigation)
-            //    .Include(m => m.進銷存組織Navigation)
-            //    .Where(m =>
-            //        m.進銷存組織 == 進銷存組織 &&
-            //        m.單據別 == 單據別 &&
-            //        m.日期 == 日期 &&
-            //        m.流水號 == 流水號)
-            //    .SingleOrDefaultAsync();
-
-            //ViewBag.單據別名稱 = model.進銷存組織 + "_" + model.進銷存組織Navigation.進銷存組織簡稱;
-            //進銷存組織名稱 = m.進銷存組織 + "_" + m.進銷存組織Navigation.進銷存組織簡稱,
-
             var viewModel = new HW_01_庫存盤點主檔BasicViewModel
-            {
-                進銷存組織 = ua.BusinessNo,
-                //進銷存組織 = 進銷存組織,
-                //進銷存組織 = 進銷存組織,
-                單據別 = "INV", // 固定 INV
-                日期 = 列帳日期
-            };
+            {};
 
             // ===== 倉庫代號下拉選單 =====
             var 倉庫選項 = await _context.倉庫基本檔
@@ -368,6 +340,16 @@ namespace MVC_Demo2.Controllers
 
             // 使用 AutoMapper 映射到 EditViewModel
             var viewModel = _mapper.Map<庫存盤點主檔, HW_01_庫存盤點主檔EditViewModel>(model);
+
+            var (org, period, date) = InitInventoryDefaultValues();
+            ViewBag.var進銷存組織 = org;
+            ViewBag.var列帳年月 = period;
+            ViewBag.var列帳日期 = date;
+
+            var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+
+            //var viewModel = new HW_01_庫存盤點主檔BasicViewModel
+            //{ };
 
             // 預備倉庫下拉（含條件）
             ViewBag.倉庫代號選項 = await _context.倉庫基本檔

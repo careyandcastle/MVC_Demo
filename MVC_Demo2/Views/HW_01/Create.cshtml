@@ -10,20 +10,28 @@
                     <ul></ul>
                 </div>
 
-                @* 固定填入進銷存組織與單據別 *@
+                @* 顯示用：進銷存組織、列帳年月、列帳日期 *@
                 <div class="form-group">
-                    <label asp-for="進銷存組織" class="control-label"></label>
-                    <input asp-for="進銷存組織" class="form-control" disabled />
-                    @Html.HiddenFor(model => model.進銷存組織)
+                    <label class="control-label">進銷存組織</label>
+                    <input class="form-control" value="@ViewBag.var進銷存組織" disabled />
+                    <input type="hidden" asp-for="進銷存組織" />
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="單據別" class="control-label"></label>
-                    <input asp-for="單據別" class="form-control" disabled />
-                    @Html.HiddenFor(model => model.單據別)
+                    <label class="control-label">列帳年月</label>
+                    <input class="form-control" value="@ViewBag.var列帳年月" disabled />
                 </div>
 
-                @*其他*@
+                <div class="form-group">
+                    <label class="control-label">列帳日期</label>
+                    <input class="form-control" value="@ViewBag.var列帳日期" disabled />
+                </div>
+
+                @* 不顯示：單據別、流水號、修改人、修改時間 *@
+                <input type="hidden" asp-for="單據別" />
+                <input type="hidden" asp-for="流水號" />
+                @*<input type="hidden" asp-for="修改人" />
+                <input type="hidden" asp-for="修改日期時間" />*@
 
                 <div class="form-group">
                     <label asp-for="日期" class="control-label"></label>

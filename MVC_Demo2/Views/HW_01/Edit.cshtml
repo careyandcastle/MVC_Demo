@@ -19,50 +19,34 @@
                 @* 顯示主鍵欄位（只讀） *@
                 <div class="form-group">
                     <label asp-for="進銷存組織" class="control-label"></label>
-                    <input class="form-control" value="@Model.進銷存組織" readonly disabled />
+                    <input asp-for="進銷存組織" class="form-control" readonly />
                 </div>
 
                 <div class="form-group">
                     <label asp-for="單據別" class="control-label"></label>
-                    <input class="form-control" value="@Model.單據別" readonly disabled />
+                    <input asp-for="單據別" class="form-control" readonly />
                 </div>
 
                 <div class="form-group">
                     <label asp-for="日期" class="control-label"></label>
-                    <input class="form-control" value="@Model.日期.ToString("yyyy-MM-dd")" readonly disabled />
+                    <input asp-for="日期" class="form-control" readonly />
                 </div>
 
                 <div class="form-group">
                     <label asp-for="流水號" class="control-label"></label>
-                    <input class="form-control" value="@Model.流水號" readonly disabled />
+                    <input asp-for="流水號" class="form-control" readonly />
                 </div>
 
-                @* 下拉選單 - 倉庫代號 *@
                 <div class="form-group">
                     <label asp-for="倉庫代號" class="control-label"></label>
                     <select asp-for="倉庫代號" class="form-control" asp-items="ViewBag.倉庫代號選項"></select>
                     <span asp-validation-for="倉庫代號" class="text-danger"></span>
                 </div>
 
-                @* 下拉選單 - 盤點種類 *@
-                <!--<div class="form-group">
-                    <label asp-for="盤點種類" class="control-label"></label>
-                    <select asp-for="盤點種類" class="form-control" v-on:change="on盤點種類變更" asp-items="ViewBag.盤點種類選項"></select>
-                    <span asp-validation-for="盤點種類" class="text-danger"></span>
-                </div>-->
-                @* 下拉選單 - 災害別（視盤點種類決定顯示） *@
-                <!--<div class="form-group" v-show="show災害別">
-                    <label asp-for="災害別" class="control-label"></label>
-                    <select asp-for="災害別" class="form-control" v-bind:disabled="!災害別選項.length" asp-items="ViewBag.災害別選項"></select>
-                    <span asp-validation-for="災害別" class="text-danger"></span>
-                </div>-->
                 <div class="form-group">
                     <label asp-for="盤點種類" class="control-label"></label>
-                    <select asp-for="盤點種類"
-                            class="form-control"
-                            asp-items="ViewBag.盤點種類選項"
-                            v-on:change="on盤點種類變更">
-                    </select>
+                    <select asp-for="盤點種類" class="form-control" asp-items="ViewBag.盤點種類選項" v-on:change="on盤點種類變更"></select>
+                    <span asp-validation-for="盤點種類" class="text-danger"></span>
                 </div>
 
                 <div class="form-group" v-if="show災害別">
@@ -74,12 +58,12 @@
 
                 <div class="form-group">
                     <label asp-for="盤點人" class="control-label"></label>
-                    <input asp-for="盤點人" class="form-control" readonly disabled />
+                    <input asp-for="盤點人" class="form-control" readonly />
                 </div>
 
                 <div class="form-group">
                     <label asp-for="盤點日期" class="control-label"></label>
-                    <input asp-for="盤點日期" class="form-control" readonly disabled />
+                    <input asp-for="盤點日期" class="form-control" readonly />
                 </div>
 
                 <div class="form-group">
@@ -98,21 +82,18 @@
 
 @section Scripts {
     <script>
-        // 將後端提供的下拉選單資料轉為前端 JavaScript 變數
         const 初始盤點種類選項 = @Html.Raw(Json.Serialize(ViewBag.盤點種類選項));
         const 初始災害別選項 = @Html.Raw(Json.Serialize(ViewBag.災害別選項));
 
         const vm = new Vue({
             el: '#hw_01-edit',
             data: {
-                show災害別: @((Model.災害別 != null).ToString().ToLower()), // 根據是否已選擇災害別預設顯示與否
-                災害別選項: 初始災害別選項 // 初始載入的災害別下拉資料
+                show災害別: @((Model.災害別 != null).ToString().ToLower()),
+                災害別選項: 初始災害別選項
             },
             methods: {
                 async on盤點種類變更(event) {
                     const selected = event.target.value;
-
-                    // 若未選擇盤點種類，則隱藏災害別並清空選項
                     if (!selected) {
                         this.show災害別 = false;
                         this.災害別選項 = [];
@@ -121,7 +102,6 @@
                     }
 
                     try {
-                        // 呼叫後端 API 載入災害別資料
                         const res = await axios.get('@Url.Action("Get災害別選項", "HW_01")', {
                             params: { 盤點種類: selected }
                         });
@@ -129,7 +109,6 @@
                         this.災害別選項 = res.data.options || [];
                         this.show災害別 = res.data.show;
 
-                        // 若災害別不顯示，清除欄位值
                         if (!this.show災害別) {
                             this.clear災害別欄位();
                         }
@@ -150,4 +129,3 @@
 
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }
-

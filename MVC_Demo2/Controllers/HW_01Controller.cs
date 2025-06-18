@@ -27,6 +27,10 @@ namespace MVC_Demo2.Controllers
         private static IConfigurationProvider _config;
         private static IMapper _mapper;
 
+        //public string var進銷存組織;
+        //public string var列帳年月;
+        //public string var列帳日期;
+
         public HW_01Controller(TRDBContext context)
         {
             _context = context;
@@ -72,10 +76,59 @@ namespace MVC_Demo2.Controllers
 
             });
             _mapper = _config.CreateMapper();
+
         }
+
+        // ✅ 這裡是 InitInventoryDefaultValues() 的正確位置
+        private (string org, string period, string date) InitInventoryDefaultValues()
+        {
+            var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+            if (ua == null)
+            {
+                Debug.WriteLine("[InitInventoryDefaultValues] ⚠️ 無法從 Session 取得使用者帳號資訊");
+                return (null, null, null);
+            }
+
+            Debug.WriteLine($"[InitInventoryDefaultValues] ▶ Session 取得成功：事業={ua.BusinessNo}, 單位={ua.DepartmentNo}, 部門={ua.DivisionNo}, 分部={ua.BranchNo}");
+
+            var orgRecord = _context.進銷存組織
+                .Where(x =>
+                    x.列帳事業 == ua.BusinessNo &&
+                    (string.IsNullOrEmpty(x.列帳單位) || x.列帳單位 == ua.DepartmentNo) &&
+                    (string.IsNullOrEmpty(x.列帳部門) || x.列帳部門 == ua.DivisionNo) &&
+                    (string.IsNullOrEmpty(x.列帳分部) || x.列帳分部 == ua.BranchNo) &&
+                    x.是否物流組織 == false
+                )
+                .OrderByDescending(x =>
+                    (x.列帳事業 + x.列帳單位 + x.列帳部門 + x.列帳分部).Length
+                )
+                .FirstOrDefault();
+
+            if (orgRecord == null)
+            {
+                Debug.WriteLine("[InitInventoryDefaultValues] ⚠️ 找不到符合條件的進銷存組織資料");
+                return (null, null, null);
+            }
+
+            Debug.WriteLine($"[InitInventoryDefaultValues] ✅ 找到組織：代號={orgRecord.進銷存組織1}, 列帳日={orgRecord.列帳日期:yyyy-MM-dd}");
+
+            string org = orgRecord.進銷存組織1;
+            string period = orgRecord.列帳日期.ToString("yyyyMM");
+            string date = orgRecord.列帳日期.ToString("yyyy-MM-dd");
+
+            Debug.WriteLine($"[InitInventoryDefaultValues] ▶ 回傳值：org={org}, period={period}, date={date}");
+
+            return (org, period, date);
+        }
+
 
         public IActionResult Index()
         {
+            var (org, period, date) = InitInventoryDefaultValues();
+            ViewBag.var進銷存組織 = org;
+            ViewBag.var列帳年月 = period;
+            ViewBag.var列帳日期 = date;
+
             ViewBag.TableFieldDescDict = new CreateTableFieldsDescription()
                 .Create<HW_01_庫存盤點主檔DisplayViewModel, HW_01_庫存盤點明細檔DisplayViewModel>();
             return View();
@@ -141,15 +194,41 @@ namespace MVC_Demo2.Controllers
 
         public async Task<IActionResult> Create()
         {
+
+            var (org, period, date) = InitInventoryDefaultValues();
+            ViewBag.var進銷存組織 = org;
+            ViewBag.var列帳年月 = period;
+            ViewBag.var列帳日期 = date;
+
             var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
 
             // 取得列帳日（假設你已存在方法或變數）
             //DateTime 列帳日期 = await Get列帳日期Async(); // 可自行實作，也可以用 DateTime.Today;
             DateTime 列帳日期 = DateTime.Today; // 可自行實作，也可以用 DateTime.Today;
 
+            // 查詢資料
+            //var model = await _context.庫存盤點主檔
+            //    .Include(m => m.倉庫基本檔)
+            //    .Include(m => m.盤點種類Navigation)
+            //    .Include(m => m.災害別Navigation)
+            //    .Include(m => m.庫存異動狀態Navigation)
+            //    .Include(m => m.單據別Navigation)
+            //    .Include(m => m.進銷存組織Navigation)
+            //    .Where(m =>
+            //        m.進銷存組織 == 進銷存組織 &&
+            //        m.單據別 == 單據別 &&
+            //        m.日期 == 日期 &&
+            //        m.流水號 == 流水號)
+            //    .SingleOrDefaultAsync();
+
+            //ViewBag.單據別名稱 = model.進銷存組織 + "_" + model.進銷存組織Navigation.進銷存組織簡稱;
+            //進銷存組織名稱 = m.進銷存組織 + "_" + m.進銷存組織Navigation.進銷存組織簡稱,
+
             var viewModel = new HW_01_庫存盤點主檔BasicViewModel
             {
                 進銷存組織 = ua.BusinessNo,
+                //進銷存組織 = 進銷存組織,
+                //進銷存組織 = 進銷存組織,
                 單據別 = "INV", // 固定 INV
                 日期 = 列帳日期
             };
@@ -182,11 +261,15 @@ namespace MVC_Demo2.Controllers
             var 盤點人選項 = await _context.修改人
                 .Select(s => new SelectListItem
                 {
-                    Text = s.修改人1 + "_" + System.Text.Encoding.UTF8.GetString(s.姓名),
+                    //Text = s.修改人1 + "_" + System.Text.Encoding.UTF8.GetString(s.姓名),
+                    Text = s.修改人1 + "_" + CustomSqlFunctions.DecryptToString(s.姓名),
+                     //System.Text.Encoding.UTF8.GetString(s.姓名),
                     Value = s.修改人1
                 }).ToListAsync();
             盤點人選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
             ViewBag.盤點人選項 = 盤點人選項;
+
+            
 
             return PartialView(viewModel);
         }
@@ -266,18 +349,17 @@ namespace MVC_Demo2.Controllers
 
             // 讀取主檔資料
             var model = await _context.庫存盤點主檔
-    .Include(x => x.倉庫基本檔)
-    .Include(x => x.盤點種類Navigation)
-    .Include(x => x.災害別Navigation)
-    .Include(x => x.庫存異動狀態Navigation)
-    .Include(x => x.進銷存組織Navigation)
-    .Where(x =>
-        x.進銷存組織 == 進銷存組織 &&
-        x.單據別 == 單據別 &&
-        x.日期 == 日期 &&
-        x.流水號 == 流水號)
-    .SingleOrDefaultAsync();
-
+                .Include(x => x.倉庫基本檔)
+                .Include(x => x.盤點種類Navigation)
+                .Include(x => x.災害別Navigation)
+                .Include(x => x.庫存異動狀態Navigation)
+                .Include(x => x.進銷存組織Navigation)
+                .Where(x =>
+                    x.進銷存組織 == 進銷存組織 &&
+                    x.單據別 == 單據別 &&
+                    x.日期 == 日期 &&
+                    x.流水號 == 流水號)
+                .SingleOrDefaultAsync();
 
             if (model == null)
             {
@@ -287,29 +369,34 @@ namespace MVC_Demo2.Controllers
             // 使用 AutoMapper 映射到 EditViewModel
             var viewModel = _mapper.Map<庫存盤點主檔, HW_01_庫存盤點主檔EditViewModel>(model);
 
-            // 預備下拉選單資料
+            // 預備倉庫下拉（含條件）
             ViewBag.倉庫代號選項 = await _context.倉庫基本檔
-                //.Where(w => w.是否裁撤 == false && w.是否暫停使用 == false)
+                .Where(w =>
+                    w.是否裁撤 == false &&
+                    w.是否暫停入庫 == false &&
+                    w.是否暫停出庫 == false &&
+                    w.是否允許負庫存銷售 == true)
                 .OrderBy(o => o.倉庫代號)
                 .Select(s => new SelectListItem
                 {
-                    Text = s.倉庫代號 + "_" + s.倉庫名稱,
+                    Text = s.倉庫代號 + "_" + s.倉庫簡稱,
                     Value = s.倉庫代號
                 })
                 .ToListAsync();
 
+            // 預備盤點種類下拉
             ViewBag.盤點種類選項 = await _context.盤點種類
-    .Where(w => !w.是否停用)
-    .Select(s => new SelectListItem
-    {
-        Text = s.盤點種類1 + "_" + s.盤點種類名稱,
-        Value = s.盤點種類1
-    }).ToListAsync();
-
+                .Where(w => !w.是否停用)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.盤點種類1 + "_" + s.盤點種類名稱,
+                    Value = s.盤點種類1
+                })
+                .ToListAsync();
 
             var 選取的盤點種類值 = model.盤點種類;
 
-            // 根據盤點種類，判斷是否需要災害別下拉
+            // 判斷是否需要災害別下拉
             var 是否災害盤點 = await _context.盤點種類
                 .Where(x => x.盤點種類1 == 選取的盤點種類值)
                 .Select(x => x.是否災害盤點)
@@ -317,14 +404,14 @@ namespace MVC_Demo2.Controllers
 
             if (是否災害盤點)
             {
-                // 載入災害別下拉選單
                 var 災害別選項 = await _context.災害別
                     .Where(x => !x.是否停用)
                     .Select(x => new SelectListItem
                     {
                         Text = x.災害別1 + "_" + x.災害別名稱,
                         Value = x.災害別1
-                    }).ToListAsync();
+                    })
+                    .ToListAsync();
 
                 災害別選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
                 ViewBag.災害別選項 = 災害別選項;
@@ -336,7 +423,6 @@ namespace MVC_Demo2.Controllers
 
             return PartialView(viewModel);
         }
-
         [HttpGet]
         [ProcUseRang(ProcNo, ProcUseRang.Update)]
         public async Task<IActionResult> EditDetail(string 進銷存組織, string 單據別, DateTime 日期, decimal 流水號, decimal 項次)

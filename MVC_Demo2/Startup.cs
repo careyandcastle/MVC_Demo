@@ -59,18 +59,18 @@ namespace MVC_Demo2
             {
                 var DB_Name = "TRDB";
 
-                Debug.WriteLine($"[DbContext註冊階段] ▶ 開始載入資料庫：{DB_Name}");
+                //Debug.WriteLine($"[DbContext註冊階段] ▶ 開始載入資料庫：{DB_Name}");
 
                 var connStr = cs.GetDbConnectionString(DB_Name);
-                Debug.WriteLine($"[DbContext註冊階段] ▶ 連線字串：{connStr}");
+                //Debug.WriteLine($"[DbContext註冊階段] ▶ 連線字串：{connStr}");
 
                 b.UseSqlServer(connStr);
 
                 SymmetricKey key = cs.GetDbSymmetricKey(DB_Name);
-                Debug.WriteLine($"[DbContext註冊階段] ▶ 金鑰名稱：{key.Name}, 密碼長度：{(key.PWD?.Length ?? 0)}");
+                //Debug.WriteLine($"[DbContext註冊階段] ▶ 金鑰名稱：{key.Name}, 密碼長度：{(key.PWD?.Length ?? 0)}");
 
                 b.AddInterceptors(new BaseDbCommandInterceptor(DB_Name, key.Name, key.PWD));
-                Debug.WriteLine($"[DbContext註冊階段] ▶ 已註冊 BaseDbCommandInterceptor 完成");
+                //Debug.WriteLine($"[DbContext註冊階段] ▶ 已註冊 BaseDbCommandInterceptor 完成");
             });
 
 

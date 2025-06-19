@@ -862,14 +862,30 @@ namespace MVC_Demo2.Controllers
         }
 
 
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Delete)]
         public async Task<IActionResult> DeleteConfirmed([Bind("進銷存組織,單據別,日期,流水號")] HW_01_庫存盤點主檔DisplayViewModel postData)
         {
-            //if (postData.進銷存組織 == null || postData.單據別名稱 == null)
-            if (postData.進銷存組織 == null || postData.單據別 == null)
-                return NotFound();
+            Debug.WriteLine("[DeleteConfirmed] ▶ 收到刪除確認請求");
+
+            if (postData == null)
+            {
+                Debug.WriteLine("[DeleteConfirmed] ❌ postData 為 null");
+                return BadRequest(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR) { message = "參數為空" });
+            }
+
+            Debug.WriteLine($"    進銷存組織 = {postData.進銷存組織}");
+            Debug.WriteLine($"    單據別     = {postData.單據別}");
+            Debug.WriteLine($"    日期       = {postData.日期:yyyy-MM-dd}");
+            Debug.WriteLine($"    流水號     = {postData.流水號}");
+
+            if (string.IsNullOrWhiteSpace(postData.進銷存組織) || string.IsNullOrWhiteSpace(postData.單據別) || postData.日期 == default)
+            {
+                Debug.WriteLine("[DeleteConfirmed] ❌ 參數遺失或格式不正確");
+                return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
+            }
 
             try
             {
@@ -882,22 +898,33 @@ namespace MVC_Demo2.Controllers
                     .SingleOrDefaultAsync();
 
                 if (model == null)
-                    return NotFound();
+                {
+                    Debug.WriteLine("[DeleteConfirmed] ❌ 查無資料");
+                    return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
+                }
+
+                Debug.WriteLine("[DeleteConfirmed] ✅ 成功找到資料，準備刪除");
 
                 _context.庫存盤點主檔.Remove(model);
                 int opCount = await _context.SaveChangesAsync();
+
+                Debug.WriteLine($"[DeleteConfirmed] ✅ 刪除完成，筆數：{opCount}");
 
                 if (opCount > 0)
                     return Ok(new ReturnData(ReturnState.ReturnCode.OK));
             }
             catch (Exception ex)
             {
+                var realEx = ex.GetOriginalException();
+                Debug.WriteLine($"[DeleteConfirmed] ❌ 發生例外：{realEx.ToMeaningfulMessage()}");
+
                 return CreatedAtAction(nameof(DeleteConfirmed), new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
                 {
-                    message = ex.GetOriginalException().ToMeaningfulMessage()
+                    message = realEx.ToMeaningfulMessage()
                 });
             }
 
+            Debug.WriteLine("[DeleteConfirmed] ❌ 未知錯誤或資料已不存在");
             return CreatedAtAction(nameof(DeleteConfirmed), new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
             {
                 message = "資料已不存在"

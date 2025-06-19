@@ -26,11 +26,7 @@ namespace MVC_Demo2.Controllers
         private const string ProcNo = "HW_01";
         private static IConfigurationProvider _config;
         private static IMapper _mapper;
-
-        //public string var進銷存組織;
-        //public string var列帳年月;
-        //public string var列帳日期;
-
+ 
         public HW_01Controller(TRDBContext context)
         {
             _context = context;
@@ -80,21 +76,18 @@ namespace MVC_Demo2.Controllers
         }
 
         // ✅ 這裡是 InitInventoryDefaultValues() 的正確位置
-        private (string org, string period, string date) InitInventoryDefaultValues()
+        private (string org, string period, string date, DateTime format_date, string userNo, string businessNo, string departmentNo, string divisionNo, string branchNo) InitInventoryDefaultValues()
         {
             var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
             if (ua == null)
             {
                 Debug.WriteLine("[InitInventoryDefaultValues] ⚠️ 無法從 Session 取得使用者帳號資訊");
-                return (null, null, null);
+                return (null, null, null, default(DateTime), null, null, null, null, null);
             }
-
-            Debug.WriteLine($"[InitInventoryDefaultValues] ▶ Session 取得成功：事業={ua.BusinessNo}, 單位={ua.DepartmentNo}, 部門={ua.DivisionNo}, 分部={ua.BranchNo}");
-
+ 
             var orgRecord = _context.進銷存組織
                 .Where(x =>
-                    x.列帳事業 == ua.BusinessNo &&
-                    (string.IsNullOrEmpty(x.列帳單位) || x.列帳單位 == ua.DepartmentNo) &&
+                    x.列帳事業 == ua.BusinessNo && x.列帳單位 == ua.DepartmentNo &&
                     (string.IsNullOrEmpty(x.列帳部門) || x.列帳部門 == ua.DivisionNo) &&
                     (string.IsNullOrEmpty(x.列帳分部) || x.列帳分部 == ua.BranchNo) &&
                     x.是否物流組織 == false
@@ -107,24 +100,27 @@ namespace MVC_Demo2.Controllers
             if (orgRecord == null)
             {
                 Debug.WriteLine("[InitInventoryDefaultValues] ⚠️ 找不到符合條件的進銷存組織資料");
-                return (null, null, null);
+                return (null, null, null, default(DateTime), ua.UserNo, ua.BusinessNo, ua.DepartmentNo, ua.DivisionNo, ua.BranchNo);
             }
-
-            Debug.WriteLine($"[InitInventoryDefaultValues] ✅ 找到組織：代號={orgRecord.進銷存組織1}, 列帳日={orgRecord.列帳日期:yyyy-MM-dd}");
 
             string org = orgRecord.進銷存組織1;
             string period = orgRecord.列帳日期.ToString("yyyyMM");
             string date = orgRecord.列帳日期.ToString("yyyy-MM-dd");
 
-            Debug.WriteLine($"[InitInventoryDefaultValues] ▶ 回傳值：org={org}, period={period}, date={date}");
+            //Debug.WriteLine($"[InitInventoryDefaultValues] ✅ 組織代號={org}, 列帳年月={period}, 列帳日期={date}");
+            //Debug.WriteLine($"[Create] ▶ 使用者帳號={userNo}，組織代號={org}，年月={period}，列帳日期={date}，格式日期{formate_date}，事業={biz}，單位={dept}，部門={div}，分部={branch}");
+            Debug.WriteLine($"[Create] ▶ 使用者帳號={ ua.UserNo}，組織代號={org}，年月={period}，列帳日期={date}，格式日期{orgRecord.列帳日期}，事業={ ua.BusinessNo}，單位={ua.DepartmentNo}，部門={ ua.DivisionNo}，分部={ua.BranchNo}");
 
-            return (org, period, date);
+            return (org, period, date, orgRecord.列帳日期, ua.UserNo, ua.BusinessNo, ua.DepartmentNo, ua.DivisionNo, ua.BranchNo);
         }
 
 
         public IActionResult Index()
         {
-            var (org, period, date) = InitInventoryDefaultValues();
+            var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+
+            Debug.WriteLine($"[Create] ▶ 使用者帳號={userNo}，組織代號={org}，年月={period}，日期={date}，事業={biz}，單位={dept}，部門={div}，分部={branch}");
+
             ViewBag.var進銷存組織 = org;
             ViewBag.var列帳年月 = period;
             ViewBag.var列帳日期 = date;
@@ -161,6 +157,8 @@ namespace MVC_Demo2.Controllers
                         .Include(m => m.進銷存組織Navigation)
                     join u in _context.修改人 on m.修改人 equals u.修改人1 into ujoin
                     from _u in ujoin.DefaultIfEmpty()
+                    join pi in _context.修改人 on m.盤點人 equals pi.修改人1 into pijoin
+                    from _pi in pijoin.DefaultIfEmpty()
                     select new HW_01_庫存盤點主檔DisplayViewModel
                     {
                         進銷存組織 = m.進銷存組織,
@@ -168,7 +166,6 @@ namespace MVC_Demo2.Controllers
                         單據別 = m.單據別,
                         單據別名稱 = m.單據別 + "_" + m.單據別Navigation.單據別名稱,
                         日期 = m.日期,
-                        //日期 = m.日期,
                         流水號 = m.流水號,
                         倉庫代號 = m.倉庫代號,
                         倉庫代號名稱 = m.倉庫代號 + "_" + m.倉庫基本檔.倉庫簡稱,
@@ -177,7 +174,7 @@ namespace MVC_Demo2.Controllers
                         災害別 = m.災害別,
                         災害別名稱 = m.災害別 + "_" + m.災害別Navigation.災害別名稱,
                         盤點人 = m.盤點人,
-                        盤點人姓名 = m.盤點人 + "_" + CustomSqlFunctions.DecryptToString(_u.姓名), // <- 若有帳號表可加入
+                        盤點人姓名 = m.盤點人 + "_" + CustomSqlFunctions.DecryptToString(_pi.姓名), // <- 若有帳號表可加入
                         備註 = m.備註,
                         盤點日期 = m.盤點日期,
                         庫存異動狀態 = m.庫存異動狀態,
@@ -194,35 +191,33 @@ namespace MVC_Demo2.Controllers
 
         public async Task<IActionResult> Create()
         {
-            var (org, period, date) = InitInventoryDefaultValues();
+            var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+
+            Debug.WriteLine($"[Create] ▶ 使用者帳號={userNo}，組織代號={org}，年月={period}，日期={date}，格式日期{formate_date}，事業={biz}，單位={dept}，部門={div}，分部={branch}");
+
             ViewBag.var進銷存組織 = org;
-            ViewBag.var列帳年月 = period;
             ViewBag.var列帳日期 = date;
-
-            Debug.WriteLine($"[Create] ▶ 初始化組織參數：org={org}, period={period}, date={date}");
-
-            var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
-            Debug.WriteLine($"[Create] ▶ 使用者帳號：{ua?.UserNo}");
 
             var viewModel = new HW_01_庫存盤點主檔BasicViewModel
             {
-                日期 = date,
+                日期 = formate_date,
                 庫存異動狀態 = "0",   // ✅ 初始狀態為「未異動」
                 是否註記刪除 = false,
                 進銷存組織 = org,
                 單據別 = "INV",
                 流水號 = 0
             };
+ 
 
-            // ===== 倉庫代號下拉選單 =====
-            var 倉庫選項 = await _context.倉庫基本檔
-                //.Where(s => s.是否暫停 == false && s.是否裁撤 == false)
-                .Select(s => new SelectListItem
-                {
-                    Text = s.倉庫代號 + "_" + s.倉庫名稱,
-                    Value = s.倉庫代號
-                }).ToListAsync();
+            var 倉庫選項 = await Get倉庫選項Async(biz, dept, div, branch);
 
+            // 🔍 除錯輸出：顯示符合條件的倉庫筆數與清單
+            Debug.WriteLine($"[Create] ▶ 查詢符合條件的倉庫筆數：{倉庫選項.Count}");
+            foreach (var item in 倉庫選項)
+            {
+                Debug.WriteLine($"[Create] ▶ 倉庫選項：Value={item.Value}, Text={item.Text}");
+            }
+ 
             if (!倉庫選項.Any()) Debug.WriteLine("[Create] ⚠️ 倉庫基本檔為空");
             倉庫選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
             ViewBag.倉庫選項 = 倉庫選項;
@@ -287,6 +282,38 @@ namespace MVC_Demo2.Controllers
 
             Debug.WriteLine($"[依盤點種類取得災害別] ✅ 成功，筆數：{災害別選項.Count}");
             return Json(災害別選項);
+        }
+
+        private async Task<List<SelectListItem>> Get倉庫選項Async(string biz, string dept, string div, string branch)
+        {
+            var 倉庫選項 = await _context.倉庫基本檔
+                .Where(x =>
+                    x.FA列帳事業 == biz &&
+                    x.FA列帳單位 == dept &&
+                    (x.FA列帳部門 == div || x.FA列帳部門 == null) &&
+                    (x.FA列帳分部 == branch || x.FA列帳分部 == null) &&
+                    !x.是否暫停入庫 &&
+                    !x.是否裁撤
+                )
+                .OrderBy(x => x.倉庫代號)
+                .Select(x => new SelectListItem
+                {
+                    Text = x.倉庫代號 + "_" + x.倉庫名稱,
+                    Value = x.倉庫代號
+                })
+                .ToListAsync();
+
+            // 🔍 除錯輸出
+            Debug.WriteLine($"[Get倉庫選項Async] ▶ 查詢符合條件的倉庫筆數：{倉庫選項.Count}");
+            foreach (var item in 倉庫選項)
+            {
+                Debug.WriteLine($"[Get倉庫選項Async] ▶ 倉庫選項：Value={item.Value}, Text={item.Text}");
+            }
+
+            // 插入預設選項
+            倉庫選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
+
+            return 倉庫選項;
         }
 
         [HttpPost]
@@ -431,9 +458,12 @@ namespace MVC_Demo2.Controllers
             // 使用 AutoMapper 映射到 EditViewModel
             var viewModel = _mapper.Map<庫存盤點主檔, HW_01_庫存盤點主檔EditViewModel>(model);
 
-            var (org, period, date) = InitInventoryDefaultValues();
+            var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+
+            Debug.WriteLine($"[Create] ▶ 使用者帳號={userNo}，組織代號={org}，年月={period}，日期={date}，事業={biz}，單位={dept}，部門={div}，分部={branch}");
+
             ViewBag.var進銷存組織 = org;
-            ViewBag.var列帳年月 = period;
+            //ViewBag.var列帳年月 = period;
             ViewBag.var列帳日期 = date;
 
             //viewModel.備註 ??= string.Empty;

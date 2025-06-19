@@ -74,8 +74,10 @@ namespace MVC_Demo2.Models.ViewModel
         [DisplayName("是否註記刪除")]
         public string 是否註記刪除顯示 { get; set; }
 
-        [DisplayName("修改人")]
+        [HiddenForView]
         public string 修改人 { get; set; }
+        [DisplayName("修改人")]
+        public string 修改人姓名 { get; set; }
 
         [DisplayName("修改時間")]
         public DateTime? 修改時間 { get; set; }

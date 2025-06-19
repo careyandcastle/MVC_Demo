@@ -181,7 +181,8 @@ namespace MVC_Demo2.Controllers
                         庫存異動狀態名稱 = m.庫存異動狀態Navigation.庫存異動狀態1,
                         是否註記刪除 = m.是否註記刪除, // 若有欄位再加
                         是否註記刪除顯示 = m.是否註記刪除 ? "是" : "否",
-                        修改人 = CustomSqlFunctions.ConcatCodeAndName(m.修改人, CustomSqlFunctions.DecryptToString(_u.姓名)),
+                        修改人 = m.修改人,
+                        修改人姓名 = CustomSqlFunctions.ConcatCodeAndName(m.修改人, CustomSqlFunctions.DecryptToString(_u.姓名)),
                         修改時間 = m.修改日期時間
                     }).AsNoTracking();
         }
@@ -796,11 +797,47 @@ namespace MVC_Demo2.Controllers
         //        message = "更新失敗"
         //    });
         //}
-        [ProcUseRang(ProcNo, ProcUseRang.Delete)]
+        //[ProcUseRang(ProcNo, ProcUseRang.Delete)]
+        //public async Task<ActionResult> Delete(string 進銷存組織, string 單據別, DateTime 日期, decimal 流水號)
+        //{
+        //    if (string.IsNullOrEmpty(進銷存組織) || string.IsNullOrEmpty(單據別) || 日期 == default || 流水號 == default)
+        //    {
+        //        return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
+        //    }
+
+        //    var viewModel = await GetBaseQuery()
+        //        .Where(s => s.進銷存組織 == 進銷存組織
+        //                 && s.單據別 == 單據別
+        //                 && s.日期 == 日期
+        //                 && s.流水號 == 流水號)
+        //        .SingleOrDefaultAsync();
+
+        //    var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+
+        //    ViewBag.var列帳日期 = date;
+        //    if (viewModel == null)
+        //    {
+        //        return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
+        //    }
+
+        //    return PartialView(viewModel); // 回傳 Delete.cshtml 的 PartialView
+        //}
         public async Task<ActionResult> Delete(string 進銷存組織, string 單據別, DateTime 日期, decimal 流水號)
         {
-            if (string.IsNullOrEmpty(進銷存組織) || string.IsNullOrEmpty(單據別) || 日期 == default || 流水號 == default)
+            Debug.WriteLine("[Delete] ▶ 收到刪除請求：");
+            Debug.WriteLine($"    進銷存組織 = {進銷存組織}");
+            Debug.WriteLine($"    單據別     = {單據別}");
+            Debug.WriteLine($"    日期       = {日期:yyyy-MM-dd}");
+            Debug.WriteLine($"    流水號     = {流水號}");
+
+            //if (string.IsNullOrEmpty(進銷存組織) || string.IsNullOrEmpty(單據別) || 日期 == default || 流水號 == default)
+            //{
+            //    Debug.WriteLine("[Delete] [ERROR] 參數為空或無效");
+            //    return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
+            //}
+            if (string.IsNullOrEmpty(進銷存組織) || string.IsNullOrEmpty(單據別) || 流水號 == default)
             {
+                Debug.WriteLine("[Delete] [ERROR] 參數為空或無效");
                 return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
             }
 
@@ -813,11 +850,17 @@ namespace MVC_Demo2.Controllers
 
             if (viewModel == null)
             {
+                Debug.WriteLine("[Delete] [ERROR] 查無資料");
                 return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
             }
 
-            return PartialView(viewModel); // 回傳 Delete.cshtml 的 PartialView
+            var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+            ViewBag.var列帳日期 = date;
+
+            Debug.WriteLine("[Delete] ▶ 成功載入資料，準備回傳 PartialView");
+            return PartialView(viewModel);
         }
+
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -833,7 +876,6 @@ namespace MVC_Demo2.Controllers
                 var model = await _context.庫存盤點主檔
                     .Where(x =>
                         x.進銷存組織 == postData.進銷存組織 &&
-                        //x.單據別 == postData.單據別名稱 &&
                         x.單據別 == postData.單據別 &&
                         x.日期 == postData.日期 &&
                         x.流水號 == postData.流水號)

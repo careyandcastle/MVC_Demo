@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-md-12">
 
-            <form asp-action="CreateMultiInput" method="post">
+            <form asp-action="CreateMultiInput" method="post" >
                 @Html.AntiForgeryToken()
 
                 <!-- 顯示欄位區域 -->
@@ -62,67 +62,126 @@
                 @Html.HiddenFor(m => m.單據別)
                 @Html.HiddenFor(m => m.日期)
                 @Html.HiddenFor(m => m.流水號)
-
+                @Html.HiddenFor(m => m.倉庫代號)
                 <!-- 存檔/關閉按鈕 -->
-                <div class="form-group mt-4">
-                    <button type="submit" class="btn btn-primary" id="btnSave" style="display: none;">存檔</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
-                </div>
+            <div class="form-group mt-4">
+                @*<button type="submit" class="btn btn-primary" id="btnSave" style="display: none;">存檔</button>*@
+                <button type="button" class="btn btn-primary" id="btnSave" style="display: none;">存檔</button>
+
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+            </div>
             </form>
         </div>
     </div>
 </div>
 <script>
+
     this.$on('fetched-page-modal::ready', (modalId) => {
-        console.log(`[Modal Ready] modalId = ${modalId}`);
+    console.log(`[Modal Ready] modalId = ${modalId}`);
+
+    this.$nextTick(() => {
+        console.log("✅ Ready to bind 加入盤點 click");
 
         let itemMap = new Map();
 
         const $btnAdd = $('#btnAddItem');
         const $btnSave = $('#btnSave');
-        const $select = $('#product-sel'); // ✅ 使用你設定的 id
+        const $select = $('#product-sel');
         const $tbody = $('#item-list-table tbody');
 
-        console.log("✅ Init Select Option Count:", $select.find('option').length);
-
         $btnAdd.off('click').on('click', function () {
-            console.log("📌 [事件] 點擊「加入盤點」按鈕");
-
             const 商品編號 = $select.val();
             const 商品名稱 = $select.find('option:selected').text();
             const 假庫存量 = Math.floor(Math.random() * 50);
 
-            console.log("🎯 選擇商品：", 商品編號, 商品名稱);
-
             if (!商品編號 || itemMap.has(商品編號)) {
-                console.warn("⚠️ 商品重複或為空");
+                alert("請選擇商品，且避免重複");
                 return;
             }
 
             const row = `
-        <tr data-id="${商品編號}">
-            <td><button type="button" class="btn btn-sm btn-danger btn-remove">刪除</button></td>
-            <td><input type="hidden" name="選項清單[].商品編號" value="${商品編號}" />${商品編號}</td>
-            <td>${商品名稱}</td>
-            <td>${假庫存量}</td>
-        </tr>
-        `;
-
+                <tr data-id="${商品編號}">
+                    <td><button type="button" class="btn btn-sm btn-danger btn-remove">刪除</button></td>
+                    <td>${商品編號}<input type="hidden" name="選項清單[].商品編號" value="${商品編號}" /></td>
+                    <td>${商品名稱}</td>
+                    <td>${假庫存量}</td>
+                </tr>`;
             $tbody.append(row);
             itemMap.set(商品編號, true);
             $btnSave.show();
-
             console.log(`✅ 已加入：${商品編號}`);
         });
+        $btnSave.off('click').on('click', async function () {
+    console.log("📝 點擊了存檔");
 
-        $tbody.off('click').on('click', '.btn-remove', function () {
-            const tr = $(this).closest('tr');
-            const 商品編號 = tr.data('id');
-            tr.remove();
-            itemMap.delete(商品編號);
-            console.log(`🗑️ 移除商品：${商品編號}`);
-            if (itemMap.size === 0) $btnSave.hide();
-        });
+    const rows = $tbody.find('tr');
+    console.log(`📦 目前列示品項筆數：${rows.length}`);
+
+    if (rows.length === 0) {
+        alert("⚠️ 請至少加入一筆盤點品項");
+        console.warn("🚫 無盤點品項，取消送出");
+        return;
+    }
+
+    const 選項清單 = [];
+    rows.each(function (index, row) {
+        const 商品編號 = $(this).data('id');
+        const 商品名稱 = $(this).find('td:eq(2)').text();
+        const 庫存商品量 = parseInt($(this).find('td:eq(3)').text());
+
+        console.log(`🧾 第 ${index + 1} 筆：商品編號=${商品編號}, 商品名稱=${商品名稱}, 庫存量=${庫存商品量}`);
+
+        if (!商品編號 || isNaN(庫存商品量)) {
+            console.warn(`⚠️ 無效資料，跳過第 ${index + 1} 筆`);
+            return;
+        }
+
+        選項清單.push({ 商品編號, 商品名稱, 庫存商品量 });
     });
+
+    const postData = {
+        進銷存組織: $('input[name="進銷存組織"]').val(),
+        單據別: $('input[name="單據別"]').val(),
+        日期: $('input[name="日期"]').val(),
+        流水號: parseInt($('input[name="流水號"]').val()),
+        倉庫代號: $('input[name="倉庫代號"]').val(),
+        選項清單: 選項清單
+    };
+
+    console.log("📤 準備送出的 postData =", postData);
+
+    if (postData.選項清單.length === 0) {
+        alert("⚠️ 沒有有效品項可送出！");
+        console.warn("🚫 有品項列但無有效資料，取消送出");
+        return;
+    }
+
+    try {
+        const response = await axios.post('@Url.Action("CreateMultiInput", "HW_01")', postData, {
+            headers: {
+                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            }
+        });
+
+        console.log("✅ 成功送出，伺服器回應：", response.data);
+        alert("🎉 已成功送出盤點品項！");
+        window.location.reload();
+    } catch (error) {
+        console.error("❌ 發生錯誤：", error);
+
+        if (error.response) {
+            console.error("📨 回傳內容：", error.response.data);
+            alert(`❌ 發生錯誤：${error.response.data}`);
+        } else {
+            alert("❌ 發生未預期錯誤，請檢查開發者工具 Console");
+        }
+    }
+});
+
+
+        // 其他綁定（刪除、存檔等）放這裡…
+    });
+});
+
 
 </script>

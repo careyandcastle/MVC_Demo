@@ -1368,6 +1368,7 @@ namespace MVC_Demo2.Controllers
                     單據別 = 單據別,
                     日期 = 日期,
                     流水號 = 流水號,
+                    倉庫代號 = 倉庫代號, // ✅ 傳入 ViewModel
                     項次 = 0,
                     商品編號 = "",
                     盤點數量 = 0
@@ -1424,6 +1425,81 @@ namespace MVC_Demo2.Controllers
 
             return 品項類別選項;
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateMultiInput([FromBody] HW_01_庫存盤點品項SubmitViewModel postData)
+        {
+            try
+            {
+                var (org, _, 列帳日, 列帳日格式化, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+ 
+                var now = DateTime.Now;
+
+                // 確保至少有一筆資料
+                if (postData.選項清單 == null || !postData.選項清單.Any())
+                    return BadRequest("請至少加入一筆盤點品項");
+
+                // 取得目前最大項次
+                var maxItemNo = await _context.庫存盤點明細
+                    .Where(x =>
+                        x.進銷存組織 == postData.進銷存組織 &&
+                        x.單據別 == postData.單據別 &&
+                        x.日期 == postData.日期 &&
+                        x.流水號 == postData.流水號)
+                    .Select(x => (int?)x.項次)
+                    .MaxAsync() ?? 0;
+
+                Debug.WriteLine($"[CreateMultiInput][POST] ▶ 當前最大項次 = {maxItemNo}");
+
+                var newItems = new List<庫存盤點明細>();
+
+                foreach (var (item, idx) in postData.選項清單.Select((val, i) => (val, i)))
+                {
+                    var stockQty = await _context.庫存日檔
+                        .Where(x =>
+                            x.倉庫組織 == postData.進銷存組織 &&
+x.倉庫代號 == postData.倉庫代號 &&
+x.日期 == postData.日期 &&
+x.商品編號 == item.商品編號
+)
+                        .Select(x => x.本日結存數量)
+                        .FirstOrDefaultAsync();
+
+                    var entity = new 庫存盤點明細
+                    {
+                        進銷存組織 = postData.進銷存組織,
+                        單據別 = postData.單據別,
+                        日期 = postData.日期,
+                        流水號 = postData.流水號,
+                        項次 = maxItemNo + idx + 1,
+                        商品編號 = item.商品編號,
+                        庫存數量 = stockQty,
+                        盤點數量 = 0,
+                        修改人 = userNo,
+                        修改日期時間 = now
+                    };
+
+                    newItems.Add(entity);
+                }
+
+                await _context.庫存盤點明細.AddRangeAsync(newItems);
+                await _context.SaveChangesAsync();
+
+                Debug.WriteLine($"[CreateMultiInput][POST] ✅ 寫入完成，共 {newItems.Count} 筆");
+
+                return Ok(new ReturnData(ReturnState.ReturnCode.OK)
+                {
+                    message = $"成功新增 {newItems.Count} 筆盤點明細資料"
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[CreateMultiInput][POST] ❌ 發生錯誤：{ex.Message}");
+                return StatusCode(500, "CreateMultiInput 儲存錯誤：" + ex.GetOriginalException().Message);
+            }
+        }
+
 
     }
 }

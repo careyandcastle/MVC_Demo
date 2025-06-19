@@ -23,7 +23,7 @@ namespace MVC_Demo2.Models.ViewModel
 
         [CTRequired]
         public string 商品編號 { get; set; }
-
+        public string 倉庫代號 { get; set; }
         public decimal? 庫存數量 { get; set; }
         public decimal? 盤點數量 { get; set; }
     }

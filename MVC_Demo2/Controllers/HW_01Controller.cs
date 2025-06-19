@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -26,7 +27,7 @@ namespace MVC_Demo2.Controllers
         private const string ProcNo = "HW_01";
         private static IConfigurationProvider _config;
         private static IMapper _mapper;
- 
+
         public HW_01Controller(TRDBContext context)
         {
             _context = context;
@@ -84,7 +85,7 @@ namespace MVC_Demo2.Controllers
                 Debug.WriteLine("[InitInventoryDefaultValues] ⚠️ 無法從 Session 取得使用者帳號資訊");
                 return (null, null, null, default(DateTime), null, null, null, null, null);
             }
- 
+
             var orgRecord = _context.進銷存組織
                 .Where(x =>
                     x.列帳事業 == ua.BusinessNo && x.列帳單位 == ua.DepartmentNo &&
@@ -208,7 +209,7 @@ namespace MVC_Demo2.Controllers
                 單據別 = "INV",
                 流水號 = 0
             };
- 
+
 
             var 倉庫選項 = await Get倉庫選項Async(biz, dept, div, branch);
 
@@ -218,7 +219,7 @@ namespace MVC_Demo2.Controllers
             {
                 Debug.WriteLine($"[Create] ▶ 倉庫選項：Value={item.Value}, Text={item.Text}");
             }
- 
+
             if (!倉庫選項.Any()) Debug.WriteLine("[Create] ⚠️ 倉庫基本檔為空");
             倉庫選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
             ViewBag.倉庫選項 = 倉庫選項;
@@ -469,25 +470,28 @@ namespace MVC_Demo2.Controllers
 
             //viewModel.備註 ??= string.Empty;
 
-            var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+            //var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
 
             //var viewModel = new HW_01_庫存盤點主檔BasicViewModel
             //{ };
 
+
+            var 倉庫選項 = await Get倉庫選項Async(biz, dept, div, branch);
+            ViewBag.倉庫代號選項 = 倉庫選項;
             // 預備倉庫下拉（含條件）
-            ViewBag.倉庫代號選項 = await _context.倉庫基本檔
-                .Where(w =>
-                    w.是否裁撤 == false &&
-                    w.是否暫停入庫 == false &&
-                    w.是否暫停出庫 == false &&
-                    w.是否允許負庫存銷售 == true)
-                .OrderBy(o => o.倉庫代號)
-                .Select(s => new SelectListItem
-                {
-                    Text = s.倉庫代號 + "_" + s.倉庫簡稱,
-                    Value = s.倉庫代號
-                })
-                .ToListAsync();
+            //ViewBag.倉庫代號選項 = await _context.倉庫基本檔
+            //    .Where(w =>
+            //        w.是否裁撤 == false &&
+            //        w.是否暫停入庫 == false &&
+            //        w.是否暫停出庫 == false &&
+            //        w.是否允許負庫存銷售 == true)
+            //    .OrderBy(o => o.倉庫代號)
+            //    .Select(s => new SelectListItem
+            //    {
+            //        Text = s.倉庫代號 + "_" + s.倉庫簡稱,
+            //        Value = s.倉庫代號
+            //    })
+            //    .ToListAsync();
 
             // 預備盤點種類下拉
             ViewBag.盤點種類選項 = await _context.盤點種類
@@ -532,7 +536,7 @@ namespace MVC_Demo2.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Update)]
-        public async Task<IActionResult> Edit([Bind("進銷存組織,單據別,日期,流水號,倉庫代號,盤點種類,災害別,備註, 盤點人, 庫存異動狀態, 是否註記刪除")] HW_01_庫存盤點主檔EditViewModel postData)
+        public async Task<IActionResult> Edit([Bind("進銷存組織,單據別,日期,流水號,倉庫代號,盤點種類,災害別,備註, 盤點人,盤點日期,  庫存異動狀態, 是否註記刪除")] HW_01_庫存盤點主檔EditViewModel postData)
         {
             //Debug.WriteLine($"[Edit] ▶ 收到編輯請求 - 組織：{postData.進銷存組織}, 單據別: {postData.單據別} ,日期：{postData.日期:yyyy-MM-dd}, 流水號：{postData.流水號}");
             Debug.WriteLine("[Edit] ▶ 收到編輯請求內容：");
@@ -863,28 +867,86 @@ namespace MVC_Demo2.Controllers
 
 
 
+        //[HttpPost, ActionName("Delete")]
+        //[ValidateAntiForgeryToken]
+        //[ProcUseRang(ProcNo, ProcUseRang.Delete)]
+        //public async Task<IActionResult> DeleteConfirmed([Bind("進銷存組織,單據別,日期,流水號")] HW_01_庫存盤點主檔DisplayViewModel postData)
+        //{
+        //    Debug.WriteLine("[DeleteConfirmed] ▶ 收到刪除確認請求");
+
+        //    if (postData == null)
+        //    {
+        //        Debug.WriteLine("[DeleteConfirmed] ❌ postData 為 null");
+        //        return BadRequest(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR) { message = "參數為空" });
+        //    }
+
+        //    Debug.WriteLine($"    進銷存組織 = {postData.進銷存組織}");
+        //    Debug.WriteLine($"    單據別     = {postData.單據別}");
+        //    Debug.WriteLine($"    日期       = {postData.日期:yyyy-MM-dd}");
+        //    Debug.WriteLine($"    流水號     = {postData.流水號}");
+
+        //    if (string.IsNullOrWhiteSpace(postData.進銷存組織) || string.IsNullOrWhiteSpace(postData.單據別) || postData.日期 == default)
+        //    {
+        //        Debug.WriteLine("[DeleteConfirmed] ❌ 參數遺失或格式不正確");
+        //        return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
+        //    }
+
+        //    try
+        //    {
+        //        var model = await _context.庫存盤點主檔
+        //            .Where(x =>
+        //                x.進銷存組織 == postData.進銷存組織 &&
+        //                x.單據別 == postData.單據別 &&
+        //                x.日期 == postData.日期 &&
+        //                x.流水號 == postData.流水號)
+        //            .SingleOrDefaultAsync();
+
+        //        if (model == null)
+        //        {
+        //            Debug.WriteLine("[DeleteConfirmed] ❌ 查無資料");
+        //            return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
+        //        }
+
+        //        Debug.WriteLine("[DeleteConfirmed] ✅ 成功找到資料，準備刪除");
+
+        //        _context.庫存盤點主檔.Remove(model);
+        //        int opCount = await _context.SaveChangesAsync();
+
+        //        Debug.WriteLine($"[DeleteConfirmed] ✅ 刪除完成，筆數：{opCount}");
+
+        //        if (opCount > 0)
+        //            return Ok(new ReturnData(ReturnState.ReturnCode.OK));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        var realEx = ex.GetOriginalException();
+        //        Debug.WriteLine($"[DeleteConfirmed] ❌ 發生例外：{realEx.ToMeaningfulMessage()}");
+
+        //        return CreatedAtAction(nameof(DeleteConfirmed), new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
+        //        {
+        //            message = realEx.ToMeaningfulMessage()
+        //        });
+        //    }
+
+        //    Debug.WriteLine("[DeleteConfirmed] ❌ 未知錯誤或資料已不存在");
+        //    return CreatedAtAction(nameof(DeleteConfirmed), new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
+        //    {
+        //        message = "資料已不存在"
+        //    });
+        //}
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [ProcUseRang(ProcNo, ProcUseRang.Delete)]
         public async Task<IActionResult> DeleteConfirmed([Bind("進銷存組織,單據別,日期,流水號")] HW_01_庫存盤點主檔DisplayViewModel postData)
         {
-            Debug.WriteLine("[DeleteConfirmed] ▶ 收到刪除確認請求");
+            Debug.WriteLine("[DeleteConfirmed] ▶ 收到刪除請求");
 
-            if (postData == null)
+            if (postData == null ||
+                string.IsNullOrWhiteSpace(postData.進銷存組織) ||
+                string.IsNullOrWhiteSpace(postData.單據別) ||
+                postData.日期 == default)
             {
-                Debug.WriteLine("[DeleteConfirmed] ❌ postData 為 null");
-                return BadRequest(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR) { message = "參數為空" });
-            }
-
-            Debug.WriteLine($"    進銷存組織 = {postData.進銷存組織}");
-            Debug.WriteLine($"    單據別     = {postData.單據別}");
-            Debug.WriteLine($"    日期       = {postData.日期:yyyy-MM-dd}");
-            Debug.WriteLine($"    流水號     = {postData.流水號}");
-
-            if (string.IsNullOrWhiteSpace(postData.進銷存組織) || string.IsNullOrWhiteSpace(postData.單據別) || postData.日期 == default)
-            {
-                Debug.WriteLine("[DeleteConfirmed] ❌ 參數遺失或格式不正確");
-                return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
+                return BadRequest(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR) { message = "參數錯誤" });
             }
 
             try
@@ -898,38 +960,48 @@ namespace MVC_Demo2.Controllers
                     .SingleOrDefaultAsync();
 
                 if (model == null)
-                {
-                    Debug.WriteLine("[DeleteConfirmed] ❌ 查無資料");
-                    return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
-                }
+                    return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR) { message = "找不到資料" });
 
-                Debug.WriteLine("[DeleteConfirmed] ✅ 成功找到資料，準備刪除");
+                var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+                if (model.庫存異動狀態 == "3")
+                    return Ok(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
+                    {
+                        message = "資料已完成異動，無法刪除"
+                    });
+                var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
 
-                _context.庫存盤點主檔.Remove(model);
-                int opCount = await _context.SaveChangesAsync();
+                // 註記刪除主檔
+                model.是否註記刪除 = true;
+                model.修改人 = userNo;
+                model.修改日期時間 = DateTime.Now;
 
-                Debug.WriteLine($"[DeleteConfirmed] ✅ 刪除完成，筆數：{opCount}");
+                // 移除所有對應明細
+                var details = await _context.庫存盤點明細
+                    .Where(d =>
+                        d.進銷存組織 == model.進銷存組織 &&
+                        d.單據別 == model.單據別 &&
+                        d.日期 == model.日期 &&
+                        d.流水號 == model.流水號)
+                    .ToListAsync();
 
-                if (opCount > 0)
-                    return Ok(new ReturnData(ReturnState.ReturnCode.OK));
+                _context.庫存盤點明細.RemoveRange(details);
+
+                await _context.SaveChangesAsync();
+
+                Debug.WriteLine("[DeleteConfirmed] ✅ 成功註記刪除並移除明細");
+
+                return Ok(new ReturnData(ReturnState.ReturnCode.OK));
             }
             catch (Exception ex)
             {
                 var realEx = ex.GetOriginalException();
-                Debug.WriteLine($"[DeleteConfirmed] ❌ 發生例外：{realEx.ToMeaningfulMessage()}");
-
                 return CreatedAtAction(nameof(DeleteConfirmed), new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
                 {
                     message = realEx.ToMeaningfulMessage()
                 });
             }
-
-            Debug.WriteLine("[DeleteConfirmed] ❌ 未知錯誤或資料已不存在");
-            return CreatedAtAction(nameof(DeleteConfirmed), new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
-            {
-                message = "資料已不存在"
-            });
         }
+
         //[HttpPost, ActionName("GetDetailDataPost")]
         //[ValidateAntiForgeryToken]
         //[NeglectActionFilter]
@@ -1247,6 +1319,110 @@ namespace MVC_Demo2.Controllers
         }
 
 
+        //[ProcUseRang(ProcNo, ProcUseRang.Create)]
+        [HttpGet]
+        [ProcUseRang(ProcNo, ProcUseRang.Add)]
+        public async Task<IActionResult> CreateMultiInput(string 進銷存組織, string 單據別, DateTime 日期, int 流水號, string 倉庫代號)
+        {
+            try
+            {
+                var (org, _, 列帳日, 列帳日格式化, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
 
+                Debug.WriteLine("┌──────────────────────────────────────┐");
+                Debug.WriteLine($"│ [CreateMultiInput] ▶ 使用者帳號   = {userNo}");
+                Debug.WriteLine($"│                          組織代號 = {org}");
+                Debug.WriteLine($"│                          列帳日期 = {列帳日:yyyy-MM-dd}");
+                Debug.WriteLine($"│                          事業別   = {biz}");
+                Debug.WriteLine($"│                          單位     = {dept}");
+                Debug.WriteLine($"│                          部門     = {div}");
+                Debug.WriteLine($"│                          分部     = {branch}");
+                Debug.WriteLine($"│                          倉庫代號     = {倉庫代號}");
+                Debug.WriteLine("└──────────────────────────────────────┘");
+
+                //ViewBag.var列帳日期 = 列帳日;
+                // Controller
+                //ViewBag.var列帳日期 = 列帳日.ToString("yyyy/MM/dd"); // 不送 DateTime，直接送格式化字串
+                //ViewBag.var列帳日期 = 列帳日?.ToString("yyyy/MM/dd", CultureInfo.GetCultureInfo("zh-TW"));
+                ViewBag.var列帳日期 = 列帳日;
+
+                ViewBag.var進銷存組織 = org;
+                ViewBag.var倉庫代號 = 倉庫代號;
+
+                var warehouse = await _context.倉庫基本檔
+    .Where(x => x.倉庫代號 == 倉庫代號)
+    .Select(x => x.倉庫簡稱)
+    .FirstOrDefaultAsync();
+
+                ViewBag.倉庫簡稱 = warehouse ?? "(查無簡稱)";
+                // 取得商品選項（目前為基礎條件）
+                var 品項選項 = await Get品項類別選項Async(biz);
+                //ViewBag.品項選項 = 品項選項;
+                ViewBag.品項選項 = (List<SelectListItem>)await Get品項類別選項Async(biz);
+
+                Debug.WriteLine($"[CreateMultiInput] ▶ 商品選項筆數 = {品項選項.Count}");
+
+                // 建立初始 ViewModel
+                var vm = new HW_01_庫存盤點明細檔CreateViewModel
+                {
+                    進銷存組織 = 進銷存組織,
+                    單據別 = 單據別,
+                    日期 = 日期,
+                    流水號 = 流水號,
+                    項次 = 0,
+                    商品編號 = "",
+                    盤點數量 = 0
+                };
+
+                Debug.WriteLine("┌──────────── ViewModel 建立完成 ────────────┐");
+                Debug.WriteLine($"│ 進銷存組織 = {vm.進銷存組織}");
+                Debug.WriteLine($"│ 單據別     = {vm.單據別}");
+                Debug.WriteLine($"│ 日期       = {vm.日期:yyyy-MM-dd}");
+                Debug.WriteLine($"│ 流水號     = {vm.流水號}");
+                Debug.WriteLine($"│ 項次       = {vm.項次}");
+                Debug.WriteLine("└───────────────────────────────────────────┘");
+
+                return PartialView(vm);
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[CreateMultiInput] ❌ 發生錯誤：{ex.Message}");
+                return StatusCode(500, "CreateMultiInput 錯誤：" + ex.GetOriginalException().Message);
+            }
+
+        }
+
+
+        private async Task<List<SelectListItem>> Get品項類別選項Async(string biz)
+        {
+            var 商品編號清單 = await _context.事業商品檔
+                .Where(x => x.事業 == biz)
+                .Select(x => x.商品編號)
+                .Distinct()
+                .ToListAsync();
+
+            // 重新查一次商品資料，抓名稱
+            var 品項類別選項 = await _context.事業商品檔
+                .Where(x => 商品編號清單.Contains(x.商品編號))
+                .OrderBy(x => x.商品編號)
+                .Select(x => new SelectListItem
+                {
+                    Text = x.商品編號 + "_" + x.商品簡稱,
+                    Value = x.商品編號
+                })
+                .ToListAsync();
+
+            // 🔍 除錯輸出
+            Debug.WriteLine($"[Get品項類別選項Async] ▶ 查詢條件：事業 = {biz}");
+            Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品筆數 = {品項類別選項.Count}");
+            foreach (var item in 品項類別選項)
+            {
+                Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品選項：Value={item.Value}, Text={item.Text}");
+            }
+
+            品項類別選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
+
+            return 品項類別選項;
+        }
     }
 }

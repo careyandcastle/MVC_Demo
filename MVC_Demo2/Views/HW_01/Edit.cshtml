@@ -11,10 +11,10 @@
                 </div>
 
                 @* 主鍵隱藏欄位 *@
-                @*<input asp-for="進銷存組織" type="hidden" />*@
-                @*<input asp-for="單據別" type="hidden" />*@
-                @*<input asp-for="日期" type="hidden" />*@
-                @*<input asp-for="流水號" type="hidden" />*@
+                <input asp-for="進銷存組織" type="hidden" />
+                <input asp-for="單據別" type="hidden" />
+                <input asp-for="日期" type="hidden" />
+                <input asp-for="流水號" type="hidden" />
 
                 @* 顯示主鍵欄位（只讀） *@
                 @*<div class="form-group">
@@ -22,20 +22,21 @@
             <input asp-for="進銷存組織" class="form-control" disabled />
         </div>*@
 
-                <div class="form-group">
-                    <label asp-for="進銷存組織" class="control-label"></label>
-                    <input class="form-control" value="@Model.進銷存組織" disabled />
-                    <input type="hidden" asp-for="進銷存組織" />
-                </div>
+            <div class="form-group">
+                <label asp-for="進銷存組織" class="control-label"></label>
+                @*<input class="form-control" value="@Model.進銷存組織" disabled />*@
+                <input asp-for="進銷存組織" class="form-control" readonly />
+                @*<input type="hidden" asp-for="進銷存組織" />*@
+            </div>
 
 
-                <div class="form-group">
+                @*<div class="form-group">
                     <label class="control-label">列帳年月</label>
                     <input class="form-control" value="@ViewBag.var列帳年月" disabled />
-                </div>
+                </div>*@
 
                 <div class="form-group">
-                    <label class="control-label">列帳日期</label>
+                    <label class="control-label">日期</label>
                     <input class="form-control" value="@ViewBag.var列帳日期" disabled />
                 </div>
 
@@ -44,10 +45,10 @@
                     <input asp-for="單據別" class="form-control" readonly />
                 </div>
 
-                <div class="form-group">
+                @*<div class="form-group">
                     <label asp-for="日期" class="control-label"></label>
                     <input asp-for="日期" class="form-control" readonly />
-                </div>
+                </div>*@
 
                 <div class="form-group">
                     <label asp-for="流水號" class="control-label"></label>

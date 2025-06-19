@@ -77,14 +77,18 @@
                     <b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-modal class="mr-1" variant="detail3">新增</b-button>
                     <b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-edit-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">修改</b-button>
                     <b-button v-if="slot.data.operatePermissions.canDelete" v-b-modal.master-table-del-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow" class="mr-1" variant="detail3">刪除</b-button>
-                    <b-button v-if="slot.data.canClick && slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-1" variant="detail3">輸入個資盤點品項</b-button>
-                    <b-button v-if="slot.data.canClick && slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-2" variant="detail3">產生個資盤點品項</b-button>
+                    <b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-input-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">輸入個資盤點品項</b-button>
+                    <b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-generate-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">產生個資盤點品項</b-button>
+                    @*<b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-1" variant="detail3">輸入個資盤點品項</b-button>*@
+                    @*<b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-2" variant="detail3">產生個資盤點品項</b-button>*@
                     <b-button v-if="slot.data.operatePermissions.canExport" class="mr-1" variant="detail3" v-on:click="slot.data.onDataExport" isWaitting="!isWaitting" :disabled="!slot.data.operatePermissions.enExport">匯出</b-button>
                     <b-button v-if="slot.data.operatePermissions.canQuery" v-b-modal.master-table-query-modal class="mr-1" variant="detail3">進階查詢</b-button>
                     <!--Master OP Page-->
                     <fetched-page-modal url="Create" id="master-table-create-modal" size="lg" close-on-success="true" title="新增資料"></fetched-page-modal>
                     <fetched-page-modal url="Edit" :param="slot.data.selectedMasterRow?.param" id="master-table-edit-modal" size="lg" close-on-success="true" title="修改資料"></fetched-page-modal>
                     <fetched-page-modal url="Delete" :param="slot.data.selectedMasterRow?.param" id="master-table-del-modal" size="lg" close-on-success="true" title="刪除資料"></fetched-page-modal>
+                    <fetched-page-modal url="CreateMultiInput" :param="slot.data.selectedMasterRow?.param" id="master-table-create-multi-input-modal" size="lg" close-on-success="true" title="輸入個資盤點品項"></fetched-page-modal>
+                    <fetched-page-modal url="CreateMultiGenerate" :param="slot.data.selectedMasterRow?.param" id="master-table-create-multi-generate-modal" size="lg" close-on-success="true" title="產生個資盤點品項"></fetched-page-modal>
                     <query-page-modal id="master-table-query-modal" title="進階查詢" :queryfields="slot.data.mTableFields" :is_filtered="slot.data.isFiltered"></query-page-modal>
 
                     <!--Detail OP Page-->
@@ -183,7 +187,7 @@
                     let postData = {
                         進銷存組織: this.進銷存組織,
                         單據別: this.單據別,
-                        @*日期: this.日期,*@ 
+                        @*日期: this.日期,*@
                         @*2025-03 - 05T00: 00: 00.000Z*@
                         @*日期: this.formatDateTime(this.日期),*@
                         @*日期: (() => {
@@ -202,7 +206,7 @@
                         流水號: this.流水號
                     };
                     debugger;
-                   
+
                     console.log("[DEBUG] 發送明細查詢：", postData);
 
                     let response = await axios.post('GetDetailDataPost', postData, {
@@ -244,7 +248,9 @@
                     進銷存組織: null,
                     單據別: null,
                     日期: null,
-                    流水號: null
+                    @*為了createMultipleInput,加了倉庫代號*@
+                    流水號: null,
+                    倉庫代號: null
                 };
 
                 if (rowData.length > 0) {
@@ -260,6 +266,7 @@
                     selectParam.單據別 = this.單據別 = data.單據別;
                     selectParam.日期 = this.日期 = data.日期;
                     selectParam.流水號 = this.流水號 = data.流水號;
+                    selectParam.倉庫代號 = this.倉庫代號 = data.倉庫代號;
                     this.selectedMasterRow.param = selectParam;
 
                     // ✅ 日期欄轉 ISO 傳送給 server
@@ -282,7 +289,7 @@
                         const noDetail = count === 0;
                         Vue.set(data, '無明細', noDetail); // Reactive 設定
                         console.log(`[DEBUG] 主檔是否無明細：${noDetail ? '✅ 是' : '❌ 否'}（count=${count}）`);
-                         
+
 
                     }).catch(err => {
                         console.error('[ERROR] CheckHasDetail 發生錯誤：', err);
@@ -496,9 +503,9 @@
                 }
 
 
-                    
 
-                
+
+
 
             };
 

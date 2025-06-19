@@ -1320,8 +1320,8 @@ namespace MVC_Demo2.Controllers
 
 
         //[ProcUseRang(ProcNo, ProcUseRang.Create)]
-        [HttpGet]
-        [ProcUseRang(ProcNo, ProcUseRang.Add)]
+        //[HttpGet]
+        //[ProcUseRang(ProcNo, ProcUseRang.Add)]
         public async Task<IActionResult> CreateMultiInput(string 進銷存組織, string 單據別, DateTime 日期, int 流水號, string 倉庫代號)
         {
             try
@@ -1395,24 +1395,23 @@ namespace MVC_Demo2.Controllers
 
         private async Task<List<SelectListItem>> Get品項類別選項Async(string biz)
         {
-            var 商品編號清單 = await _context.事業商品檔
+            // 先查詢符合事業的商品清單
+            var 商品清單 =   _context.事業商品檔
                 .Where(x => x.事業 == biz)
-                .Select(x => x.商品編號)
-                .Distinct()
-                .ToListAsync();
+    .AsEnumerable() // 🔍 ← 這行是關鍵！把資料拉進記憶體處理 GroupBy
+    .GroupBy(x => x.商品編號)
+    .Select(g => g.OrderBy(x => x.商品簡稱).First()) // 每個商品編號只取第一筆（以名稱排序）
+    .OrderBy(x => x.商品編號)
+    .Select(x => new SelectListItem
+    {
+        Text = x.商品編號 + "_" + x.商品簡稱,
+        Value = x.商品編號
+    }).ToList(); // ← ❌ 這裡錯，因為上面是 AsEnumerable()
 
-            // 重新查一次商品資料，抓名稱
-            var 品項類別選項 = await _context.事業商品檔
-                .Where(x => 商品編號清單.Contains(x.商品編號))
-                .OrderBy(x => x.商品編號)
-                .Select(x => new SelectListItem
-                {
-                    Text = x.商品編號 + "_" + x.商品簡稱,
-                    Value = x.商品編號
-                })
-                .ToListAsync();
+            // ⬇️ 改為 ToList()
+            var 品項類別選項 = 商品清單.ToList();
 
-            // 🔍 除錯輸出
+            // 除錯輸出
             Debug.WriteLine($"[Get品項類別選項Async] ▶ 查詢條件：事業 = {biz}");
             Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品筆數 = {品項類別選項.Count}");
             foreach (var item in 品項類別選項)
@@ -1420,9 +1419,11 @@ namespace MVC_Demo2.Controllers
                 Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品選項：Value={item.Value}, Text={item.Text}");
             }
 
+            // 插入第一筆提示
             品項類別選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
 
             return 品項類別選項;
         }
+
     }
 }

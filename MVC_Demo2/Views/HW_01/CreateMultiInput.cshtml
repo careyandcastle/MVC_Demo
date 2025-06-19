@@ -30,7 +30,9 @@
                 <div class="form-group row">
                     <label asp-for="商品編號" class="col-sm-2 col-form-label"></label>
                     <div class="col-sm-10">
-                        <select asp-for="商品編號" class="form-control" asp-items="ViewBag.品項選項"></select>
+                        @*<select asp-for="商品編號" class="form-control" asp-items="ViewBag.品項選項"></select>*@
+                        <select asp-for="商品編號" class="form-control" asp-items="ViewBag.品項選項" id="product-sel"></select>
+
                         <span asp-validation-for="商品編號" class="text-danger"></span>
                     </div>
                 </div>
@@ -70,58 +72,57 @@
         </div>
     </div>
 </div>
-@section Scripts {
-    <script>
-        this.$on('fetched-page-modal::ready', (modalId) => {
-            console.log(`[Modal Ready] modalId = ${modalId}`);
+<script>
+    this.$on('fetched-page-modal::ready', (modalId) => {
+        console.log(`[Modal Ready] modalId = ${modalId}`);
 
-            let itemMap = new Map();
+        let itemMap = new Map();
 
-            const $btnAdd = $('#btnAddItem');
-            const $btnSave = $('#btnSave');
-            const $select = $('#商品編號');
-            const $tbody = $('#item-list-table tbody');
+        const $btnAdd = $('#btnAddItem');
+        const $btnSave = $('#btnSave');
+        const $select = $('#product-sel'); // ✅ 使用你設定的 id
+        const $tbody = $('#item-list-table tbody');
 
-            $btnAdd.off('click').on('click', function () {
-                console.log("📌 [事件] 點擊加入盤點");
+        console.log("✅ Init Select Option Count:", $select.find('option').length);
 
-                const 商品編號 = $select.val();
-                const 商品名稱 = $select.find('option:selected').text();
-                const 假庫存量 = Math.floor(Math.random() * 50); // 暫時用亂數
+        $btnAdd.off('click').on('click', function () {
+            console.log("📌 [事件] 點擊「加入盤點」按鈕");
 
-                if (!商品編號 || itemMap.has(商品編號)) {
-                    console.warn("⚠️ 商品重複或為空");
-                    return;
-                }
+            const 商品編號 = $select.val();
+            const 商品名稱 = $select.find('option:selected').text();
+            const 假庫存量 = Math.floor(Math.random() * 50);
 
-                const row = `
-                <tr data-id="${商品編號}">
-                    <td><button type="button" class="btn btn-sm btn-danger btn-remove">刪除</button></td>
-                    <td><input type="hidden" name="選項清單[].商品編號" value="${商品編號}" />${商品編號}</td>
-                    <td>${商品名稱}</td>
-                    <td>${假庫存量}</td>
-                </tr>
-            `;
+            console.log("🎯 選擇商品：", 商品編號, 商品名稱);
 
-                $tbody.append(row);
-                itemMap.set(商品編號, true);
-                $btnSave.show();
+            if (!商品編號 || itemMap.has(商品編號)) {
+                console.warn("⚠️ 商品重複或為空");
+                return;
+            }
 
-                console.log(`✅ 已加入：${商品編號}`);
-            });
+            const row = `
+        <tr data-id="${商品編號}">
+            <td><button type="button" class="btn btn-sm btn-danger btn-remove">刪除</button></td>
+            <td><input type="hidden" name="選項清單[].商品編號" value="${商品編號}" />${商品編號}</td>
+            <td>${商品名稱}</td>
+            <td>${假庫存量}</td>
+        </tr>
+        `;
 
-            $tbody.off('click').on('click', '.btn-remove', function () {
-                const tr = $(this).closest('tr');
-                const 商品編號 = tr.data('id');
+            $tbody.append(row);
+            itemMap.set(商品編號, true);
+            $btnSave.show();
 
-                tr.remove();
-                itemMap.delete(商品編號);
-
-                console.log(`🗑️ 移除商品：${商品編號}`);
-                if (itemMap.size === 0) {
-                    $btnSave.hide();
-                }
-            });
+            console.log(`✅ 已加入：${商品編號}`);
         });
-    </script>
-}
+
+        $tbody.off('click').on('click', '.btn-remove', function () {
+            const tr = $(this).closest('tr');
+            const 商品編號 = tr.data('id');
+            tr.remove();
+            itemMap.delete(商品編號);
+            console.log(`🗑️ 移除商品：${商品編號}`);
+            if (itemMap.size === 0) $btnSave.hide();
+        });
+    });
+
+</script>

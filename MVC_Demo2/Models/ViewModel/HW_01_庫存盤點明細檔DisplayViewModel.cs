@@ -16,7 +16,10 @@ namespace MVC_Demo2.Models.ViewModel
         public string 單據別 { get; set; }
 
         [Key]
+        [HiddenForView]
         public DateTime 日期 { get; set; }
+        [DisplayName("日期")]
+        public string 日期顯示 => 日期.ToString("yyyy/MM/dd");
 
         [Key]
         public decimal 流水號 { get; set; }
@@ -25,6 +28,7 @@ namespace MVC_Demo2.Models.ViewModel
         public decimal 項次 { get; set; }
 
         [DisplayName("商品編號")]
+
         public string 商品編號 { get; set; }
 
         [DisplayName("商品名稱")]

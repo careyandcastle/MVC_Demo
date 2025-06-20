@@ -1032,75 +1032,56 @@ namespace MVC_Demo2.Controllers
         public async Task<IActionResult> GetDetailData([FromBody] HW_01_庫存盤點主檔DisplayViewModel keys)
         {
             if (keys == null)
-            {
                 return BadRequest("未提供主檔鍵值資料");
-            }
+
             if (string.IsNullOrEmpty(keys.進銷存組織)
                 || string.IsNullOrEmpty(keys.單據別)
                 || keys.日期 == default
                 || keys.流水號 == default)
-            {
                 return NotFound();
-            }
-            #region test
-            // 🔍 1. 先印出傳入的主鍵條件
-            Debug.WriteLine($"[DEBUG] 傳入條件：進銷存組織={keys.進銷存組織}, 單據別={keys.單據別}, 日期={keys.日期:yyyy-MM-dd HH:mm:ss}, 流水號={keys.流水號}");
 
-            //// 🔍 2. 先查 DB 中是否有符合該日期的資料（這段可放 try 區塊外也可內）
-            //var checkDateList = await GetDetailBaseQuery()
-            //    .Where(x => x.日期.Date == keys.日期.Date)
-            //    .Select(x => x.日期)
-            //    .ToListAsync();
+            Debug.WriteLine($"[DEBUG] 傳入條件：進銷存組織={keys.進銷存組織}, 單據別={keys.單據別}, 日期={keys.日期:yyyy-MM-dd}, 流水號={keys.流水號}");
 
+            // 👇 模擬事業為固定值（你可以改為從其他來源取得）
+            //var fake事業 = "B1";
+            var 事業 = keys.進銷存組織?.Length >= 2 ? keys.進銷存組織.Substring(0, 2) : "";
 
-            //foreach (var dt in checkDateList)
-            //{
-            //    Debug.WriteLine($"[DEBUG] DB 中存在的日期：{dt:yyyy-MM-dd HH:mm:ss}");
-            //}
+            // ✅ 直接 Join 事業商品檔
+            var detailQuery = from d in _context.庫存盤點明細
+                              join p in _context.事業商品檔
+                                  on new { 事業 = 事業, d.商品編號 } equals new { p.事業, p.商品編號 } into dp
+                              from prod in dp.DefaultIfEmpty()
+                              where d.進銷存組織 == keys.進銷存組織
+                                    && d.單據別 == keys.單據別
+                                    && d.日期.Date == keys.日期.Date
+                                    && d.流水號 == keys.流水號
+                              select new HW_01_庫存盤點明細檔DisplayViewModel
+                              {
+                                  進銷存組織 = d.進銷存組織,
+                                  單據別 = d.單據別,
+                                  日期 = d.日期,
+                                  //日期顯示 = d.日期,
+                                  流水號 = d.流水號,
+                                  項次 = (decimal)d.項次,
+                                  商品編號 = d.商品編號,
+                                  商品名稱 = prod != null ? prod.商品名稱 : "",
+                                  //商品簡稱 = prod != null ? prod.商品簡稱 : "",
+                                  商品規格 = prod != null ? prod.商品規格 : "",
+                                  單位 = prod != null ? prod.銷售商品單位 : "",
+                                  庫存數量 = d.庫存數量,
+                                  盤點數量 = d.盤點數量
+                              };
 
-            // ✅ 先過濾條件
-            var baseQuery = GetDetailBaseQuery()
-                .Where(x => x.進銷存組織 == keys.進銷存組織
-                         && x.單據別 == keys.單據別
-                         && x.日期.Date == keys.日期.Date
-                         && x.流水號 == keys.流水號);
-
-            // ✅ 先拉出來 Debug 看有哪些資料（這樣才精準）
-            var debugList = baseQuery.ToList();
-
-            // DEBUG：逐筆比對欄位差異
-            foreach (var x in debugList)
-            {
-                Debug.WriteLine($@"[DEBUG] 明細比對：
-進銷存組織 => DB={x.進銷存組織} / 查詢={keys.進銷存組織} / 相符: {x.進銷存組織 == keys.進銷存組織}
-單據別     => DB={x.單據別} / 查詢={keys.單據別} / 相符: {x.單據別 == keys.單據別}
-日期       => DB={x.日期:yyyy-MM-dd HH:mm:ss} / 查詢={keys.日期:yyyy-MM-dd HH:mm:ss} / 相符: {x.日期.Date == keys.日期.Date}
-流水號     => DB={x.流水號} / 查詢={keys.流水號} / 相符: {x.流水號 == keys.流水號}
-");
-            }
-
-            #endregion
-            var detailQuery = GetDetailBaseQuery()
-                .Where(x => x.進銷存組織 == keys.進銷存組織
-                         && x.單據別 == keys.單據別
-                         //&& x.日期 == keys.日期
-                         && x.日期.Date == keys.日期.Date
-                         && x.流水號 == keys.流水號);
-
-            #region test
-            // 🔍 4. 將結果轉成 List，再來 Debug 比對
             var resultList = await detailQuery.ToListAsync();
+
             foreach (var x in resultList)
             {
-                Debug.WriteLine($"[DEBUG] 比對結果 => DB 日期: {x.日期:yyyy-MM-dd HH:mm:ss} / 傳入日期: {keys.日期:yyyy-MM-dd HH:mm:ss} / 相符: {x.日期.Date == keys.日期.Date}");
+                Debug.WriteLine($"[DEBUG] 商品編號={x.商品編號}, 名稱={x.商品名稱}, 規格={x.商品規格}");
             }
 
-            // 🔍 5. 確認是否查無資料
             if (!resultList.Any())
-            {
                 Debug.WriteLine("[DEBUG] 查無符合條件的明細資料。");
-            }
-            #endregion
+
             var pagedData = await PaginatedList<HW_01_庫存盤點明細檔DisplayViewModel>.CreateAsync(detailQuery);
 
             return Ok(new ReturnData(ReturnState.ReturnCode.OK) { data = pagedData });

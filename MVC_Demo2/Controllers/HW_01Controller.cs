@@ -739,8 +739,7 @@ namespace MVC_Demo2.Controllers
         }
 
 
-
-        [HttpGet]
+ 
         [NeglectActionFilter]
         [HttpGet]
         public async Task<IActionResult> Get災害別選項(string 盤點種類)
@@ -1414,14 +1413,16 @@ namespace MVC_Demo2.Controllers
             try
             {
                 var (org, _, 列帳日, 列帳日格式化, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
- 
                 var now = DateTime.Now;
 
                 // 確保至少有一筆資料
                 if (postData.選項清單 == null || !postData.選項清單.Any())
+                {
+                    Debug.WriteLine("[CreateMultiInput][POST] ❌ 無任何品項可新增！");
                     return BadRequest("請至少加入一筆盤點品項");
+                }
 
-                // 取得目前最大項次
+                // 查目前最大項次
                 var maxItemNo = await _context.庫存盤點明細
                     .Where(x =>
                         x.進銷存組織 == postData.進銷存組織 &&
@@ -1437,15 +1438,37 @@ namespace MVC_Demo2.Controllers
 
                 foreach (var (item, idx) in postData.選項清單.Select((val, i) => (val, i)))
                 {
+                    Debug.WriteLine($"[CreateMultiInput][POST] ▶ 準備加入商品：{item.商品編號}");
+
+                    // 防呆：是否已存在相同商品
+                    bool alreadyExists = await _context.庫存盤點明細.AnyAsync(x =>
+                        x.進銷存組織 == postData.進銷存組織 &&
+                        x.單據別 == postData.單據別 &&
+                        x.日期 == postData.日期 &&
+                        x.流水號 == postData.流水號 &&
+                        x.商品編號 == item.商品編號);
+
+                    if (alreadyExists)
+                    {
+                        Debug.WriteLine($"⚠️ 商品 {item.商品編號} 已存在，跳過。");
+                        continue;
+                    }
+
+                    // 查庫存數量
                     var stockQty = await _context.庫存日檔
                         .Where(x =>
                             x.倉庫組織 == postData.進銷存組織 &&
-x.倉庫代號 == postData.倉庫代號 &&
-x.日期 == postData.日期 &&
-x.商品編號 == item.商品編號
-)
+                            x.倉庫代號 == postData.倉庫代號 &&
+                            x.日期 == postData.日期 &&
+                            x.商品編號 == item.商品編號)
                         .Select(x => x.本日結存數量)
                         .FirstOrDefaultAsync();
+
+                    if (stockQty == null)
+                    {
+                        Debug.WriteLine($"⚠️ 找不到商品 {item.商品編號} 的庫存日檔結存資料，預設為 0");
+                        stockQty = 0;
+                    }
 
                     var entity = new 庫存盤點明細
                     {
@@ -1453,7 +1476,7 @@ x.商品編號 == item.商品編號
                         單據別 = postData.單據別,
                         日期 = postData.日期,
                         流水號 = postData.流水號,
-                        項次 = maxItemNo + idx + 1,
+                        項次 = maxItemNo + newItems.Count + 1,
                         商品編號 = item.商品編號,
                         庫存數量 = stockQty,
                         盤點數量 = 0,
@@ -1461,7 +1484,14 @@ x.商品編號 == item.商品編號
                         修改日期時間 = now
                     };
 
+                    Debug.WriteLine($"✅ 新增項次={entity.項次}, 商品={entity.商品編號}, 庫存={entity.庫存數量}");
                     newItems.Add(entity);
+                }
+
+                if (!newItems.Any())
+                {
+                    Debug.WriteLine("[CreateMultiInput][POST] ⚠️ 無有效資料寫入");
+                    return BadRequest("所有品項皆重複或缺資料，未寫入任何資料");
                 }
 
                 await _context.庫存盤點明細.AddRangeAsync(newItems);
@@ -1480,6 +1510,42 @@ x.商品編號 == item.商品編號
                 return StatusCode(500, "CreateMultiInput 儲存錯誤：" + ex.GetOriginalException().Message);
             }
         }
+        [HttpPost]
+        [NeglectActionFilter]
+        public async Task<IActionResult> GetStockQty([FromBody] 庫存查詢條件 query)
+        {
+            Debug.WriteLine("📥 [GetStockQty] 接收查詢條件：");
+            Debug.WriteLine($"▶ 進銷存組織 = {query.進銷存組織}");
+            Debug.WriteLine($"▶ 倉庫代號   = {query.倉庫代號}");
+            Debug.WriteLine($"▶ 日期       = {query.日期:yyyy-MM-dd}");
+            Debug.WriteLine($"▶ 單據別     = {query.單據別}");
+            Debug.WriteLine($"▶ 流水號     = {query.流水號}");
+            Debug.WriteLine($"▶ 商品編號   = {query.商品編號}");
+
+            var qty = await _context.庫存盤點明細
+                .Where(x =>
+                    x.進銷存組織 == query.進銷存組織 &&
+                    x.單據別 == query.單據別 &&
+                    x.日期 == query.日期 &&
+                    x.流水號 == query.流水號 &&
+                    x.商品編號 == query.商品編號)
+                .Select(x => x.庫存數量)
+                .FirstOrDefaultAsync();
+
+            Debug.WriteLine($"📤 [GetStockQty] 查得庫存數量：{qty}");
+            return Ok(qty);
+        }
+
+        public class 庫存查詢條件
+        {
+            public string 進銷存組織 { get; set; }
+            public string 倉庫代號 { get; set; }
+            public string 單據別 { get; set; }
+            public DateTime 日期 { get; set; }
+            public int 流水號 { get; set; }
+            public string 商品編號 { get; set; }
+        }
+
 
 
     }

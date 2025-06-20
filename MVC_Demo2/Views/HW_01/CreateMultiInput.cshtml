@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-md-12">
 
-            <form asp-action="CreateMultiInput" method="post" >
+            <form asp-action="CreateMultiInput" method="post">
                 @Html.AntiForgeryToken()
 
                 <!-- 顯示欄位區域 -->
@@ -64,24 +64,21 @@
                 @Html.HiddenFor(m => m.流水號)
                 @Html.HiddenFor(m => m.倉庫代號)
                 <!-- 存檔/關閉按鈕 -->
-            <div class="form-group mt-4">
-                @*<button type="submit" class="btn btn-primary" id="btnSave" style="display: none;">存檔</button>*@
-                <button type="button" class="btn btn-primary" id="btnSave" style="display: none;">存檔</button>
+                <div class="form-group mt-4">
+                    @*<button type="submit" class="btn btn-primary" id="btnSave" style="display: none;">存檔</button>*@
+                    <button type="button" class="btn btn-primary" id="btnSave" style="display: none;">存檔</button>
 
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
-            </div>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+                </div>
             </form>
         </div>
     </div>
 </div>
 <script>
-
-    this.$on('fetched-page-modal::ready', (modalId) => {
+this.$on('fetched-page-modal::ready', (modalId) => {
     console.log(`[Modal Ready] modalId = ${modalId}`);
 
     this.$nextTick(() => {
-        console.log("✅ Ready to bind 加入盤點 click");
-
         let itemMap = new Map();
 
         const $btnAdd = $('#btnAddItem');
@@ -89,99 +86,163 @@
         const $select = $('#product-sel');
         const $tbody = $('#item-list-table tbody');
 
-        $btnAdd.off('click').on('click', function () {
+        @*const getStockQty = async (商品編號) => {
+            try {
+                const res = await axios.post('@Url.Action("GetStockQty", "HW_01")', {
+                    進銷存組織: $('input[name="進銷存組織"]').val(),
+                    倉庫代號: $('input[name="倉庫代號"]').val(),
+                    日期: $('input[name="日期"]').val(),
+                    商品編號: 商品編號
+                });
+                console.log(`📦 庫存查詢成功：${商品編號} => ${res.data}`);
+                return res.data || 0;
+            } catch (err) {
+                console.error("❌ 查詢庫存量失敗", err);
+                return 0;
+            }
+        };*@
+        const getStockQty = async (商品編號) => {
+    try {
+        @*const res = await axios.post('@Url.Action("GetStockQty", "HW_01")', {
+            進銷存組織: $('input[name="進銷存組織"]').val(),
+            倉庫代號: $('input[name="倉庫代號"]').val(),
+            單據別: $('input[name="單據別"]').val(),
+            日期: $('input[name="日期"]').val(),
+            流水號: parseInt($('input[name="流水號"]').val()),
+            商品編號: 商品編號
+        });*@
+        const res = await axios.post('@Url.Action("GetStockQty", "HW_01")', {
+    進銷存組織: $('input[name="進銷存組織"]').val(),
+    倉庫代號: $('input[name="倉庫代號"]').val(),
+    單據別: $('input[name="單據別"]').val(),
+    日期: $('input[name="日期"]').val(),
+    流水號: parseInt($('input[name="流水號"]').val(), 10),
+    商品編號: 商品編號
+}, {
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
+
+
+        console.log("📤 查詢參數 = ", {
+            進銷存組織: $('input[name="進銷存組織"]').val(),
+            倉庫代號: $('input[name="倉庫代號"]').val(),
+            日期: $('input[name="日期"]').val(),
+            單據別: $('input[name="單據別"]').val(),
+            流水號: $('input[name="流水號"]').val(),
+            商品編號: 商品編號
+        });
+        console.log(`📦 查詢盤點明細庫存成功：${商品編號} => ${res.data}`);
+        return res.data || 0;
+    } catch (err) {
+        console.error("❌ 查詢盤點明細庫存量失敗", err);
+        return 0;
+    }
+};
+
+        $btnAdd.off('click').on('click', async function () {
             const 商品編號 = $select.val();
             const 商品名稱 = $select.find('option:selected').text();
-            const 假庫存量 = Math.floor(Math.random() * 50);
 
-            if (!商品編號 || itemMap.has(商品編號)) {
-                alert("請選擇商品，且避免重複");
+            if (!商品編號) {
+                alert("⚠️ 請先選擇商品");
                 return;
             }
+
+            if (itemMap.has(商品編號)) {
+                alert("⚠️ 此商品已加入，請勿重複");
+                return;
+            }
+
+            console.log(`🔍 查詢商品：${商品編號} - ${商品名稱}`);
+            const 庫存商品量 = await getStockQty(商品編號);
 
             const row = `
                 <tr data-id="${商品編號}">
                     <td><button type="button" class="btn btn-sm btn-danger btn-remove">刪除</button></td>
                     <td>${商品編號}<input type="hidden" name="選項清單[].商品編號" value="${商品編號}" /></td>
                     <td>${商品名稱}</td>
-                    <td>${假庫存量}</td>
+                    <td>${庫存商品量}<input type="hidden" name="選項清單[].庫存商品量" value="${庫存商品量}" /></td>
                 </tr>`;
             $tbody.append(row);
             itemMap.set(商品編號, true);
             $btnSave.show();
-            console.log(`✅ 已加入：${商品編號}`);
+            console.log(`✅ 已成功加入商品：${商品編號}`);
         });
+
         $btnSave.off('click').on('click', async function () {
-    console.log("📝 點擊了存檔");
+            console.log("📝 點擊送出按鈕");
 
-    const rows = $tbody.find('tr');
-    console.log(`📦 目前列示品項筆數：${rows.length}`);
+            const rows = $tbody.find('tr');
+            console.log(`📋 當前列示品項筆數：${rows.length}`);
 
-    if (rows.length === 0) {
-        alert("⚠️ 請至少加入一筆盤點品項");
-        console.warn("🚫 無盤點品項，取消送出");
-        return;
-    }
+            if (rows.length === 0) {
+                alert("⚠️ 請至少加入一筆盤點品項");
+                console.warn("🚫 無可送出資料");
+                return;
+            }
 
-    const 選項清單 = [];
-    rows.each(function (index, row) {
-        const 商品編號 = $(this).data('id');
-        const 商品名稱 = $(this).find('td:eq(2)').text();
-        const 庫存商品量 = parseInt($(this).find('td:eq(3)').text());
+            const 選項清單 = [];
+            rows.each(function (i) {
+                const 商品編號 = $(this).data('id');
+                const 商品名稱 = $(this).find('td:eq(2)').text();
+                const 庫存商品量 = parseInt($(this).find('td:eq(3)').text());
 
-        console.log(`🧾 第 ${index + 1} 筆：商品編號=${商品編號}, 商品名稱=${商品名稱}, 庫存量=${庫存商品量}`);
+                if (!商品編號 || isNaN(庫存商品量)) {
+                    console.warn(`⚠️ 第 ${i + 1} 筆資料無效，略過`);
+                    return;
+                }
 
-        if (!商品編號 || isNaN(庫存商品量)) {
-            console.warn(`⚠️ 無效資料，跳過第 ${index + 1} 筆`);
-            return;
-        }
+                console.log(`📌 收集第 ${i + 1} 筆：${商品編號}, ${商品名稱}, 庫存=${庫存商品量}`);
+                選項清單.push({ 商品編號, 商品名稱, 庫存商品量 });
+            });
 
-        選項清單.push({ 商品編號, 商品名稱, 庫存商品量 });
-    });
+            const postData = {
+                進銷存組織: $('input[name="進銷存組織"]').val(),
+                單據別: $('input[name="單據別"]').val(),
+                日期: $('input[name="日期"]').val(),
+                流水號: parseInt($('input[name="流水號"]').val()),
+                倉庫代號: $('input[name="倉庫代號"]').val(),
+                選項清單: 選項清單
+            };
 
-    const postData = {
-        進銷存組織: $('input[name="進銷存組織"]').val(),
-        單據別: $('input[name="單據別"]').val(),
-        日期: $('input[name="日期"]').val(),
-        流水號: parseInt($('input[name="流水號"]').val()),
-        倉庫代號: $('input[name="倉庫代號"]').val(),
-        選項清單: 選項清單
-    };
+            console.log("📤 送出資料 postData =", postData);
 
-    console.log("📤 準備送出的 postData =", postData);
+            try {
+                const response = await axios.post('@Url.Action("CreateMultiInput", "HW_01")', postData, {
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    }
+                });
 
-    if (postData.選項清單.length === 0) {
-        alert("⚠️ 沒有有效品項可送出！");
-        console.warn("🚫 有品項列但無有效資料，取消送出");
-        return;
-    }
+                console.log("✅ 成功送出，伺服器回應：", response.data);
+                alert("🎉 已成功送出盤點品項！");
+                window.location.reload();
+            } catch (error) {
+                console.error("❌ 發生錯誤", error);
 
-    try {
-        const response = await axios.post('@Url.Action("CreateMultiInput", "HW_01")', postData, {
-            headers: {
-                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                if (error.response) {
+                    console.warn("📨 錯誤回應內容：", error.response.data);
+                    alert("❌ 發生錯誤：" + error.response.data);
+                } else {
+                    alert("❌ 發生未知錯誤，請查看 Console");
+                }
             }
         });
 
-        console.log("✅ 成功送出，伺服器回應：", response.data);
-        alert("🎉 已成功送出盤點品項！");
-        window.location.reload();
-    } catch (error) {
-        console.error("❌ 發生錯誤：", error);
+        $tbody.off('click').on('click', '.btn-remove', function () {
+            const tr = $(this).closest('tr');
+            const 商品編號 = tr.data('id');
+            tr.remove();
+            itemMap.delete(商品編號);
+            console.log(`🗑️ 已移除商品：${商品編號}`);
 
-        if (error.response) {
-            console.error("📨 回傳內容：", error.response.data);
-            alert(`❌ 發生錯誤：${error.response.data}`);
-        } else {
-            alert("❌ 發生未預期錯誤，請檢查開發者工具 Console");
-        }
-    }
-});
-
-
-        // 其他綁定（刪除、存檔等）放這裡…
+            if (itemMap.size === 0) {
+                $btnSave.hide();
+                console.log("📭 所有品項已清空，隱藏送出按鈕");
+            }
+        });
     });
 });
-
-
 </script>

@@ -77,6 +77,44 @@ namespace MVC_Demo2.Controllers
         }
 
         // ✅ 這裡是 InitInventoryDefaultValues() 的正確位置
+        //private (string org, string period, string date, DateTime format_date, string userNo, string businessNo, string departmentNo, string divisionNo, string branchNo) InitInventoryDefaultValues()
+        //{
+        //    var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+        //    if (ua == null)
+        //    {
+        //        Debug.WriteLine("[InitInventoryDefaultValues] ⚠️ 無法從 Session 取得使用者帳號資訊");
+        //        return (null, null, null, default(DateTime), null, null, null, null, null);
+        //    }
+
+        //    var orgRecord = _context.進銷存組織
+        //        .Where(x =>
+        //            x.列帳事業 == ua.BusinessNo && x.列帳單位 == ua.DepartmentNo &&
+        //            (string.IsNullOrEmpty(x.列帳部門) || x.列帳部門 == ua.DivisionNo) &&
+        //            (string.IsNullOrEmpty(x.列帳分部) || x.列帳分部 == ua.BranchNo) &&
+        //            x.是否物流組織 == false
+        //        )
+        //        .OrderByDescending(x =>
+        //            (x.列帳事業 + x.列帳單位 + x.列帳部門 + x.列帳分部).Length
+        //        )
+        //        .FirstOrDefault();
+
+        //    if (orgRecord == null)
+        //    {
+        //        Debug.WriteLine("[InitInventoryDefaultValues] ⚠️ 找不到符合條件的進銷存組織資料");
+        //        return (null, null, null, default(DateTime), ua.UserNo, ua.BusinessNo, ua.DepartmentNo, ua.DivisionNo, ua.BranchNo);
+        //    }
+
+        //    string org = orgRecord.進銷存組織1;
+        //    string period = orgRecord.列帳日期.ToString("yyyyMM");
+        //    string date = orgRecord.列帳日期.ToString("yyyy-MM-dd");
+
+        //    //Debug.WriteLine($"[InitInventoryDefaultValues] ✅ 組織代號={org}, 列帳年月={period}, 列帳日期={date}");
+        //    //Debug.WriteLine($"[Create] ▶ 使用者帳號={userNo}，組織代號={org}，年月={period}，列帳日期={date}，格式日期{formate_date}，事業={biz}，單位={dept}，部門={div}，分部={branch}");
+        //    Debug.WriteLine($"[Create] ▶ 使用者帳號={ ua.UserNo}，組織代號={org}，年月={period}，列帳日期={date}，格式日期{orgRecord.列帳日期}，事業={ ua.BusinessNo}，單位={ua.DepartmentNo}，部門={ ua.DivisionNo}，分部={ua.BranchNo}");
+
+        //    return (org, period, date, orgRecord.列帳日期, ua.UserNo, ua.BusinessNo, ua.DepartmentNo, ua.DivisionNo, ua.BranchNo);
+        //}
+
         private (string org, string period, string date, DateTime format_date, string userNo, string businessNo, string departmentNo, string divisionNo, string branchNo) InitInventoryDefaultValues()
         {
             var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
@@ -86,17 +124,28 @@ namespace MVC_Demo2.Controllers
                 return (null, null, null, default(DateTime), null, null, null, null, null);
             }
 
-            var orgRecord = _context.進銷存組織
+            Debug.WriteLine($"[InitInventoryDefaultValues] ✅ 從 Session 取得使用者：UserNo={ua.UserNo}, BusinessNo={ua.BusinessNo}, DepartmentNo={ua.DepartmentNo}, DivisionNo={ua.DivisionNo}, BranchNo={ua.BranchNo}");
+
+            var orgRecordQuery = _context.進銷存組織
                 .Where(x =>
-                    x.列帳事業 == ua.BusinessNo && x.列帳單位 == ua.DepartmentNo &&
+                    x.列帳事業 == ua.BusinessNo &&
+                    x.列帳單位 == ua.DepartmentNo &&
                     (string.IsNullOrEmpty(x.列帳部門) || x.列帳部門 == ua.DivisionNo) &&
                     (string.IsNullOrEmpty(x.列帳分部) || x.列帳分部 == ua.BranchNo) &&
                     x.是否物流組織 == false
-                )
-                .OrderByDescending(x =>
-                    (x.列帳事業 + x.列帳單位 + x.列帳部門 + x.列帳分部).Length
-                )
-                .FirstOrDefault();
+                );
+
+            Debug.WriteLine($"[InitInventoryDefaultValues] ▶ 組織篩選條件：事業={ua.BusinessNo}，單位={ua.DepartmentNo}，部門={ua.DivisionNo}，分部={ua.BranchNo}");
+
+            var orgRecord = orgRecordQuery
+    .OrderByDescending(x => x.列帳日期)
+    .ThenByDescending(x =>
+        (x.列帳事業 ?? "").Length +
+        (x.列帳單位 ?? "").Length +
+        (x.列帳部門 ?? "").Length +
+        (x.列帳分部 ?? "").Length
+    )
+    .FirstOrDefault();
 
             if (orgRecord == null)
             {
@@ -108,13 +157,11 @@ namespace MVC_Demo2.Controllers
             string period = orgRecord.列帳日期.ToString("yyyyMM");
             string date = orgRecord.列帳日期.ToString("yyyy-MM-dd");
 
-            //Debug.WriteLine($"[InitInventoryDefaultValues] ✅ 組織代號={org}, 列帳年月={period}, 列帳日期={date}");
-            //Debug.WriteLine($"[Create] ▶ 使用者帳號={userNo}，組織代號={org}，年月={period}，列帳日期={date}，格式日期{formate_date}，事業={biz}，單位={dept}，部門={div}，分部={branch}");
-            Debug.WriteLine($"[Create] ▶ 使用者帳號={ ua.UserNo}，組織代號={org}，年月={period}，列帳日期={date}，格式日期{orgRecord.列帳日期}，事業={ ua.BusinessNo}，單位={ua.DepartmentNo}，部門={ ua.DivisionNo}，分部={ua.BranchNo}");
+            Debug.WriteLine($"[InitInventoryDefaultValues] ✅ 取得組織：進銷存組織={org}，列帳年月={period}，列帳日期={date}，格式日期={orgRecord.列帳日期}");
+            Debug.WriteLine($"[InitInventoryDefaultValues] ✅ 使用者帳號={ua.UserNo}，事業={ua.BusinessNo}，單位={ua.DepartmentNo}，部門={ua.DivisionNo}，分部={ua.BranchNo}");
 
             return (org, period, date, orgRecord.列帳日期, ua.UserNo, ua.BusinessNo, ua.DepartmentNo, ua.DivisionNo, ua.BranchNo);
         }
-
 
         public IActionResult Index()
         {
@@ -739,7 +786,7 @@ namespace MVC_Demo2.Controllers
         }
 
 
- 
+
         [NeglectActionFilter]
         [HttpGet]
         public async Task<IActionResult> Get災害別選項(string 盤點種類)
@@ -1311,44 +1358,48 @@ namespace MVC_Demo2.Controllers
                 Debug.WriteLine("┌──────────────────────────────────────┐");
                 Debug.WriteLine($"│ [CreateMultiInput] ▶ 使用者帳號   = {userNo}");
                 Debug.WriteLine($"│                          組織代號 = {org}");
-                Debug.WriteLine($"│                          列帳日期 = {列帳日:yyyy-MM-dd}");
+                Debug.WriteLine($"│                          列帳日期 = {列帳日:yyyy-MM-dd} (格式化：{列帳日格式化})");
                 Debug.WriteLine($"│                          事業別   = {biz}");
                 Debug.WriteLine($"│                          單位     = {dept}");
                 Debug.WriteLine($"│                          部門     = {div}");
                 Debug.WriteLine($"│                          分部     = {branch}");
-                Debug.WriteLine($"│                          倉庫代號     = {倉庫代號}");
+                Debug.WriteLine($"│                          倉庫代號 = {倉庫代號}");
                 Debug.WriteLine("└──────────────────────────────────────┘");
 
-                //ViewBag.var列帳日期 = 列帳日;
-                // Controller
-                //ViewBag.var列帳日期 = 列帳日.ToString("yyyy/MM/dd"); // 不送 DateTime，直接送格式化字串
-                //ViewBag.var列帳日期 = 列帳日?.ToString("yyyy/MM/dd", CultureInfo.GetCultureInfo("zh-TW"));
                 ViewBag.var列帳日期 = 列帳日;
-
                 ViewBag.var進銷存組織 = org;
                 ViewBag.var倉庫代號 = 倉庫代號;
 
                 var warehouse = await _context.倉庫基本檔
-    .Where(x => x.倉庫代號 == 倉庫代號)
-    .Select(x => x.倉庫簡稱)
-    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(x => x.倉庫組織 == org && x.倉庫代號 == 倉庫代號);
 
-                ViewBag.倉庫簡稱 = warehouse ?? "(查無簡稱)";
-                // 取得商品選項（目前為基礎條件）
-                var 品項選項 = await Get品項類別選項Async(biz);
-                //ViewBag.品項選項 = 品項選項;
-                ViewBag.品項選項 = (List<SelectListItem>)await Get品項類別選項Async(biz);
+                //ViewBag.倉庫簡稱 = warehouse ?? "(查無簡稱)";
+                ViewBag.倉庫簡稱 = warehouse != null ? warehouse.倉庫簡稱 : "(查無簡稱)";
+
+                Debug.WriteLine($"[CreateMultiInput] ▶ 倉庫簡稱 = {ViewBag.倉庫簡稱}");
+
+                var 品項選項 = await Get品項選項_依據庫存日檔Async(
+                    進銷存組織: org,
+                    倉庫代號: 倉庫代號,
+                    日期: 列帳日格式化
+                );
+
+                ViewBag.品項選項 = 品項選項;
 
                 Debug.WriteLine($"[CreateMultiInput] ▶ 商品選項筆數 = {品項選項.Count}");
+                var preview = 品項選項.Take(5).ToList();
+                for (int i = 0; i < preview.Count; i++)
+                {
+                    Debug.WriteLine($"　　▶ 第{i + 1}筆：Value = {preview[i].Value}, Text = {preview[i].Text}");
+                }
 
-                // 建立初始 ViewModel
                 var vm = new HW_01_庫存盤點明細檔CreateViewModel
                 {
                     進銷存組織 = 進銷存組織,
                     單據別 = 單據別,
                     日期 = 日期,
                     流水號 = 流水號,
-                    倉庫代號 = 倉庫代號, // ✅ 傳入 ViewModel
+                    倉庫代號 = 倉庫代號,
                     項次 = 0,
                     商品編號 = "",
                     盤點數量 = 0
@@ -1360,50 +1411,83 @@ namespace MVC_Demo2.Controllers
                 Debug.WriteLine($"│ 日期       = {vm.日期:yyyy-MM-dd}");
                 Debug.WriteLine($"│ 流水號     = {vm.流水號}");
                 Debug.WriteLine($"│ 項次       = {vm.項次}");
+                Debug.WriteLine($"│ 商品編號   = {vm.商品編號}");
                 Debug.WriteLine("└───────────────────────────────────────────┘");
 
                 return PartialView(vm);
-
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[CreateMultiInput] ❌ 發生錯誤：{ex.Message}");
-                return StatusCode(500, "CreateMultiInput 錯誤：" + ex.GetOriginalException().Message);
+                var realEx = ex.GetOriginalException();
+                Debug.WriteLine("❌ [CreateMultiInput] 發生例外！");
+                Debug.WriteLine($"▶ Message: {ex.Message}");
+                Debug.WriteLine($"▶ Inner: {realEx?.Message}");
+                Debug.WriteLine($"▶ StackTrace: {realEx?.StackTrace}");
+                return StatusCode(500, "CreateMultiInput 錯誤：" + realEx?.Message);
             }
-
         }
 
 
-        private async Task<List<SelectListItem>> Get品項類別選項Async(string biz)
+        //    private async Task<List<SelectListItem>> Get品項類別選項Async(string biz)
+        //    {
+        //        // 先查詢符合事業的商品清單
+        //        var 商品清單 =   _context.事業商品檔
+        //            .Where(x => x.事業 == biz)
+        //.AsEnumerable() // 🔍 ← 這行是關鍵！把資料拉進記憶體處理 GroupBy
+        //.GroupBy(x => x.商品編號)
+        //.Select(g => g.OrderBy(x => x.商品簡稱).First()) // 每個商品編號只取第一筆（以名稱排序）
+        //.OrderBy(x => x.商品編號)
+        //.Select(x => new SelectListItem
+        //{
+        //    Text = x.商品編號 + "_" + x.商品簡稱,
+        //    Value = x.商品編號
+        //}).ToList(); // ← ❌ 這裡錯，因為上面是 AsEnumerable()
+
+        //        // ⬇️ 改為 ToList()
+        //        var 品項類別選項 = 商品清單.ToList();
+
+        //        // 除錯輸出
+        //        Debug.WriteLine($"[Get品項類別選項Async] ▶ 查詢條件：事業 = {biz}");
+        //        Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品筆數 = {品項類別選項.Count}");
+        //        //foreach (var item in 品項類別選項)
+        //        //{
+        //        //    Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品選項：Value={item.Value}, Text={item.Text}");
+        //        //}
+
+        //        // 插入第一筆提示
+        //        品項類別選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
+
+        //        return 品項類別選項;
+        //    }
+        private async Task<List<SelectListItem>> Get品項選項_依據庫存日檔Async(string 進銷存組織, string 倉庫代號, DateTime 日期)
         {
-            // 先查詢符合事業的商品清單
-            var 商品清單 =   _context.事業商品檔
-                .Where(x => x.事業 == biz)
-    .AsEnumerable() // 🔍 ← 這行是關鍵！把資料拉進記憶體處理 GroupBy
-    .GroupBy(x => x.商品編號)
-    .Select(g => g.OrderBy(x => x.商品簡稱).First()) // 每個商品編號只取第一筆（以名稱排序）
-    .OrderBy(x => x.商品編號)
-    .Select(x => new SelectListItem
-    {
-        Text = x.商品編號 + "_" + x.商品簡稱,
-        Value = x.商品編號
-    }).ToList(); // ← ❌ 這裡錯，因為上面是 AsEnumerable()
+            var 事業 = 進銷存組織?.Length >= 2 ? 進銷存組織.Substring(0, 2) : "";
 
-            // ⬇️ 改為 ToList()
-            var 品項類別選項 = 商品清單.ToList();
+            var query = from s in _context.庫存日檔
+                        join p in _context.事業商品檔
+                            on new { 商品編號 = s.商品編號, 事業 = 事業 }
+                            equals new { p.商品編號, p.事業 }
+                        where s.倉庫組織 == 進銷存組織
+                              && s.倉庫代號 == 倉庫代號
+                              && s.日期 == 日期
+                              && s.本日結存數量 > 0 // 🔍 可選條件：只抓有庫存的
+                        group new { s, p } by new { s.商品編號, p.商品簡稱 } into g
+                        orderby g.Key.商品編號
+                        select new SelectListItem
+                        {
+                            Value = g.Key.商品編號,
+                            Text = g.Key.商品編號 + "_" + g.Key.商品簡稱
+                        };
 
-            // 除錯輸出
-            Debug.WriteLine($"[Get品項類別選項Async] ▶ 查詢條件：事業 = {biz}");
-            Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品筆數 = {品項類別選項.Count}");
-            //foreach (var item in 品項類別選項)
-            //{
-            //    Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品選項：Value={item.Value}, Text={item.Text}");
-            //}
+            var result = await query.ToListAsync();
+            foreach (var item in result)
+            {
+                Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品選項：Value={item.Value}, Text={item.Text}");
+            }
+            // 加入「--請選擇--」
+            result.Insert(0, new SelectListItem { Value = "", Text = "--請選擇--" });
 
-            // 插入第一筆提示
-            品項類別選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
-
-            return 品項類別選項;
+            return result;
         }
 
         [HttpPost]

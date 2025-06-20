@@ -85,32 +85,10 @@ this.$on('fetched-page-modal::ready', (modalId) => {
         const $btnSave = $('#btnSave');
         const $select = $('#product-sel');
         const $tbody = $('#item-list-table tbody');
-
-        @*const getStockQty = async (商品編號) => {
-            try {
-                const res = await axios.post('@Url.Action("GetStockQty", "HW_01")', {
-                    進銷存組織: $('input[name="進銷存組織"]').val(),
-                    倉庫代號: $('input[name="倉庫代號"]').val(),
-                    日期: $('input[name="日期"]').val(),
-                    商品編號: 商品編號
-                });
-                console.log(`📦 庫存查詢成功：${商品編號} => ${res.data}`);
-                return res.data || 0;
-            } catch (err) {
-                console.error("❌ 查詢庫存量失敗", err);
-                return 0;
-            }
-        };*@
+ 
         const getStockQty = async (商品編號) => {
     try {
-        @*const res = await axios.post('@Url.Action("GetStockQty", "HW_01")', {
-            進銷存組織: $('input[name="進銷存組織"]').val(),
-            倉庫代號: $('input[name="倉庫代號"]').val(),
-            單據別: $('input[name="單據別"]').val(),
-            日期: $('input[name="日期"]').val(),
-            流水號: parseInt($('input[name="流水號"]').val()),
-            商品編號: 商品編號
-        });*@
+ 
         console.log("📤 查詢參數 = ", {
             進銷存組織: $('input[name="進銷存組織"]').val(),
             倉庫代號: $('input[name="倉庫代號"]').val(),

@@ -183,7 +183,8 @@ namespace MVC_Demo2.Controllers
         [NeglectActionFilter]
         public async Task<IActionResult> GetData([FromBody] QueryConditions qc)
         {
-            IQueryable<HW_01_庫存盤點主檔DisplayViewModel> sql = GetBaseQuery();
+            var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+            IQueryable<HW_01_庫存盤點主檔DisplayViewModel> sql = GetBaseQuery(org);
             PaginatedList<HW_01_庫存盤點主檔DisplayViewModel> queryedData =
                 await PaginatedList<HW_01_庫存盤點主檔DisplayViewModel>.CreateAsync(sql, qc);
 
@@ -194,15 +195,16 @@ namespace MVC_Demo2.Controllers
             });
         }
 
-        private IQueryable<HW_01_庫存盤點主檔DisplayViewModel> GetBaseQuery()
+        private IQueryable<HW_01_庫存盤點主檔DisplayViewModel> GetBaseQuery(string org)
         {
             return (from m in _context.庫存盤點主檔
-                        .Include(m => m.倉庫基本檔)
-                        .Include(m => m.盤點種類Navigation)
-                        .Include(m => m.災害別Navigation)
-                        .Include(m => m.庫存異動狀態Navigation)
-                        .Include(m => m.單據別Navigation)
-                        .Include(m => m.進銷存組織Navigation)
+            .Include(m => m.倉庫基本檔)
+            .Include(m => m.盤點種類Navigation)
+            .Include(m => m.災害別Navigation)
+            .Include(m => m.庫存異動狀態Navigation)
+            .Include(m => m.單據別Navigation)
+            .Include(m => m.進銷存組織Navigation)
+                    where m.進銷存組織 == org // ✅ 加上這一行
                     join u in _context.修改人 on m.修改人 equals u.修改人1 into ujoin
                     from _u in ujoin.DefaultIfEmpty()
                     join pi in _context.修改人 on m.盤點人 equals pi.修改人1 into pijoin
@@ -409,13 +411,6 @@ namespace MVC_Demo2.Controllers
                 model.庫存異動狀態 = "0";           // ✅ 外鍵欄位，避免外鍵例外
                 model.是否註記刪除 = false;           // ✅ NOT NULL 欄位
                 model.備註 ??= string.Empty;         // ✅ 備註不能為 null
-
-                // 產生流水號（依組織＋單據別＋日期）
-                //model.流水號 = await _context.庫存盤點主檔
-                //    .Where(x => x.進銷存組織 == model.進銷存組織 && x.單據別 == "INV" && x.日期 == model.日期)
-                //    .Select(x => x.流水號)
-                //    .DefaultIfEmpty(0)
-                //    .MaxAsync() + 1;
                 var 流水號清單 = await _context.庫存盤點主檔
     .Where(x => x.進銷存組織 == model.進銷存組織 && x.單據別 == "INV" && x.日期 == model.日期)
     .Select(x => x.流水號)
@@ -423,18 +418,36 @@ namespace MVC_Demo2.Controllers
 
                 model.流水號 = (流水號清單.Any() ? 流水號清單.Max() : 0) + 1;
 
-                var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
-                model.修改人 = ua.UserNo;
+                var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+
+                //var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+                model.修改人 = userNo;
                 model.修改日期時間 = DateTime.Now;
 
                 _context.庫存盤點主檔.Add(model);
+
+                Debug.WriteLine("📦 [Create] ▶ 即將新增的庫存盤點主檔內容：");
+                Debug.WriteLine($"進銷存組織 = {model.進銷存組織}");
+                Debug.WriteLine($"單據別     = {model.單據別}");
+                Debug.WriteLine($"日期       = {model.日期:yyyy-MM-dd}");
+                Debug.WriteLine($"流水號     = {model.流水號}");
+                Debug.WriteLine($"盤點種類   = {model.盤點種類}");
+                Debug.WriteLine($"災害別     = {model.災害別}");
+                Debug.WriteLine($"倉庫代號   = {model.倉庫代號}");
+                Debug.WriteLine($"盤點人     = {model.盤點人}");
+                Debug.WriteLine($"盤點日期   = {model.盤點日期:yyyy-MM-dd}");
+                Debug.WriteLine($"備註       = {model.備註}");
+                Debug.WriteLine($"是否註記刪除 = {model.是否註記刪除}");
+                Debug.WriteLine($"庫存異動狀態 = {model.庫存異動狀態}");
+                Debug.WriteLine($"修改人     = {model.修改人}");
+                Debug.WriteLine($"修改日期時間 = {model.修改日期時間:yyyy-MM-dd HH:mm:ss}");
                 int opCount = await _context.SaveChangesAsync();
 
                 Debug.WriteLine($"[Create] ▶ 建立成功，新增筆數：{opCount}，流水號：{model.流水號}");
 
                 if (opCount > 0)
                 {
-                    var newData = await GetBaseQuery()
+                    var newData = await GetBaseQuery(org)
                         .Where(x =>
                             x.進銷存組織 == model.進銷存組織 &&
                             x.單據別 == model.單據別 &&
@@ -891,7 +904,9 @@ namespace MVC_Demo2.Controllers
                 return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
             }
 
-            var viewModel = await GetBaseQuery()
+            var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+
+            var viewModel = await GetBaseQuery(org)
                 .Where(s => s.進銷存組織 == 進銷存組織
                          && s.單據別 == 單據別
                          && s.日期 == 日期
@@ -904,7 +919,7 @@ namespace MVC_Demo2.Controllers
                 return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR));
             }
 
-            var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+            //var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
             ViewBag.var列帳日期 = date;
 
             Debug.WriteLine("[Delete] ▶ 成功載入資料，準備回傳 PartialView");
@@ -986,12 +1001,14 @@ namespace MVC_Demo2.Controllers
         public async Task<IActionResult> DeleteConfirmed([Bind("進銷存組織,單據別,日期,流水號")] HW_01_庫存盤點主檔DisplayViewModel postData)
         {
             Debug.WriteLine("[DeleteConfirmed] ▶ 收到刪除請求");
+            Debug.WriteLine($"▶ postData = 組織={postData?.進銷存組織}, 單據別={postData?.單據別}, 日期={postData?.日期:yyyy-MM-dd}, 流水號={postData?.流水號}");
 
             if (postData == null ||
                 string.IsNullOrWhiteSpace(postData.進銷存組織) ||
                 string.IsNullOrWhiteSpace(postData.單據別) ||
                 postData.日期 == default)
             {
+                Debug.WriteLine("❌ postData 參數驗證錯誤");
                 return BadRequest(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR) { message = "參數錯誤" });
             }
 
@@ -1006,22 +1023,33 @@ namespace MVC_Demo2.Controllers
                     .SingleOrDefaultAsync();
 
                 if (model == null)
+                {
+                    Debug.WriteLine("❌ 查無主檔資料");
                     return NotFound(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR) { message = "找不到資料" });
+                }
+
+                Debug.WriteLine($"📦 [主檔資料] 庫存異動狀態={model.庫存異動狀態}，是否註記刪除={model.是否註記刪除}");
 
                 var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
+                Debug.WriteLine($"👤 當前使用者={userNo}，組織={org}");
+
                 if (model.庫存異動狀態 == "3")
+                {
+                    Debug.WriteLine("⚠️ 資料已完成異動，禁止刪除");
                     return Ok(new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
                     {
                         message = "資料已完成異動，無法刪除"
                     });
-                var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
+                }
 
                 // 註記刪除主檔
                 model.是否註記刪除 = true;
                 model.修改人 = userNo;
                 model.修改日期時間 = DateTime.Now;
 
-                // 移除所有對應明細
+                Debug.WriteLine($"📝 註記刪除主檔：流水號={model.流水號}，修改人={model.修改人}，修改時間={model.修改日期時間}");
+
+                // 查詢並刪除明細
                 var details = await _context.庫存盤點明細
                     .Where(d =>
                         d.進銷存組織 == model.進銷存組織 &&
@@ -1030,17 +1058,20 @@ namespace MVC_Demo2.Controllers
                         d.流水號 == model.流水號)
                     .ToListAsync();
 
+                Debug.WriteLine($"🗑️ 預備移除明細筆數 = {details.Count}");
+
                 _context.庫存盤點明細.RemoveRange(details);
 
                 await _context.SaveChangesAsync();
 
-                Debug.WriteLine("[DeleteConfirmed] ✅ 成功註記刪除並移除明細");
+                Debug.WriteLine("[DeleteConfirmed] ✅ 成功註記主檔刪除並移除明細");
 
                 return Ok(new ReturnData(ReturnState.ReturnCode.OK));
             }
             catch (Exception ex)
             {
                 var realEx = ex.GetOriginalException();
+                Debug.WriteLine($"❌ 例外錯誤：{realEx.Message}");
                 return CreatedAtAction(nameof(DeleteConfirmed), new ReturnData(ReturnState.ReturnCode.DELETE_ERROR)
                 {
                     message = realEx.ToMeaningfulMessage()

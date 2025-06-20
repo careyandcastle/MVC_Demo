@@ -111,11 +111,21 @@ this.$on('fetched-page-modal::ready', (modalId) => {
             流水號: parseInt($('input[name="流水號"]').val()),
             商品編號: 商品編號
         });*@
+        console.log("📤 查詢參數 = ", {
+            進銷存組織: $('input[name="進銷存組織"]').val(),
+            倉庫代號: $('input[name="倉庫代號"]').val(),
+            @*日期: $('input[name="日期"]').val(),*@
+            日期: '@ViewBag.var列帳日期',
+            單據別: $('input[name="單據別"]').val(),
+            流水號: $('input[name="流水號"]').val(),
+            商品編號: 商品編號
+        });
         const res = await axios.post('@Url.Action("GetStockQty", "HW_01")', {
     進銷存組織: $('input[name="進銷存組織"]').val(),
     倉庫代號: $('input[name="倉庫代號"]').val(),
     單據別: $('input[name="單據別"]').val(),
-    日期: $('input[name="日期"]').val(),
+    @*日期: $('input[name="日期"]').val(),*@
+    日期: '@ViewBag.var列帳日期',
     流水號: parseInt($('input[name="流水號"]').val(), 10),
     商品編號: 商品編號
 }, {
@@ -125,15 +135,8 @@ this.$on('fetched-page-modal::ready', (modalId) => {
 });
 
 
-        console.log("📤 查詢參數 = ", {
-            進銷存組織: $('input[name="進銷存組織"]').val(),
-            倉庫代號: $('input[name="倉庫代號"]').val(),
-            日期: $('input[name="日期"]').val(),
-            單據別: $('input[name="單據別"]').val(),
-            流水號: $('input[name="流水號"]').val(),
-            商品編號: 商品編號
-        });
-        console.log(`📦 查詢盤點明細庫存成功：${商品編號} => ${res.data}`);
+
+        console.log(`📦 查詢盤點明細庫存成功：${商品編號} => ${res.data.結存數量}`);
         return res.data || 0;
     } catch (err) {
         console.error("❌ 查詢盤點明細庫存量失敗", err);
@@ -156,8 +159,10 @@ this.$on('fetched-page-modal::ready', (modalId) => {
             }
 
             console.log(`🔍 查詢商品：${商品編號} - ${商品名稱}`);
-            const 庫存商品量 = await getStockQty(商品編號);
-
+            @*const 庫存商品量 = await getStockQty(商品編號);*@
+            const result = await getStockQty(商品編號);
+            const 庫存商品量 = result.結存數量;
+            @*const 商品名稱 = result.商品簡稱;*@
             const row = `
                 <tr data-id="${商品編號}">
                     <td><button type="button" class="btn btn-sm btn-danger btn-remove">刪除</button></td>
@@ -202,6 +207,7 @@ this.$on('fetched-page-modal::ready', (modalId) => {
                 進銷存組織: $('input[name="進銷存組織"]').val(),
                 單據別: $('input[name="單據別"]').val(),
                 日期: $('input[name="日期"]').val(),
+                @*日期: '@ViewBag.var列帳日期',*@
                 流水號: parseInt($('input[name="流水號"]').val()),
                 倉庫代號: $('input[name="倉庫代號"]').val(),
                 選項清單: 選項清單

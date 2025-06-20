@@ -1395,10 +1395,10 @@ namespace MVC_Demo2.Controllers
             // 除錯輸出
             Debug.WriteLine($"[Get品項類別選項Async] ▶ 查詢條件：事業 = {biz}");
             Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品筆數 = {品項類別選項.Count}");
-            foreach (var item in 品項類別選項)
-            {
-                Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品選項：Value={item.Value}, Text={item.Text}");
-            }
+            //foreach (var item in 品項類別選項)
+            //{
+            //    Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品選項：Value={item.Value}, Text={item.Text}");
+            //}
 
             // 插入第一筆提示
             品項類別選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
@@ -1510,30 +1510,71 @@ namespace MVC_Demo2.Controllers
                 return StatusCode(500, "CreateMultiInput 儲存錯誤：" + ex.GetOriginalException().Message);
             }
         }
+        //[HttpPost]
+        //[NeglectActionFilter]
+        //public async Task<IActionResult> GetStockQty([FromBody] 庫存查詢條件 query)
+        //{
+        //    Debug.WriteLine("📥 [GetStockQty] 接收查詢條件：");
+        //    Debug.WriteLine($"▶ 進銷存組織 = {query.進銷存組織}");
+        //    Debug.WriteLine($"▶ 倉庫代號   = {query.倉庫代號}");
+        //    Debug.WriteLine($"▶ 日期       = {query.日期:yyyy-MM-dd}");
+        //    Debug.WriteLine($"▶ 單據別     = {query.單據別}");
+        //    Debug.WriteLine($"▶ 流水號     = {query.流水號}");
+        //    Debug.WriteLine($"▶ 商品編號   = {query.商品編號}");
+
+        //    var qty = await _context.庫存盤點明細
+        //        .Where(x =>
+        //            x.進銷存組織 == query.進銷存組織 &&
+        //            x.單據別 == query.單據別 &&
+        //            x.日期 == query.日期 &&
+        //            x.流水號 == query.流水號 &&
+        //            x.商品編號 == query.商品編號)
+        //        .Select(x => x.庫存數量)
+        //        .FirstOrDefaultAsync();
+
+        //    Debug.WriteLine($"📤 [GetStockQty] 查得庫存數量：{qty}");
+        //    return Ok(qty);
+        //}
         [HttpPost]
-        [NeglectActionFilter]
         public async Task<IActionResult> GetStockQty([FromBody] 庫存查詢條件 query)
         {
             Debug.WriteLine("📥 [GetStockQty] 接收查詢條件：");
             Debug.WriteLine($"▶ 進銷存組織 = {query.進銷存組織}");
             Debug.WriteLine($"▶ 倉庫代號   = {query.倉庫代號}");
             Debug.WriteLine($"▶ 日期       = {query.日期:yyyy-MM-dd}");
-            Debug.WriteLine($"▶ 單據別     = {query.單據別}");
-            Debug.WriteLine($"▶ 流水號     = {query.流水號}");
             Debug.WriteLine($"▶ 商品編號   = {query.商品編號}");
 
-            var qty = await _context.庫存盤點明細
-                .Where(x =>
-                    x.進銷存組織 == query.進銷存組織 &&
-                    x.單據別 == query.單據別 &&
-                    x.日期 == query.日期 &&
-                    x.流水號 == query.流水號 &&
-                    x.商品編號 == query.商品編號)
-                .Select(x => x.庫存數量)
-                .FirstOrDefaultAsync();
+            var 事業 = query.進銷存組織?.Length >= 2 ? query.進銷存組織.Substring(0, 2) : "";
 
-            Debug.WriteLine($"📤 [GetStockQty] 查得庫存數量：{qty}");
-            return Ok(qty);
+            var result = await (from s in _context.庫存日檔
+                                join p in _context.事業商品檔 on s.商品編號 equals p.商品編號
+                                where s.倉庫組織 == query.進銷存組織
+                                      && s.倉庫代號 == query.倉庫代號
+                                      && s.商品編號 == query.商品編號
+                                      && s.日期 == query.日期
+                                      && p.事業 == 事業
+                                select new
+                                {
+                                    商品編號 = s.商品編號,
+                                    商品簡稱 = p.商品簡稱,
+                                    結存數量 = s.本日結存數量
+                                })
+                                .FirstOrDefaultAsync();
+
+            if (result == null)
+            {
+                Debug.WriteLine("⚠️ 查無庫存資料");
+                return NotFound("查無庫存資料");
+            }
+
+            Debug.WriteLine($"📤 [GetStockQty] 商品編號={result.商品編號}, 商品簡稱={result.商品簡稱}, 結存數量={result.結存數量}");
+
+            return Ok(new
+            {
+                result.商品編號,
+                result.商品簡稱,
+                result.結存數量
+            });
         }
 
         public class 庫存查詢條件

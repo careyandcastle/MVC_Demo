@@ -522,7 +522,7 @@ namespace MVC_Demo2.Controllers
 
             var (org, period, date, formate_date, userNo, biz, dept, div, branch) = InitInventoryDefaultValues();
 
-            Debug.WriteLine($"[Create] ▶ 使用者帳號={userNo}，組織代號={org}，年月={period}，日期={date}，事業={biz}，單位={dept}，部門={div}，分部={branch}");
+            Debug.WriteLine($"[Edit] ▶ 使用者帳號={userNo}，組織代號={org}，年月={period}，日期={date}，事業={biz}，單位={dept}，部門={div}，分部={branch}");
 
             ViewBag.var進銷存組織 = org;
             //ViewBag.var列帳年月 = period;
@@ -1163,54 +1163,7 @@ namespace MVC_Demo2.Controllers
 
             return Ok(new ReturnData(ReturnState.ReturnCode.OK) { data = pagedData });
         }
-
-        //private IQueryable<HW_01_庫存盤點明細檔DisplayViewModel> GetDetailBaseQuery()
-        //        {
-        //            #region 測試
-        //            Debug.WriteLine("[DEBUG] 進入 GetDetailBaseQuery()"); // 👉 插入位置 #1：方法開頭
-
-        //            // 插入位置 #2：印出左右資料表筆數
-        //            Debug.WriteLine($"[DEBUG] 庫存盤點明細原始筆數：{_context.庫存盤點明細.Count()}");
-        //            Debug.WriteLine($"[DEBUG] 事業商品檔原始筆數：{_context.事業商品檔.Count()}");
-        //            // 插入位置 #3：測試 JOIN 條件是否成立
-        //            var joinTest = (from d in _context.庫存盤點明細
-        //                            select new { d.進銷存組織, d.商品編號 })
-        //                           .Distinct()
-        //                           .ToList();
-
-        //            foreach (var item in joinTest)
-        //            {
-        //                bool exists = _context.事業商品檔.Any(p =>
-        //                    p.事業 == item.進銷存組織 && p.商品編號 == item.商品編號);
-
-        //                Debug.WriteLine($"[DEBUG] 測試 JOIN 是否成立：事業={item.進銷存組織}, 商品={item.商品編號}, 是否存在於商品檔：{exists}");
-        //            }
-
-        //#endregion
-        //            var query = from d in _context.庫存盤點明細
-        //                        join p in _context.事業商品檔
-        //                            on new { d.進銷存組織, d.商品編號 }
-        //                            equals new { 進銷存組織 = p.事業, p.商品編號 }
-        //                        select new HW_01_庫存盤點明細檔DisplayViewModel
-        //                        {
-        //                            進銷存組織 = d.進銷存組織,
-        //                            單據別 = d.單據別,
-        //                            日期 = d.日期,
-        //                            流水號 = d.流水號,
-        //                            項次 = d.項次,
-        //                            商品編號 = d.商品編號,
-        //                            商品名稱 = p.商品名稱,
-        //                            商品規格 = p.商品規格,
-        //                            單位 = p.銷售商品單位,
-        //                            庫存數量 = d.庫存數量,
-        //                            盤點數量 = d.盤點數量
-        //                        };
-
-        //            var list = query.ToList(); // 強制執行查詢
-        //            Debug.WriteLine($"[DEBUG] 明細查詢筆數（JOIN後）：{list.Count}");
-
-        //            return list.AsQueryable();
-        //        }
+         
         private IQueryable<HW_01_庫存盤點明細檔DisplayViewModel> GetDetailBaseQuery()
         {
             Debug.WriteLine("[DEBUG] 進入 GetDetailBaseQuery()");
@@ -1409,11 +1362,20 @@ namespace MVC_Demo2.Controllers
 
                 Debug.WriteLine($"[CreateMultiInput] ▶ 倉庫簡稱 = {ViewBag.倉庫簡稱}");
 
-                var 品項選項 = await Get品項選項_依據庫存日檔Async_for_createMultiInput( 
-                   進銷存組織: org,
-                   倉庫代號: 倉庫代號,
-                   日期: 列帳日格式化
-               );
+                // var 品項選項 = await Get品項選項_依據庫存日檔Async_for_createMultiInput( 
+                //    進銷存組織: org,
+                //    倉庫代號: 倉庫代號,
+                //    日期: 列帳日格式化
+                //);
+                var 品項選項 = await Get品項選項_依據庫存日檔Async_for_createMultiInput(
+     進銷存組織: org,
+     倉庫代號: 倉庫代號,
+     主檔日期: 日期,
+     日期: 列帳日格式化,
+     單據別: 單據別,
+     流水號: 流水號
+ );
+
 
                 ViewBag.品項選項 = 品項選項;
 
@@ -1460,18 +1422,46 @@ namespace MVC_Demo2.Controllers
             }
         }
 
-        private async Task<List<SelectListItem>> Get品項選項_依據庫存日檔Async_for_createMultiInput(string 進銷存組織, string 倉庫代號, DateTime 日期)
+        //private async Task<List<SelectListItem>> Get品項選項_依據庫存日檔Async_for_createMultiInput(string 進銷存組織, string 倉庫代號, DateTime 日期)
+        private async Task<List<SelectListItem>> Get品項選項_依據庫存日檔Async_for_createMultiInput(
+    string 進銷存組織,
+    string 倉庫代號,
+    DateTime 主檔日期,
+    DateTime 日期,
+    string 單據別,
+    int 流水號)
         {
+            Debug.WriteLine("📥 [Get品項選項_依據庫存日檔Async_for_createMultiInput] 接收參數");
+            Debug.WriteLine($"▶ 進銷存組織 = {進銷存組織}");
+            Debug.WriteLine($"▶ 倉庫代號   = {倉庫代號}");
+            Debug.WriteLine($"▶ 日期       = {日期:yyyy-MM-dd}");
+            Debug.WriteLine($"▶ 單據別     = {單據別}");
+            Debug.WriteLine($"▶ 流水號     = {流水號}");
+
             var 事業 = 進銷存組織?.Length >= 2 ? 進銷存組織.Substring(0, 2) : "";
+            Debug.WriteLine($"▶ 轉換後事業 = {事業}");
+
+            // ✅ 正確排除：限制條件一致
+            var existingProductIds = await _context.庫存盤點明細
+                .Where(d =>
+                    d.進銷存組織 == 進銷存組織 &&
+                    d.單據別 == 單據別 &&
+                    d.日期 == 主檔日期 &&
+                    d.流水號 == 流水號)
+                .Select(d => d.商品編號)
+                .ToListAsync();
+
+            Debug.WriteLine($"▶ 已存在明細商品數量 = {existingProductIds.Count}");
 
             var query = from s in _context.庫存日檔
                         join p in _context.事業商品檔
-                            on new { 商品編號 = s.商品編號, 事業 = 事業 }
-                            equals new { p.商品編號, p.事業 }
+                            on new { s.商品編號, 事業 } equals new { p.商品編號, p.事業 }
                         where s.倉庫組織 == 進銷存組織
                               && s.倉庫代號 == 倉庫代號
                               && s.日期 == 日期
-                              //&& s.本日結存數量 > 0 // 🔍 可選條件：只抓有庫存的//@@@@
+                              && p.是否停用 == false
+                              && p.是否暫停銷售 == false
+                              && !existingProductIds.Contains(s.商品編號)
                         group new { s, p } by new { s.商品編號, p.商品簡稱 } into g
                         orderby g.Key.商品編號
                         select new SelectListItem
@@ -1481,15 +1471,19 @@ namespace MVC_Demo2.Controllers
                         };
 
             var result = await query.ToListAsync();
+
+            Debug.WriteLine($"✅ 查詢商品選項數量 = {result.Count}");
+
             foreach (var item in result)
             {
-                Debug.WriteLine($"[Get品項類別選項Async] ▶ 商品選項：Value={item.Value}, Text={item.Text}");
+                Debug.WriteLine($"▶ 商品選項：Value={item.Value}, Text={item.Text}");
             }
-            // 加入「--請選擇--」
-            result.Insert(0, new SelectListItem { Value = "", Text = "--請選擇--" });
 
+            result.Insert(0, new SelectListItem { Value = "", Text = "--請選擇--" });
             return result;
         }
+
+
 
         private async Task<List<商品選項項目>> Get品項選項_依據庫存日檔Async_for_fullInventory(string 進銷存組織, string 倉庫代號, DateTime 日期)
         {

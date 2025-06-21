@@ -70,19 +70,85 @@
 }
 <h1 class="mt-1">@ViewData["Title"]</h1>
 <div id="hw_01-index">
+
     <table-component id="hw_01-master-table" ref="hw_01-master-table">
         <template #default="slot">
             <b-row class="mb-2">
                 <b-col cols="auto">
-                    <b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-modal class="mr-1" variant="detail3">新增</b-button>
-                    <b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-edit-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">修改</b-button>
-                    <b-button v-if="slot.data.operatePermissions.canDelete" v-b-modal.master-table-del-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow" class="mr-1" variant="detail3">刪除</b-button>
-                    <b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-create-multi-input-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">輸入個別盤點品項</b-button>
-                    <b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-create-full-inventory-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">產生整庫盤點品項</b-button>
+
+                    <b-button v-if="slot.data.operatePermissions.canCreate"
+                              v-b-modal.master-table-create-modal
+                              class="mr-1"
+                              variant="detail3">
+                        新增
+                    </b-button>
+
+                    <b-button v-if="slot.data.operatePermissions.canUpdate"
+                              v-b-modal.master-table-edit-modal
+                              @@click="slot.data.isNewItemOnTop = false"
+                              :disabled="!slot.data.selectedMasterRow?.param?.canClickEditOrDelete"
+                              class="mr-1"
+                              variant="detail3">
+                        修改
+                    </b-button>
+
+                    <b-button v-if="slot.data.operatePermissions.canDelete"
+                              v-b-modal.master-table-del-modal
+                              @@click="slot.data.isNewItemOnTop = false"
+                              :disabled="!slot.data.selectedMasterRow?.param?.canClickEditOrDelete"
+                              class="mr-1"
+                              variant="detail3">
+                        刪除
+                    </b-button>
+
+                    <b-button v-if="slot.data.operatePermissions.canCreate"
+                              v-b-modal.master-table-create-multi-input-modal
+                              @@click="slot.data.isNewItemOnTop = false"
+                              :disabled="!slot.data.selectedMasterRow?.param?.canClickAddInventoryItem"
+                              class="mr-1"
+                              variant="detail3">
+                        輸入個別盤點品項
+                    </b-button>
+
+                    <b-button v-if="slot.data.operatePermissions.canCreate"
+                              v-b-modal.master-table-create-full-inventory-modal
+                              @@click="slot.data.isNewItemOnTop = false"
+                              :disabled="!slot.data.selectedMasterRow?.param?.canClickAddInventoryItem"
+                              class="mr-1"
+                              variant="detail3">
+                        產生整庫盤點品項
+                    </b-button>
+
+                    <b-button v-if="slot.data.operatePermissions.canExport"
+                              class="mr-1"
+                              variant="detail3"
+                              v-on:click="slot.data.onDataExport"
+                              isWaitting="!isWaitting"
+                              :disabled="!slot.data.operatePermissions.enExport">
+                        匯出
+                    </b-button>
+
+                    <b-button v-if="slot.data.operatePermissions.canQuery"
+                              v-b-modal.master-table-query-modal
+                              class="mr-1"
+                              variant="detail3">
+                        進階查詢
+                    </b-button>
+
+
+
+                    <!--<b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-modal class="mr-1" variant="detail3">新增</b-button>-->
+                    @*<b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-edit-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">修改</b-button>*@
+                    <!--<b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-edit-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.canClick_canClickEditOrDelete" class="mr-1" variant="detail3">修改</b-button>-->
+                    @*<b-button v-if="slot.data.operatePermissions.canDelete" v-b-modal.master-table-del-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow" class="mr-1" variant="detail3">刪除</b-button>*@
+                    <!--<b-button v-if="slot.data.operatePermissions.canDelete" v-b-modal.master-table-del-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.canClick_canClickEditOrDelete" class="mr-1" variant="detail3">刪除</b-button>
+                    <b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-input-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.canClick_canClickAddInventoryItem" class="mr-1" variant="detail3">輸入個別盤點品項</b-button>-->
+                    @*<b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-create-full-inventory-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">產生整庫盤點品項</b-button>*@
+                    <!--<b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-full-inventory-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.canClick_canClickAddInventoryItem" class="mr-1" variant="detail3">產生整庫盤點品項</b-button>-->
                     @*<b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-1" variant="detail3">輸入個資盤點品項</b-button>*@
                     @*<b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-2" variant="detail3">產生個資盤點品項</b-button>*@
-                    <b-button v-if="slot.data.operatePermissions.canExport" class="mr-1" variant="detail3" v-on:click="slot.data.onDataExport" isWaitting="!isWaitting" :disabled="!slot.data.operatePermissions.enExport">匯出</b-button>
-                    <b-button v-if="slot.data.operatePermissions.canQuery" v-b-modal.master-table-query-modal class="mr-1" variant="detail3">進階查詢</b-button>
+                    <!--<b-button v-if="slot.data.operatePermissions.canExport" class="mr-1" variant="detail3" v-on:click="slot.data.onDataExport" isWaitting="!isWaitting" :disabled="!slot.data.operatePermissions.enExport">匯出</b-button>
+                    <b-button v-if="slot.data.operatePermissions.canQuery" v-b-modal.master-table-query-modal class="mr-1" variant="detail3">進階查詢</b-button>-->
                     <!--Master OP Page-->
                     <fetched-page-modal url="Create" id="master-table-create-modal" size="lg" close-on-success="true" title="新增資料"></fetched-page-modal>
                     <fetched-page-modal url="Edit" :param="slot.data.selectedMasterRow?.param" id="master-table-edit-modal" size="lg" close-on-success="true" title="修改資料"></fetched-page-modal>
@@ -90,7 +156,10 @@
                     <fetched-page-modal url="CreateMultiInput" :param="slot.data.selectedMasterRow?.param" id="master-table-create-multi-input-modal" size="lg" close-on-success="true" title="輸入個別盤點品項"></fetched-page-modal>
                     <fetched-page-modal url="CreateFullInventoryItems" :param="slot.data.selectedMasterRow?.param" id="master-table-create-full-inventory-modal" size="lg" close-on-success="true" title="產生整庫盤點品項"></fetched-page-modal>
                     <query-page-modal id="master-table-query-modal" title="進階查詢" :queryfields="slot.data.mTableFields" :is_filtered="slot.data.isFiltered"></query-page-modal>
-
+                    @*canClick_canClickShowDetail: true,
+                        canClick_canClickAddInventoryItem: true,
+                        canClick_canClickInputOrApprove: true,
+                        canClick_canClickEditOrDelete: true,*@
                     <!--Detail OP Page-->
                     <fetched-page-modal url="CreateDetail" :param="slot.data.selectedMasterRow?.param" close-on-success="true"
                                         id="detail-table-create-modal" title="新增明細"></fetched-page-modal>
@@ -229,77 +298,72 @@
             // 點擊主檔列觸發：設定明細查詢條件
             const _onMasterRowSelect = function (rowData) {
                 console.log("[DEBUG] onMasterRowSelect: 選取主檔", rowData);
-                @*debugger;*@
-                var selectParam = {
-                    進銷存組織: null,
-                    單據別: null,
-                    日期: null,
-                    @*為了createMultipleInput,加了倉庫代號*@
-                    流水號: null,
-                    倉庫代號: null
-                };
 
                 if (rowData.length > 0) {
                     let data = rowData[0];
-                    console.log("[DEBUG] 傳送明細條件：", {
+
+                    const param = {
                         進銷存組織: data.進銷存組織,
                         單據別: data.單據別,
                         日期: data.日期,
-                        流水號: data.流水號
-                    });
+                        流水號: data.流水號,
+                        倉庫代號: data.倉庫代號,
+                        是否刪除: data.是否刪除
+                    };
 
-                    selectParam.進銷存組織 = this.進銷存組織 = data.進銷存組織;
-                    selectParam.單據別 = this.單據別 = data.單據別;
-                    selectParam.日期 = this.日期 = data.日期;
-                    selectParam.流水號 = this.流水號 = data.流水號;
-                    selectParam.倉庫代號 = this.倉庫代號 = data.倉庫代號;
-                    this.selectedMasterRow.param = selectParam;
-
-                    // ✅ 日期欄轉 ISO 傳送給 server
                     Object.entries(dateTimePropertyName[TableType.MasterTable]).forEach(([propName, dateType]) => {
                         let dateLocalestring = data[propName];
-                        if (selectParam.hasOwnProperty(propName) && data.hasOwnProperty(propName) && dateLocalestring) {
-                            selectParam[propName] = this[propName] = Date.parse_zhTW_string(dateLocalestring).toISOString();
+                        if (param.hasOwnProperty(propName) && dateLocalestring) {
+                            param[propName] = Date.parse_zhTW_string(dateLocalestring).toISOString();
                         }
                     });
 
-                    // ✅ 呼叫 API 判斷是否有明細
+                    // ✅ 設定 param（轉為 reactive）
+                    this.selectedMasterRow.param = Vue.observable(param);
 
-                    @*axios.post('/HW_01/CheckHasDetail', {
-                        進銷存組織: selectParam.進銷存組織,
-                        單據別: selectParam.單據別,
-                        日期: selectParam.日期,
-                        流水號: selectParam.流水號
-                    }).then(res => {
-                        const count = res.data.count;
-                        const noDetail = count === 0;
-                        Vue.set(data, '無明細', noDetail); // Reactive 設定
-                        console.log(`[DEBUG] 主檔是否無明細：${noDetail ? '✅ 是' : '❌ 否'}（count=${count}）`);
-
-
-                    }).catch(err => {
-                        console.error('[ERROR] CheckHasDetail 發生錯誤：', err);
-                    });
-
-                } else {
-                    console.warn("[DEBUG] 主檔未選擇任何列！");
-                }*@
-                    axios.post('/HW_01/CheckHasDetail', selectParam)
-                        .then(res => {
+                    // ✅ 呼叫 API 取得控制項布林
+                    axios.post('/HW_01/CheckHasDetail', {
+                        進銷存組織: param.進銷存組織,
+                        單據別: param.單據別,
+                        日期: param.日期,
+                        流水號: param.流水號
+                    })
+                        .then(async res => {
                             const count = res.data.count;
                             const noDetail = count === 0;
 
-                            const rowIndex = data.__rowIndex__;
-                            if (rowIndex != null && this.masterData && this.masterData[rowIndex]) {
-                                Vue.set(this.masterData[rowIndex], '無明細', noDetail);
-                                console.log(`[DEBUG] 成功設定無明細：index=${rowIndex}, count=${count}`);
-                            } else {
-                                console.warn(`[WARN] 無法設定無明細，rowIndex 無效或資料不存在：${rowIndex}`);
-                            }
+                            Object.assign(this.selectedMasterRow.param, {
+                                canClickShowDetail: res.data.canClickShowDetail,
+                                canClickAddInventoryItem: res.data.canClickAddInventoryItem,
+                                canClickInputOrApprove: res.data.canClickInputOrApprove,
+                                canClickEditOrDelete: res.data.canClickEditOrDelete
+                            });
+
+                            Vue.set(data, '無明細', noDetail);
+
+                            // ✅ 強制刷新畫面更新按鈕狀態
+                            this.$forceUpdate();
+                            await this.$nextTick();
+
+                            // ✅ 確認可點狀態輸出
+                            console.log('[DEBUG] 🔙 CheckHasDetail 回傳內容：', res.data);
+                            console.log(`[DEBUG] 主檔是否無明細：${noDetail ? '❌ 無' : '✅ 有'}（count=${count}）`);
+                            console.log(`[DEBUG] ➕ 新增品項可點：${res.data.canClickAddInventoryItem}`);
+                            console.log(`[DEBUG] 🔘 顯示明細可點：${res.data.canClickShowDetail}`);
+                            console.log(`[DEBUG] 📝 輸入/完成可點：${res.data.canClickInputOrApprove}`);
+                            console.log(`[DEBUG] ✏️ 修改/刪除可點：${res.data.canClickEditOrDelete}`);
                         })
                         .catch(err => {
-                            console.error('[ERROR] CheckHasDetail 發生錯誤：', err);
+                            console.error('[ERROR] ❌ CheckHasDetail 發生錯誤：', err);
+                            if (err.response) {
+                                console.error('[ERROR] 回應狀態：', err.response.status);
+                                console.error('[ERROR] 回應內容：', err.response.data);
+                            }
+                            console.error('[ERROR] 錯誤訊息：', err.message);
                         });
+
+                } else {
+                    console.warn("[DEBUG] 主檔未選擇任何列！");
                 }
             };
 
@@ -433,8 +497,14 @@
                 isFiltered: false,
                 isNewItemOnTop: true,
 
-                canClick: true,
-
+                @*this.canClick_canClickShowDetail = res.data.canClickShowDetail;
+                this.canClick_canClickAddInventoryItem = res.data.canClickAddInventoryItem;
+                this.canClick_canClickInputOrApprove = res.data.canClickInputOrApprove;
+                this.canClick_canClickEditOrDelete = res.data.canClickEditOrDelete;*@
+                canClick_canClickShowDetail: true,
+                canClick_canClickAddInventoryItem: true,
+                canClick_canClickInputOrApprove: true,
+                canClick_canClickEditOrDelete: true,
                 // 主檔查詢條件欄位
                 進銷存組織: '',
                 單據別: '',
@@ -490,7 +560,7 @@
 
                     return '';
                 },
-                 
+
                 @*getMasterTableActionButtonConfig: function (rowData) {
                     return [
                         {

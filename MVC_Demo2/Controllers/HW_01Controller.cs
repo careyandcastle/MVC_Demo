@@ -76,44 +76,7 @@ namespace MVC_Demo2.Controllers
 
         }
 
-        // ✅ 這裡是 InitInventoryDefaultValues() 的正確位置
-        //private (string org, string period, string date, DateTime format_date, string userNo, string businessNo, string departmentNo, string divisionNo, string branchNo) InitInventoryDefaultValues()
-        //{
-        //    var ua = HttpContext.Session.GetObject<UserAccountForSession>(nameof(UserAccountForSession));
-        //    if (ua == null)
-        //    {
-        //        Debug.WriteLine("[InitInventoryDefaultValues] ⚠️ 無法從 Session 取得使用者帳號資訊");
-        //        return (null, null, null, default(DateTime), null, null, null, null, null);
-        //    }
-
-        //    var orgRecord = _context.進銷存組織
-        //        .Where(x =>
-        //            x.列帳事業 == ua.BusinessNo && x.列帳單位 == ua.DepartmentNo &&
-        //            (string.IsNullOrEmpty(x.列帳部門) || x.列帳部門 == ua.DivisionNo) &&
-        //            (string.IsNullOrEmpty(x.列帳分部) || x.列帳分部 == ua.BranchNo) &&
-        //            x.是否物流組織 == false
-        //        )
-        //        .OrderByDescending(x =>
-        //            (x.列帳事業 + x.列帳單位 + x.列帳部門 + x.列帳分部).Length
-        //        )
-        //        .FirstOrDefault();
-
-        //    if (orgRecord == null)
-        //    {
-        //        Debug.WriteLine("[InitInventoryDefaultValues] ⚠️ 找不到符合條件的進銷存組織資料");
-        //        return (null, null, null, default(DateTime), ua.UserNo, ua.BusinessNo, ua.DepartmentNo, ua.DivisionNo, ua.BranchNo);
-        //    }
-
-        //    string org = orgRecord.進銷存組織1;
-        //    string period = orgRecord.列帳日期.ToString("yyyyMM");
-        //    string date = orgRecord.列帳日期.ToString("yyyy-MM-dd");
-
-        //    //Debug.WriteLine($"[InitInventoryDefaultValues] ✅ 組織代號={org}, 列帳年月={period}, 列帳日期={date}");
-        //    //Debug.WriteLine($"[Create] ▶ 使用者帳號={userNo}，組織代號={org}，年月={period}，列帳日期={date}，格式日期{formate_date}，事業={biz}，單位={dept}，部門={div}，分部={branch}");
-        //    Debug.WriteLine($"[Create] ▶ 使用者帳號={ ua.UserNo}，組織代號={org}，年月={period}，列帳日期={date}，格式日期{orgRecord.列帳日期}，事業={ ua.BusinessNo}，單位={ua.DepartmentNo}，部門={ ua.DivisionNo}，分部={ua.BranchNo}");
-
-        //    return (org, period, date, orgRecord.列帳日期, ua.UserNo, ua.BusinessNo, ua.DepartmentNo, ua.DivisionNo, ua.BranchNo);
-        //}
+ 
 
         private (string org, string period, string date, DateTime format_date, string userNo, string businessNo, string departmentNo, string divisionNo, string branchNo) InitInventoryDefaultValues()
         {
@@ -162,6 +125,42 @@ namespace MVC_Demo2.Controllers
 
             return (org, period, date, orgRecord.列帳日期, ua.UserNo, ua.BusinessNo, ua.DepartmentNo, ua.DivisionNo, ua.BranchNo);
         }
+        //[HttpPost]
+        //public async Task<IActionResult> GetStockQty([FromBody] 庫存查詢條件 query)
+        //{ CanClickShowDetail CanClickAddInventoryItem CanClickEditOrDelete
+        //[HttpPost]
+        //[NeglectActionFilter]
+        //public IActionResult CanClickShowDetailAsync([FromBody] 計數 body)
+        //{
+        //    bool 無明細 = body.count != 0;
+
+        //    Debug.WriteLine($"[CanClickShowDetailAsync] ▶ 無明細={無明細} ");
+
+        //    return Ok(new { result = !無明細 });
+        //}
+
+        //[HttpPost]
+        //// 輸入各別盤點品項／產生整庫盤點品項：未刪除且尚未完成異動
+        //[NeglectActionFilter]
+        //public bool CanClickAddInventoryItem(HW_01_庫存盤點主檔DisplayViewModel row)
+        //{
+        //    return !row.是否註記刪除 && row.庫存異動狀態 != "3";
+        //}
+
+        // 輸入盤點數量／核准並異動庫存：未刪除、未完成異動且已有明細
+        //[NeglectActionFilter]
+        //public bool CanClickInputOrApprove(HW_01_庫存盤點主檔DisplayViewModel row)
+        //{
+        //    return !row.是否註記刪除 && row.庫存異動狀態 != "3" && row.明細筆數 > 0;
+
+        //}
+        //[HttpPost]
+        //// 修改／刪除：未刪除且尚未完成異動
+        //[NeglectActionFilter]
+        //public bool CanClickEditOrDelete(HW_01_庫存盤點主檔DisplayViewModel row)
+        //{
+        //    return !row.是否註記刪除 && row.庫存異動狀態 != "3";
+        //}
 
         public IActionResult Index()
         {
@@ -1326,7 +1325,36 @@ namespace MVC_Demo2.Controllers
                     x.日期.Date == key.日期.Date &&
                     x.流水號 == key.流水號);
 
-            return Ok(new { count });
+            // 查一次主檔補足狀態
+            var master = await _context.庫存盤點主檔
+                .Where(x =>
+                    x.進銷存組織 == key.進銷存組織 &&
+                    x.單據別 == key.單據別 &&
+                    x.日期 == key.日期 &&
+                    x.流水號 == key.流水號)
+                .Select(x => new {
+                    x.是否註記刪除,
+                    x.庫存異動狀態
+                })
+                .SingleOrDefaultAsync();
+
+            if (master == null)
+                return NotFound();
+
+            // 按鈕判斷邏輯
+            bool canClickShowDetail = !master.是否註記刪除 && count > 0;
+            bool canClickAddInventoryItem = !master.是否註記刪除 && master.庫存異動狀態 != "3";
+            bool canClickInputOrApprove = !master.是否註記刪除 && master.庫存異動狀態 != "3" && count > 0;
+            bool canClickEditOrDelete = !master.是否註記刪除 && master.庫存異動狀態 != "3";
+
+            return Ok(new
+            {
+                count,
+                canClickShowDetail,
+                canClickAddInventoryItem,
+                canClickInputOrApprove,
+                canClickEditOrDelete
+            });
         }
 
 
@@ -1832,8 +1860,20 @@ namespace MVC_Demo2.Controllers
             public int 流水號 { get; set; }
             public string 商品編號 { get; set; }
         }
-
-
+        public class 計數
+        {
+            public int count { get; set; }
+ 
+        }
+        //[HttpPost]
+        //[NeglectActionFilter] // 可有可無，視你需不需要略過權限驗證
+        //public IActionResult CanClickShowDetailAsync([FromBody] int count)
+        //{
+        //    bool result = count > 0;
+        //    return Ok(result);
+        //}
+        //[HttpPost]
+        
 
     }
 }

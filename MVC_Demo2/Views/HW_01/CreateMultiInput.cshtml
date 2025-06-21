@@ -98,19 +98,19 @@ this.$on('fetched-page-modal::ready', (modalId) => {
             流水號: $('input[name="流水號"]').val(),
             商品編號: 商品編號
         });
-        const res = await axios.post('@Url.Action("GetStockQty", "HW_01")', {
-    進銷存組織: $('input[name="進銷存組織"]').val(),
-    倉庫代號: $('input[name="倉庫代號"]').val(),
-    單據別: $('input[name="單據別"]').val(),
-    @*日期: $('input[name="日期"]').val(),*@
-    日期: '@ViewBag.var列帳日期',
-    流水號: parseInt($('input[name="流水號"]').val(), 10),
-    商品編號: 商品編號
-}, {
-    headers: {
-        'Content-Type': 'application/json'
-    }
-});
+            const res = await axios.post('@Url.Action("GetStockQty", "HW_01")', {
+        進銷存組織: $('input[name="進銷存組織"]').val(),
+        倉庫代號: $('input[name="倉庫代號"]').val(),
+        單據別: $('input[name="單據別"]').val(),
+        @*日期: $('input[name="日期"]').val(),*@
+        日期: '@ViewBag.var列帳日期',
+        流水號: parseInt($('input[name="流水號"]').val(), 10),
+        商品編號: 商品編號
+    }, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
 
 
 

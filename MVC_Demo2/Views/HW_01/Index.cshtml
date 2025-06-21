@@ -69,53 +69,101 @@
     <script src="~/js/site.js"></script>
 }
 <h1 class="mt-1">@ViewData["Title"]</h1>
+<!-- 渲染 Loading 覆蓋層 -->
+@*<div v-if="isBusy" class="global-wait-overlay">
+    <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>*@
+@**@
 <div id="hw_01-index">
-
+    <!-- 這個 div 由 Vue 管控，並顯示或隱藏根據 isBusy 的值 -->
+    @*<b-spinner small type="border" v-if="params.data.isbusy" class="mr-1"></b-spinner>*@
     <table-component id="hw_01-master-table" ref="hw_01-master-table">
         <template #default="slot">
             <b-row class="mb-2">
                 <b-col cols="auto">
+                    <!--<div v-if="slot.data.isbusy"
+                 style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 9999; background: rgba(230, 255, 230, 0.95); padding: 2em; border-radius: 1em;">-->
+                    <!-- 淡綠 -->
+                    <!--<b-spinner variant="primary" label="Loading..."></b-spinner>
+        <div class="mt-2">正在檢查權限，請稍候...</div>
+    </div>-->
+                    <!--<div v-if="slot.data.isCheckingPermission"
+                 style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 200, 0.6); z-index: 10000;
+    display: flex; align-items: center; justify-content: center;">-->
+                    <!-- 淡黃 -->
+                    <!--<div style="background: white; padding: 2em; border-radius: 1em;">
+            <b-spinner variant="primary" label="Loading..."></b-spinner>
+            <div class="mt-2 text-center">資料讀取中...</div>
+        </div>
+    </div>-->
+                    <!--<b-button v-if="slot.data.operatePermissions.canUpdate"
 
+    @@click="slot.data.isNewItemOnTop = false"
+    :disabled="slot.data.isCheckingPermission || !slot.data.canEditDelete"
+    class="mr-1" variant="detail3"
+     >-->
+                    @*淡藍*@
+                    <!--<b-spinner small type="border" v-if=true class="mr-1"></b-spinner>
+      {{ slot.data.isCheckingPermission ? '請稍候...' : '編輯' }}
+    </b-button>-->
+                    @*<b-spinner small type="border" v-if="!slot.data.isBusy" class="mr-1"></b-spinner>*@
+                    @*<b-button v-if="slot.data.operatePermissions.canCreate"
+                  v-b-modal.master-table-create-modal
+                  class="mr-1"
+                  variant="detail3">
+            <b-spinner small type="border" v-if="slot.data.isBusy" class="mr-1"></b-spinner>
+            新增
+        </b-button>*@
                     <b-button v-if="slot.data.operatePermissions.canCreate"
                               v-b-modal.master-table-create-modal
+                              :disabled="slot.data.params.data.isBusy"
                               class="mr-1"
                               variant="detail3">
+                        <b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>
                         新增
                     </b-button>
 
                     <b-button v-if="slot.data.operatePermissions.canUpdate"
                               v-b-modal.master-table-edit-modal
                               @@click="slot.data.isNewItemOnTop = false"
-                              :disabled="!slot.data.selectedMasterRow?.param?.canClickEditOrDelete"
+                              :disabled="!slot.data.selectedMasterRow?.param?.canClickEditOrDelete || slot.data.params.data.isBusy"
                               class="mr-1"
                               variant="detail3">
+                        <b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>
                         修改
                     </b-button>
 
                     <b-button v-if="slot.data.operatePermissions.canDelete"
                               v-b-modal.master-table-del-modal
                               @@click="slot.data.isNewItemOnTop = false"
-                              :disabled="!slot.data.selectedMasterRow?.param?.canClickEditOrDelete"
+                              :disabled="!slot.data.selectedMasterRow?.param?.canClickEditOrDelete || slot.data.params.data.isBusy"
                               class="mr-1"
                               variant="detail3">
+                        <b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>
                         刪除
                     </b-button>
 
                     <b-button v-if="slot.data.operatePermissions.canCreate"
                               v-b-modal.master-table-create-multi-input-modal
-                              @@click="slot.data.isNewItemOnTop = false"
+                              @@click="slot.data.isNewItemOnTop = false || slot.data.params.data.isBusy"
                               :disabled="!slot.data.selectedMasterRow?.param?.canClickAddInventoryItem"
                               class="mr-1"
                               variant="detail3">
+                        <b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>
                         輸入個別盤點品項
                     </b-button>
 
                     <b-button v-if="slot.data.operatePermissions.canCreate"
                               v-b-modal.master-table-create-full-inventory-modal
                               @@click="slot.data.isNewItemOnTop = false"
-                              :disabled="!slot.data.selectedMasterRow?.param?.canClickAddInventoryItem"
+                              :disabled="!slot.data.selectedMasterRow?.param?.canClickAddInventoryItem || slot.data.params.data.isBusy"
                               class="mr-1"
                               variant="detail3">
+                        <b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>
                         產生整庫盤點品項
                     </b-button>
 
@@ -142,13 +190,13 @@
                     <!--<b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-edit-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.canClick_canClickEditOrDelete" class="mr-1" variant="detail3">修改</b-button>-->
                     @*<b-button v-if="slot.data.operatePermissions.canDelete" v-b-modal.master-table-del-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow" class="mr-1" variant="detail3">刪除</b-button>*@
                     <!--<b-button v-if="slot.data.operatePermissions.canDelete" v-b-modal.master-table-del-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.canClick_canClickEditOrDelete" class="mr-1" variant="detail3">刪除</b-button>
-                    <b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-input-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.canClick_canClickAddInventoryItem" class="mr-1" variant="detail3">輸入個別盤點品項</b-button>-->
+    <b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-input-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.canClick_canClickAddInventoryItem" class="mr-1" variant="detail3">輸入個別盤點品項</b-button>-->
                     @*<b-button v-if="slot.data.operatePermissions.canUpdate" v-b-modal.master-table-create-full-inventory-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.selectedMasterRow?.param" class="mr-1" variant="detail3">產生整庫盤點品項</b-button>*@
                     <!--<b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-full-inventory-modal @@click="slot.data.isNewItemOnTop = false" :disabled="!slot.data.canClick_canClickAddInventoryItem" class="mr-1" variant="detail3">產生整庫盤點品項</b-button>-->
                     @*<b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-1" variant="detail3">輸入個資盤點品項</b-button>*@
                     @*<b-button v-if="slot.data.operatePermissions.canCreate" v-b-modal.master-table-create-multi-modal class="mr-2" variant="detail3">產生個資盤點品項</b-button>*@
                     <!--<b-button v-if="slot.data.operatePermissions.canExport" class="mr-1" variant="detail3" v-on:click="slot.data.onDataExport" isWaitting="!isWaitting" :disabled="!slot.data.operatePermissions.enExport">匯出</b-button>
-                    <b-button v-if="slot.data.operatePermissions.canQuery" v-b-modal.master-table-query-modal class="mr-1" variant="detail3">進階查詢</b-button>-->
+    <b-button v-if="slot.data.operatePermissions.canQuery" v-b-modal.master-table-query-modal class="mr-1" variant="detail3">進階查詢</b-button>-->
                     <!--Master OP Page-->
                     <fetched-page-modal url="Create" id="master-table-create-modal" size="lg" close-on-success="true" title="新增資料"></fetched-page-modal>
                     <fetched-page-modal url="Edit" :param="slot.data.selectedMasterRow?.param" id="master-table-edit-modal" size="lg" close-on-success="true" title="修改資料"></fetched-page-modal>
@@ -157,9 +205,9 @@
                     <fetched-page-modal url="CreateFullInventoryItems" :param="slot.data.selectedMasterRow?.param" id="master-table-create-full-inventory-modal" size="lg" close-on-success="true" title="產生整庫盤點品項"></fetched-page-modal>
                     <query-page-modal id="master-table-query-modal" title="進階查詢" :queryfields="slot.data.mTableFields" :is_filtered="slot.data.isFiltered"></query-page-modal>
                     @*canClick_canClickShowDetail: true,
-                        canClick_canClickAddInventoryItem: true,
-                        canClick_canClickInputOrApprove: true,
-                        canClick_canClickEditOrDelete: true,*@
+        canClick_canClickAddInventoryItem: true,
+        canClick_canClickInputOrApprove: true,
+        canClick_canClickEditOrDelete: true,*@
                     <!--Detail OP Page-->
                     <fetched-page-modal url="CreateDetail" :param="slot.data.selectedMasterRow?.param" close-on-success="true"
                                         id="detail-table-create-modal" title="新增明細"></fetched-page-modal>
@@ -325,6 +373,9 @@
                     this.日期 = param.日期;
                     this.流水號 = param.流水號;
 
+                    @*params.data.isBusy = true; // 顯示 Loading 遮罩*@
+                    Vue.set(params.data, 'isBusy', true);  // 保證是響應式
+                    console.log("{這段是補上的關鍵}busy?", params.data.isBusy);
                     // 再發 API 拿布林判斷
                     axios.post('/HW_01/CheckHasDetail', {
                         進銷存組織: param.進銷存組織,
@@ -333,23 +384,33 @@
                         流水號: param.流水號
                     })
                         .then(res => {
- 
-                            const noDetail = !res.data.hasDetail;
 
+                            const noDetail = !res.data.hasDetail;
+                            @*if (res.data.hasOwnProperty('isbusy')) {
+                                console.log("{!!!!!!!!!!!!!!!!!!!!!!");
+                                Vue.set(params.data, 'isBusy', res.data.isbusy);
+                            }*@
+                            console.log(params.data);
+                            @*params.data.isBusy = false; // 顯示 Loading 遮罩*@
+                            Vue.set(params.data, 'isBusy', false);  // 保證是響應式
                             // ✅ 將 API 回傳布林狀態，寫入 reactive 物件中
                             Object.assign(this.selectedMasterRow.param, {
                                 canClickShowDetail: res.data.canClickShowDetail,
                                 canClickAddInventoryItem: res.data.canClickAddInventoryItem,
                                 canClickInputOrApprove: res.data.canClickInputOrApprove,
-                                canClickEditOrDelete: res.data.canClickEditOrDelete
+                                canClickEditOrDelete: res.data.canClickEditOrDelete,
+                                @*isBusy: res.data.isBusy*@
                             });
-
-                            // ✅ 強制觸發畫面重 render（解決按鈕狀態延遲更新）
+                            Vue.set(data, '無明細', noDetail);
+                            @*this.isBusy = false; // 顯示 Loading 遮罩*@
+                            console.log("{reactive}busy?", params.data.isBusy);
                             this.$forceUpdate();
+                            // ✅ 強制觸發畫面重 render（解決按鈕狀態延遲更新）
+
                             @*await this.$nextTick();*@
 
                             // 若 rowData 是目前的 data，也可加上標示
-                            Vue.set(data, '無明細', noDetail);
+
                             // ✅ 確認可點狀態輸出
                            console.log('[DEBUG] 🔙 CheckHasDetail 回傳內容：', res.data);
                            console.log(`[DEBUG] 主檔是否無明細：${noDetail ? '❌ 無' : '✅ 有'} `);
@@ -357,13 +418,20 @@
                            console.log(`[DEBUG] 🔘 顯示明細可點：${res.data.canClickShowDetail}`);
                            console.log(`[DEBUG] 📝 輸入/完成可點：${res.data.canClickInputOrApprove}`)
                            console.log(`[DEBUG] ✏️ 修改/刪除可點：${res.data.canClickEditOrDelete}`);
+                            console.log(`[DEBUG] ✏️ busy?：${params.data.isbusy}`);
                         })
                         .catch(err => {
                             console.error('[ERROR] ❌ CheckHasDetail 發生錯誤：', err);
+                            Vue.set(params.data, 'isBusy', false);  // 保證是響應式
+                            @*this.isBusy = false; // 顯示 Loading 遮罩*@
+                            this.$forceUpdate();
+                            console.log("busy?", this.isBusy);
                         });
 
                 } else {
                     console.warn("[DEBUG] 主檔未選擇任何列！");
+                    this.isBusy = false; // 顯示 Loading 遮罩
+                    console.log("busy?", this.isBusy);
                 }
             }
 
@@ -490,13 +558,14 @@
             const params = { data: null, methods: null };
 
             // Data 區塊：Vue 組件的 reactive 屬性
+
             params.data = {
                 mTableFieldDesc: _mTableFieldDesc,
                 dTableFieldDesc: _dTableFieldDesc,
                 operatePermissions: _opPermiss,
                 isFiltered: false,
                 isNewItemOnTop: true,
-
+                isBusy: true, // 控制遮罩顯示
                 @*this.canClick_canClickShowDetail = res.data.canClickShowDetail;
                 this.canClick_canClickAddInventoryItem = res.data.canClickAddInventoryItem;
                 this.canClick_canClickInputOrApprove = res.data.canClickInputOrApprove;
@@ -603,6 +672,20 @@
             Vue.CreateVue(params).$mount('#hw_01-index');
         })();
     </script>
-
+    <style>
+            .global-wait-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(255, 255, 255, 0.4); /* 半透明 */
+                z-index: 9999; /* 確保遮罩層級最高 */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: wait; /* 顯示轉圈圈樣式 */
+            }
+        </style>
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

@@ -1328,7 +1328,7 @@ namespace MVC_Demo2.Controllers
         [ProcUseRang(ProcNo, ProcUseRang.Delete)]
         public async Task<IActionResult> DeleteDetailConfirmed([Bind("進銷存組織,單據別,日期,流水號,項次")] HW_01_庫存盤點明細檔DisplayViewModel postData)
         {
-            if (postData.進銷存組織 == null || postData.商品編號 == null)
+            if (postData.進銷存組織 == null )
                 return NotFound();
 
             try
@@ -1471,7 +1471,7 @@ namespace MVC_Demo2.Controllers
                         where s.倉庫組織 == 進銷存組織
                               && s.倉庫代號 == 倉庫代號
                               && s.日期 == 日期
-                              && s.本日結存數量 > 0 // 🔍 可選條件：只抓有庫存的//@@@@
+                              //&& s.本日結存數量 > 0 // 🔍 可選條件：只抓有庫存的//@@@@
                         group new { s, p } by new { s.商品編號, p.商品簡稱 } into g
                         orderby g.Key.商品編號
                         select new SelectListItem
@@ -1502,7 +1502,7 @@ namespace MVC_Demo2.Controllers
                         where s.倉庫組織 == 進銷存組織
                               && s.倉庫代號 == 倉庫代號
                               && s.日期 == 日期
-                              && s.本日結存數量 > 0
+                              //&& s.本日結存數量 > 0
                         group new { s, p } by new { s.商品編號, p.商品簡稱, s.本日結存數量 } into g
                         orderby g.Key.商品編號
                         select new 商品選項項目

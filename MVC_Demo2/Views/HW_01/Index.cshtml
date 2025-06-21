@@ -447,6 +447,9 @@
 
             // Methods 區塊：Vue 組件的功能方法注入
             params.methods = {
+                willShowMasterTableButton1: function (rowData) {
+                    return false;
+                },
                 // 系統掛載必備方法
                 dsMasterProvider: _dsMasterProvider,
                 onMasterRowSelect: _onMasterRowSelect,
@@ -486,8 +489,36 @@
                     }
 
                     return '';
-                }
-
+                },
+                 
+                @*getMasterTableActionButtonConfig: function (rowData) {
+                    return [
+                        {
+                            text: '按鈕1',
+                            willShow: false,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 1'); }
+                        },
+                        {
+                            text: '按鈕2',
+                            willShow: true,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 2'); }
+                        },
+                        {
+                            text: '按鈕3',
+                            willShow: true,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 3'); }
+                        },
+                        {
+                            text: '按鈕4',
+                            willShow: true,
+                            variant: 'outline-detail1',
+                            eventHandler: () => { alert('btn 4'); }
+                        }
+                    ];
+                }*@
 
 
 

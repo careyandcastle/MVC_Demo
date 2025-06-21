@@ -1318,12 +1318,13 @@ namespace MVC_Demo2.Controllers
         [HttpPost]
         public async Task<IActionResult> CheckHasDetail([FromBody] HW_01_庫存盤點主檔DisplayViewModel key)
         {
-            var count = await _context.庫存盤點明細
-                .CountAsync(x =>
-                    x.進銷存組織 == key.進銷存組織 &&
-                    x.單據別 == key.單據別 &&
-                    x.日期.Date == key.日期.Date &&
-                    x.流水號 == key.流水號);
+            bool hasDetail = await _context.庫存盤點明細
+    .AnyAsync(x =>
+        x.進銷存組織 == key.進銷存組織 &&
+        x.單據別 == key.單據別 &&
+        //x.日期.Date == key.日期.Date &&
+        x.日期 >= key.日期.Date && x.日期 < key.日期.Date.AddDays(1) &&
+        x.流水號 == key.流水號);
 
             // 查一次主檔補足狀態
             var master = await _context.庫存盤點主檔
@@ -1342,14 +1343,14 @@ namespace MVC_Demo2.Controllers
                 return NotFound();
 
             // 按鈕判斷邏輯
-            bool canClickShowDetail = !master.是否註記刪除 && count > 0;
+            bool canClickShowDetail = !master.是否註記刪除 && hasDetail ;
             bool canClickAddInventoryItem = !master.是否註記刪除 && master.庫存異動狀態 != "3";
-            bool canClickInputOrApprove = !master.是否註記刪除 && master.庫存異動狀態 != "3" && count > 0;
+            bool canClickInputOrApprove = !master.是否註記刪除 && master.庫存異動狀態 != "3" && hasDetail;
             bool canClickEditOrDelete = !master.是否註記刪除 && master.庫存異動狀態 != "3";
 
             return Ok(new
             {
-                count,
+                hasDetail,
                 canClickShowDetail,
                 canClickAddInventoryItem,
                 canClickInputOrApprove,

@@ -70,7 +70,7 @@
 }
 <h1 class="mt-1">@ViewData["Title"]</h1>
 <div id="hw_01-index">
- 
+
     <table-component id="hw_01-master-table" ref="hw_01-master-table">
         <template #default="slot">
             <b-row class="mb-2">
@@ -333,8 +333,8 @@
                         流水號: param.流水號
                     })
                         .then(res => {
-                            const count = res.data.count;
-                            const noDetail = count === 0;
+ 
+                            const noDetail = !res.data.hasDetail;
 
                             // ✅ 將 API 回傳布林狀態，寫入 reactive 物件中
                             Object.assign(this.selectedMasterRow.param, {
@@ -350,8 +350,13 @@
 
                             // 若 rowData 是目前的 data，也可加上標示
                             Vue.set(data, '無明細', noDetail);
-
-                            console.log(`[DEBUG] ✏️ 修改/刪除可點：${res.data.canClickEditOrDelete}`);
+                            // ✅ 確認可點狀態輸出
+                           console.log('[DEBUG] 🔙 CheckHasDetail 回傳內容：', res.data);
+                           console.log(`[DEBUG] 主檔是否無明細：${noDetail ? '❌ 無' : '✅ 有'} `);
+                           console.log(`[DEBUG] ➕ 新增品項可點：${res.data.canClickAddInventoryItem}`);
+                           console.log(`[DEBUG] 🔘 顯示明細可點：${res.data.canClickShowDetail}`);
+                           console.log(`[DEBUG] 📝 輸入/完成可點：${res.data.canClickInputOrApprove}`)
+                           console.log(`[DEBUG] ✏️ 修改/刪除可點：${res.data.canClickEditOrDelete}`);
                         })
                         .catch(err => {
                             console.error('[ERROR] ❌ CheckHasDetail 發生錯誤：', err);
@@ -552,6 +557,9 @@
                     if (item['無明細'] === true) {
                         return 'text-info'; // 藍
                     }
+                    @*else {
+                        return '';
+                    }*@
 
                     return '';
                 },

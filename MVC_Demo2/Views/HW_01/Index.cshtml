@@ -70,7 +70,7 @@
 }
 <h1 class="mt-1">@ViewData["Title"]</h1>
 <div id="hw_01-index">
-
+ 
     <table-component id="hw_01-master-table" ref="hw_01-master-table">
         <template #default="slot">
             <b-row class="mb-2">
@@ -301,7 +301,6 @@
 
                 if (rowData.length > 0) {
                     let data = rowData[0];
-
                     const param = {
                         進銷存組織: data.進銷存組織,
                         單據別: data.單據別,
@@ -318,20 +317,26 @@
                         }
                     });
 
-                    // ✅ 設定 param（轉為 reactive）
                     this.selectedMasterRow.param = Vue.observable(param);
 
-                    // ✅ 呼叫 API 取得控制項布林
+                    // ✅ 這段是補上的關鍵
+                    this.進銷存組織 = param.進銷存組織;
+                    this.單據別 = param.單據別;
+                    this.日期 = param.日期;
+                    this.流水號 = param.流水號;
+
+                    // 再發 API 拿布林判斷
                     axios.post('/HW_01/CheckHasDetail', {
                         進銷存組織: param.進銷存組織,
                         單據別: param.單據別,
                         日期: param.日期,
                         流水號: param.流水號
                     })
-                        .then(async res => {
+                        .then(res => {
                             const count = res.data.count;
                             const noDetail = count === 0;
 
+                            // ✅ 將 API 回傳布林狀態，寫入 reactive 物件中
                             Object.assign(this.selectedMasterRow.param, {
                                 canClickShowDetail: res.data.canClickShowDetail,
                                 canClickAddInventoryItem: res.data.canClickAddInventoryItem,
@@ -339,33 +344,23 @@
                                 canClickEditOrDelete: res.data.canClickEditOrDelete
                             });
 
+                            // ✅ 強制觸發畫面重 render（解決按鈕狀態延遲更新）
+                            this.$forceUpdate();
+                            @*await this.$nextTick();*@
+
+                            // 若 rowData 是目前的 data，也可加上標示
                             Vue.set(data, '無明細', noDetail);
 
-                            // ✅ 強制刷新畫面更新按鈕狀態
-                            this.$forceUpdate();
-                            await this.$nextTick();
-
-                            // ✅ 確認可點狀態輸出
-                            console.log('[DEBUG] 🔙 CheckHasDetail 回傳內容：', res.data);
-                            console.log(`[DEBUG] 主檔是否無明細：${noDetail ? '❌ 無' : '✅ 有'}（count=${count}）`);
-                            console.log(`[DEBUG] ➕ 新增品項可點：${res.data.canClickAddInventoryItem}`);
-                            console.log(`[DEBUG] 🔘 顯示明細可點：${res.data.canClickShowDetail}`);
-                            console.log(`[DEBUG] 📝 輸入/完成可點：${res.data.canClickInputOrApprove}`);
                             console.log(`[DEBUG] ✏️ 修改/刪除可點：${res.data.canClickEditOrDelete}`);
                         })
                         .catch(err => {
                             console.error('[ERROR] ❌ CheckHasDetail 發生錯誤：', err);
-                            if (err.response) {
-                                console.error('[ERROR] 回應狀態：', err.response.status);
-                                console.error('[ERROR] 回應內容：', err.response.data);
-                            }
-                            console.error('[ERROR] 錯誤訊息：', err.message);
                         });
 
                 } else {
                     console.warn("[DEBUG] 主檔未選擇任何列！");
                 }
-            };
+            }
 
 
                 // 點擊明細列觸發（如需再利用，可自定後續處理）

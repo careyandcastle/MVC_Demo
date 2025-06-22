@@ -118,22 +118,36 @@
             <b-spinner small type="border" v-if="slot.data.isBusy" class="mr-1"></b-spinner>
             新增
         </b-button>*@
+                    @*<b-button v-if="slot.data.operatePermissions.canCreate"
+                  v-b-modal.master-table-create-modal
+                  :disabled="slot.data.params.data.isBusy"
+                  class="mr-1"
+                  variant="detail3">
+            <b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>
+            新增
+        </b-button>*@
                     <b-button v-if="slot.data.operatePermissions.canCreate"
                               v-b-modal.master-table-create-modal
                               :disabled="slot.data.params.data.isBusy"
-                              class="mr-1"
+                              class="mr-1 position-relative"
                               variant="detail3">
-                        <b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>
+                        <span v-if="slot.data.params.data.isBusy" class="spinner-overlay">
+                            <b-spinner small type="border" class="custom-spinner"></b-spinner>
+                        </span>
                         新增
                     </b-button>
+
 
                     <b-button v-if="slot.data.operatePermissions.canUpdate"
                               v-b-modal.master-table-edit-modal
                               @@click="slot.data.isNewItemOnTop = false"
                               :disabled="!slot.data.selectedMasterRow?.param?.canClickEditOrDelete || slot.data.params.data.isBusy"
-                              class="mr-1"
+                              class="mr-1 position-relative"
                               variant="detail3">
-                        <b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>
+                        @*<b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>*@
+                        <span v-if="slot.data.params.data.isBusy" class="spinner-overlay">
+                            <b-spinner small type="border" class="custom-spinner"></b-spinner>
+                        </span>
                         修改
                     </b-button>
 
@@ -141,19 +155,25 @@
                               v-b-modal.master-table-del-modal
                               @@click="slot.data.isNewItemOnTop = false"
                               :disabled="!slot.data.selectedMasterRow?.param?.canClickEditOrDelete || slot.data.params.data.isBusy"
-                              class="mr-1"
+                              class="mr-1 position-relative"
                               variant="detail3">
-                        <b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>
+                        @*<b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>*@
+                        <span v-if="slot.data.params.data.isBusy" class="spinner-overlay">
+                            <b-spinner small type="border" class="custom-spinner"></b-spinner>
+                        </span>
                         刪除
                     </b-button>
 
                     <b-button v-if="slot.data.operatePermissions.canCreate"
                               v-b-modal.master-table-create-multi-input-modal
                               @@click="slot.data.isNewItemOnTop = false || slot.data.params.data.isBusy"
-                              :disabled="!slot.data.selectedMasterRow?.param?.canClickAddInventoryItem"
-                              class="mr-1"
+                              :disabled="!slot.data.selectedMasterRow?.param?.canClickAddInventoryItem || slot.data.params.data.isBusy"
+                              class="mr-1 position-relative"
                               variant="detail3">
-                        <b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>
+                        @*<b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>*@
+                        <span v-if="slot.data.params.data.isBusy" class="spinner-overlay">
+                            <b-spinner small type="border" class="custom-spinner"></b-spinner>
+                        </span>
                         輸入個別盤點品項
                     </b-button>
 
@@ -161,10 +181,54 @@
                               v-b-modal.master-table-create-full-inventory-modal
                               @@click="slot.data.isNewItemOnTop = false"
                               :disabled="!slot.data.selectedMasterRow?.param?.canClickAddInventoryItem || slot.data.params.data.isBusy"
-                              class="mr-1"
+                              class="mr-1 position-relative"
                               variant="detail3">
-                        <b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>
+                        @*<b-spinner small type="border" v-if="slot.data.params.data.isBusy" class="mr-1"></b-spinner>*@
+                        <span v-if="slot.data.params.data.isBusy" class="spinner-overlay">
+                            <b-spinner small type="border" class="custom-spinner"></b-spinner>
+                        </span>
                         產生整庫盤點品項
+                    </b-button>
+
+
+
+                    <!-- 顯示盤點明細 按鈕 -->
+                    <b-button v-if="slot.data.operatePermissions.canCreate"
+                              v-b-modal.show-inventory-details-modal
+                              @@click="slot.data.isNewItemOnTop = false"
+                              :disabled="!slot.data.selectedMasterRow?.param?.canClickShowDetail || slot.data.params.data.isBusy"
+                              class="mr-1 position-relative"
+                              variant="detail3">
+                        <span v-if="slot.data.params.data.isBusy" class="spinner-overlay">
+                            <b-spinner small type="border" class="custom-spinner"></b-spinner>
+                        </span>
+                        顯示盤點明細
+                    </b-button>
+
+                    <!-- 輸入盤點數量 按鈕 -->
+                    <b-button v-if="slot.data.operatePermissions.canCreate"
+                              v-b-modal.input-inventory-qty-modal
+                              @@click="slot.data.isNewItemOnTop = false"
+                              :disabled="!slot.data.selectedMasterRow?.param?.canClickAddInventoryItem || slot.data.params.data.isBusy"
+                              class="mr-1 position-relative"
+                              variant="detail3">
+                        <span v-if="slot.data.params.data.isBusy" class="spinner-overlay">
+                            <b-spinner small type="border" class="custom-spinner"></b-spinner>
+                        </span>
+                        輸入盤點數量
+                    </b-button>
+
+                    <!-- 核准並異動庫存 按鈕 -->
+                    <b-button v-if="slot.data.operatePermissions.canCreate"
+                              v-b-modal.approve-inventory-modal
+                              @@click="slot.data.isNewItemOnTop = false"
+                              :disabled="!slot.data.selectedMasterRow?.param?.canClickInputOrApprove || slot.data.params.data.isBusy"
+                              class="mr-1 position-relative"
+                              variant="warning">
+                        <span v-if="slot.data.params.data.isBusy" class="spinner-overlay">
+                            <b-spinner small type="border" class="custom-spinner"></b-spinner>
+                        </span>
+                        核准並異動庫存
                     </b-button>
 
                     <b-button v-if="slot.data.operatePermissions.canExport"
@@ -402,14 +466,9 @@
                                 @*isBusy: res.data.isBusy*@
                             });
                             Vue.set(data, '無明細', noDetail);
-                            @*this.isBusy = false; // 顯示 Loading 遮罩*@
                             console.log("{reactive}busy?", params.data.isBusy);
-                            this.$forceUpdate();
                             // ✅ 強制觸發畫面重 render（解決按鈕狀態延遲更新）
-
-                            @*await this.$nextTick();*@
-
-                            // 若 rowData 是目前的 data，也可加上標示
+                            this.$forceUpdate();
 
                             // ✅ 確認可點狀態輸出
                            console.log('[DEBUG] 🔙 CheckHasDetail 回傳內容：', res.data);
@@ -418,7 +477,8 @@
                            console.log(`[DEBUG] 🔘 顯示明細可點：${res.data.canClickShowDetail}`);
                            console.log(`[DEBUG] 📝 輸入/完成可點：${res.data.canClickInputOrApprove}`)
                            console.log(`[DEBUG] ✏️ 修改/刪除可點：${res.data.canClickEditOrDelete}`);
-                            console.log(`[DEBUG] ✏️ busy?：${params.data.isbusy}`);
+                            @*console.log(`[DEBUG] ✏️ 修改/刪除可點：${this.selectedMasterRow.param.canClickEditOrDelete}`);*@
+                           console.log(`[DEBUG] ✏️ busy?：${params.data.isbusy}`);
                         })
                         .catch(err => {
                             console.error('[ERROR] ❌ CheckHasDetail 發生錯誤：', err);
@@ -673,7 +733,7 @@
         })();
     </script>
     <style>
-            .global-wait-overlay {
+            @*.global-wait-overlay {
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -685,7 +745,30 @@
                 justify-content: center;
                 align-items: center;
                 cursor: wait; /* 顯示轉圈圈樣式 */
-            }
+            }*@
+        @*.spinner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            background-color: rgba(0, 0, 0, 0.3); /* 半透明黑色背景 */
+            padding: 10px;
+            border-radius: 0%; /* 圓形背景 */
+        }*@
+        .custom-spinner {
+            border-top-color: #003366; /* 深藍色 */
+            border-right-color: white; /* 白色 */
+            border-bottom-color: #003366; /* 深藍色 */
+            border-left-color: white; /* 白色 */
+        }
+        .spinner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
         </style>
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

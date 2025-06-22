@@ -26,5 +26,12 @@ namespace MVC_Demo2.Models.ViewModel
         public string 倉庫代號 { get; set; }
         public decimal? 庫存數量 { get; set; }
         public decimal? 盤點數量 { get; set; }
+
+
+        //0622
+        public string 商品名稱 { get; set; } // 只作畫面顯示用
+        public string 商品規格 { get; set; }
+        public string 單位 { get; set; }
+
     }
 }

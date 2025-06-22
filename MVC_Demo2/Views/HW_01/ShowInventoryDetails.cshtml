@@ -1,0 +1,55 @@
+﻿@model List<MVC_Demo2.Models.ViewModel.HW_01_庫存盤點明細檔DisplayViewModel>
+
+@{
+    ViewData["Title"] = "顯示盤點明細";
+}
+
+
+<div class="container-fluid">
+    <h4 class="text-primary mb-3">@ViewData["Title"]</h4>
+
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label">倉庫代號</label>
+        <div class="col-sm-4">
+            <input type="text" class="form-control" value="@ViewBag.倉庫代號" readonly />
+        </div>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-danger">⚠️ 庫存盤點明細無資料</div>
+    }
+    else
+    {
+        <table class="table table-bordered table-sm">
+            <thead class="thead-light">
+                <tr>
+                    <th>商品編號</th>
+                    <th>商品名稱</th>
+                    <th>商品規格</th>
+                    <th>商品單位</th>
+                    <th>庫存數量</th>
+                    <th>盤點數量</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderBy(x => x.商品編號))
+                {
+                <tr>
+                    <td>@item.商品編號</td>
+                    <td>@item.商品名稱</td>
+                    <td>@item.商品規格</td>
+                    <td>@item.單位</td>
+                    @*<td class="text-right">@item.庫存數量.ToString("0.####")</td>*@
+                    <td class="text-right">@item.庫存數量</td>
+                    <td class="text-right">@item.盤點數量</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <div class="form-group mt-3">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+    </div>
+</div>

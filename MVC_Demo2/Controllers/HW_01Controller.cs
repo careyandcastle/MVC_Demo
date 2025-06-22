@@ -1779,10 +1779,152 @@ namespace MVC_Demo2.Controllers
         }
 
 
-
-
         [HttpGet]
-        [NeglectActionFilter]
+        //[NeglectActionFilter]
+        public async Task<IActionResult> ShowInventoryDetails(string 進銷存組織, string 單據別, DateTime 日期, int 流水號, string 倉庫代號)
+        {
+            try
+            {
+                var result = await (
+    from d in _context.庫存盤點明細
+    join p in _context.事業商品檔 on d.商品編號 equals p.商品編號
+    where d.進銷存組織 == 進銷存組織
+       && d.單據別 == 單據別
+       && d.日期 == 日期
+       && d.流水號 == 流水號
+    group new { d, p } by new
+    {
+        d.商品編號,
+        d.項次,
+        d.進銷存組織,
+        d.單據別,
+        d.日期,
+        d.流水號,
+        d.庫存數量,
+        d.盤點數量,
+        p.商品名稱,
+        p.商品規格,
+        p.銷售商品單位
+    } into g
+    orderby g.Key.商品編號
+    select new HW_01_庫存盤點明細檔DisplayViewModel
+    {
+        進銷存組織 = g.Key.進銷存組織,
+        單據別 = g.Key.單據別,
+        日期 = g.Key.日期,
+        流水號 = g.Key.流水號,
+        項次 = g.Key.項次,
+        商品編號 = g.Key.商品編號,
+        商品名稱 = g.Key.商品名稱,
+        商品規格 = g.Key.商品規格,
+        單位 = g.Key.銷售商品單位,
+        庫存數量 = g.Key.庫存數量,
+        盤點數量 = g.Key.盤點數量
+    }
+).ToListAsync();
+
+                ViewBag.倉庫代號 = 倉庫代號;
+
+                return PartialView("ShowInventoryDetails", result);
+            }
+            catch (Exception ex)
+            {
+                // 若有 logging，可記錄錯誤
+                return BadRequest("發生錯誤：" + ex.Message);
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> InputInventoryQty(string 進銷存組織, string 單據別, DateTime 日期, int 流水號, string 倉庫代號)
+        {
+            var query = from d in _context.庫存盤點明細
+                        join p in _context.事業商品檔 on d.商品編號 equals p.商品編號 into dp
+                        from p in dp.DefaultIfEmpty()
+                        where d.進銷存組織 == 進銷存組織
+                              && d.單據別 == 單據別
+                              && d.日期 == 日期
+                              && d.流水號 == 流水號
+                        group new { d, p } by new
+                        {
+                            d.商品編號,
+                            d.項次,
+                            d.進銷存組織,
+                            d.單據別,
+                            d.日期,
+                            d.流水號,
+                            d.庫存數量,
+                            d.盤點數量,
+                            倉庫代號,
+                        } into g
+                        orderby g.Key.商品編號
+                        select new HW_01_庫存盤點明細檔BasicViewModel
+                        {
+                            商品編號 = g.Key.商品編號,
+                            項次 = g.Key.項次,
+                            進銷存組織 = g.Key.進銷存組織,
+                            單據別 = g.Key.單據別,
+                            日期 = g.Key.日期,
+                            流水號 = g.Key.流水號,
+                            倉庫代號 = g.Key.倉庫代號,
+                            庫存數量 = g.Key.庫存數量,
+                            盤點數量 = g.Key.盤點數量
+                        };
+
+            var model = await query.ToListAsync();
+
+
+            //var model = await query
+            //    .OrderBy(d => d.項次)
+            //    .ToListAsync();
+
+            ViewBag.倉庫代號 = 倉庫代號;
+            ViewBag.日期顯示 = 日期.ToString("yyyy/MM/dd");
+
+            return PartialView("InputInventoryQty", model);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> InputInventoryQty(List<HW_01_庫存盤點明細檔BasicViewModel> postData)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(postData); // 或回傳錯誤提示
+            }
+
+            foreach (var item in postData)
+            {
+                var entity = await _context.庫存盤點明細
+                    .FirstOrDefaultAsync(x =>
+                        x.進銷存組織 == item.進銷存組織 &&
+                        x.單據別 == item.單據別 &&
+                        x.日期 == item.日期 &&
+                        x.流水號 == item.流水號 &&
+                        x.項次 == item.項次);
+
+                if (entity != null)
+                {
+                    if (item.盤點數量.HasValue)
+                    {
+                        entity.盤點數量 = item.盤點數量.Value;
+                    }
+                    else
+                    {
+                        entity.盤點數量 = 0m;
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
+        }
+        //[HttpGet]
+        ////[NeglectActionFilter]
+        //public async Task<IActionResult> ApproveInventory(string 進銷存組織, string 單據別, DateTime 日期, int 流水號, string 倉庫代號)
+        //{
+        //}
+        [HttpGet]
+        //[NeglectActionFilter]
         public async Task<IActionResult> CreateFullInventoryItems(string 進銷存組織, string 單據別, DateTime 日期, int 流水號, string 倉庫代號)
         {
             try

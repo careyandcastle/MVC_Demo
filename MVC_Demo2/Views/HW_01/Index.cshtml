@@ -194,7 +194,7 @@
 
                     <!-- 顯示盤點明細 按鈕 -->
                     <b-button v-if="slot.data.operatePermissions.canCreate"
-                              v-b-modal.show-inventory-details-modal
+                              v-b-modal.master-table-show-inventory-details-modal
                               @@click="slot.data.isNewItemOnTop = false"
                               :disabled="!slot.data.selectedMasterRow?.param?.canClickShowDetail || slot.data.params.data.isBusy"
                               class="mr-1 position-relative"
@@ -207,7 +207,7 @@
 
                     <!-- 輸入盤點數量 按鈕 -->
                     <b-button v-if="slot.data.operatePermissions.canCreate"
-                              v-b-modal.input-inventory-qty-modal
+                              v-b-modal.master-table-input-inventory-qty-modal
                               @@click="slot.data.isNewItemOnTop = false"
                               :disabled="!slot.data.selectedMasterRow?.param?.canClickAddInventoryItem || slot.data.params.data.isBusy"
                               class="mr-1 position-relative"
@@ -220,7 +220,7 @@
 
                     <!-- 核准並異動庫存 按鈕 -->
                     <b-button v-if="slot.data.operatePermissions.canCreate"
-                              v-b-modal.approve-inventory-modal
+                              v-b-modal.master-table-approve-inventory-modal
                               @@click="slot.data.isNewItemOnTop = false"
                               :disabled="!slot.data.selectedMasterRow?.param?.canClickInputOrApprove || slot.data.params.data.isBusy"
                               class="mr-1 position-relative"
@@ -267,6 +267,9 @@
                     <fetched-page-modal url="Delete" :param="slot.data.selectedMasterRow?.param" id="master-table-del-modal" size="lg" close-on-success="true" title="刪除資料"></fetched-page-modal>
                     <fetched-page-modal url="CreateMultiInput" :param="slot.data.selectedMasterRow?.param" id="master-table-create-multi-input-modal" size="lg" close-on-success="true" title="輸入個別盤點品項"></fetched-page-modal>
                     <fetched-page-modal url="CreateFullInventoryItems" :param="slot.data.selectedMasterRow?.param" id="master-table-create-full-inventory-modal" size="lg" close-on-success="true" title="產生整庫盤點品項"></fetched-page-modal>
+                    <fetched-page-modal url="ShowInventoryDetails" :param="slot.data.selectedMasterRow?.param" id="master-table-show-inventory-details-modal" size="lg" close-on-success="true" title="顯示盤點明細"></fetched-page-modal>
+                    <fetched-page-modal url="InputInventoryQty" :param="slot.data.selectedMasterRow?.param" id="master-table-input-inventory-qty-modal" size="lg" close-on-success="true" title="輸入盤點數量"></fetched-page-modal>
+                    <fetched-page-modal url="ApproveInventory" :param="slot.data.selectedMasterRow?.param" id="master-table-approve-inventory-modal" size="lg" close-on-success="true" title="核准並異動庫存"></fetched-page-modal>
                     <query-page-modal id="master-table-query-modal" title="進階查詢" :queryfields="slot.data.mTableFields" :is_filtered="slot.data.isFiltered"></query-page-modal>
                     @*canClick_canClickShowDetail: true,
         canClick_canClickAddInventoryItem: true,

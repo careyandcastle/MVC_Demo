@@ -1,0 +1,33 @@
+﻿@model List<MVC_Demo2.Models.ViewModel.HW_01_庫存盤點明細檔BasicViewModel>
+
+<form asp-action="InputInventoryQty" method="post">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>商品編號</th>
+                <th>庫存數量</th>
+                <th>盤點數量</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <tr>
+                    <td>@Model[i].商品編號</td>
+                    <td>@Model[i].庫存數量</td>
+                    <td>
+                        <input asp-for="@Model[i].盤點數量" class="form-control" />
+                        <input type="hidden" asp-for="@Model[i].進銷存組織" />
+                        <input type="hidden" asp-for="@Model[i].單據別" />
+                        <input type="hidden" asp-for="@Model[i].日期" />
+                        <input type="hidden" asp-for="@Model[i].流水號" />
+                        <input type="hidden" asp-for="@Model[i].項次" />
+                        <input type="hidden" asp-for="@Model[i].商品編號" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">儲存</button>
+</form>

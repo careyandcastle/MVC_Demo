@@ -260,8 +260,17 @@ namespace MVC_Demo2.Controllers
 
             try
             {
-                Debug.WriteLine("[Create] ▶ 即將呼叫 Get倉庫選項Async");
-                var 倉庫選項 = await Get倉庫選項Async(biz, dept, div, branch, org);
+                //Debug.WriteLine("[Create] ▶ 即將呼叫 Get倉庫選項Async");
+                var 倉庫選項 = await _context.倉庫基本檔
+                .Where(s => s.倉庫組織 == org && s.是否暫停入庫 == false && s.是否裁撤 == false)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.倉庫代號 + "_" + s.倉庫名稱,
+                    Value = s.倉庫代號
+                }).ToListAsync();
+                倉庫選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
+ 
+                ViewBag.倉庫選項 = 倉庫選項;
 
                 Debug.WriteLine($"[Create] ▶ 查詢符合條件的倉庫筆數：{倉庫選項.Count}");
                 foreach (var item in 倉庫選項)
@@ -547,7 +556,15 @@ namespace MVC_Demo2.Controllers
             //{ };
 
 
-            var 倉庫選項 = await Get倉庫選項Async(biz, dept, div, branch, 進銷存組織);
+            var 倉庫選項 = await _context.倉庫基本檔
+                .Where(s => s.倉庫組織 == org && s.是否暫停入庫 == false && s.是否裁撤 == false)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.倉庫代號 + "_" + s.倉庫名稱,
+                    Value = s.倉庫代號
+                }).ToListAsync();
+            倉庫選項.Insert(0, new SelectListItem { Text = "--請選擇--", Value = "" });
+            ViewBag.倉庫選項 = 倉庫選項;
             ViewBag.倉庫代號選項 = 倉庫選項;
             // 預備倉庫下拉（含條件）
             //ViewBag.倉庫代號選項 = await _context.倉庫基本檔
@@ -1464,30 +1481,87 @@ namespace MVC_Demo2.Controllers
         }
 
         //private async Task<List<SelectListItem>> Get品項選項_依據庫存日檔Async_for_createMultiInput(string 進銷存組織, string 倉庫代號, DateTime 日期)
+        //    private async Task<List<SelectListItem>> Get品項選項_依據庫存日檔Async_for_createMultiInput(
+        //string 進銷存組織,
+        //string 倉庫代號,
+        //DateTime 主檔日期,
+        //DateTime 日期,
+        //string 單據別,
+        //int 流水號)
+        //    {
+        //        Debug.WriteLine("📥 [Get品項選項_依據庫存日檔Async_for_createMultiInput] 接收參數");
+        //        Debug.WriteLine($"▶ 進銷存組織 = {進銷存組織}");
+        //        Debug.WriteLine($"▶ 倉庫代號   = {倉庫代號}");
+        //        Debug.WriteLine($"▶ 日期       = {日期:yyyy-MM-dd}");
+        //        Debug.WriteLine($"▶ 單據別     = {單據別}");
+        //        Debug.WriteLine($"▶ 流水號     = {流水號}");
+
+        //        var 事業 = 進銷存組織?.Length >= 2 ? 進銷存組織.Substring(0, 2) : "";
+        //        Debug.WriteLine($"▶ 轉換後事業 = {事業}");
+
+        //        // ✅ 正確排除：限制條件一致
+        //        var existingProductIds = await _context.庫存盤點明細
+        //            .Where(d =>
+        //                d.進銷存組織 == 進銷存組織 &&
+        //                d.單據別 == 單據別 &&
+        //                d.日期 == 主檔日期 &&
+        //                d.流水號 == 流水號)
+        //            .Select(d => d.商品編號)
+        //            .ToListAsync();
+
+        //        Debug.WriteLine($"▶ 已存在明細商品數量 = {existingProductIds.Count}");
+
+        //        var query = from s in _context.庫存日檔
+        //                    join p in _context.事業商品檔
+        //                        on new { s.商品編號, 事業 } equals new { p.商品編號, p.事業 }
+        //                    where s.倉庫組織 == 進銷存組織
+        //                          && s.倉庫代號 == 倉庫代號
+        //                          && s.日期 == 日期
+        //                          && p.是否停用 == false
+        //                          && p.是否暫停銷售 == false
+        //                          && !existingProductIds.Contains(s.商品編號)
+        //                    group new { s, p } by new { s.商品編號, p.商品簡稱 } into g
+        //                    orderby g.Key.商品編號
+        //                    select new SelectListItem
+        //                    {
+        //                        Value = g.Key.商品編號,
+        //                        Text = g.Key.商品編號 + "_" + g.Key.商品簡稱
+        //                    };
+
+        //        var result = await query.ToListAsync();
+
+        //        Debug.WriteLine($"✅ 查詢商品選項數量 = {result.Count}");
+
+        //        foreach (var item in result)
+        //        {
+        //            Debug.WriteLine($"▶ 商品選項：Value={item.Value}, Text={item.Text}");
+        //        }
+
+        //        result.Insert(0, new SelectListItem { Value = "", Text = "--請選擇--" });
+        //        return result;
+        //    }
         private async Task<List<SelectListItem>> Get品項選項_依據庫存日檔Async_for_createMultiInput(
-    string 進銷存組織,
-    string 倉庫代號,
-    DateTime 主檔日期,
-    DateTime 日期,
-    string 單據別,
-    int 流水號)
+        string 進銷存組織,
+        string 倉庫代號,
+        DateTime 主檔日期,
+        DateTime 日期,
+        string 單據別,
+        int 流水號)
         {
             Debug.WriteLine("📥 [Get品項選項_依據庫存日檔Async_for_createMultiInput] 接收參數");
             Debug.WriteLine($"▶ 進銷存組織 = {進銷存組織}");
             Debug.WriteLine($"▶ 倉庫代號   = {倉庫代號}");
-            Debug.WriteLine($"▶ 日期       = {日期:yyyy-MM-dd}");
+            Debug.WriteLine($"▶ 主檔日期   = {主檔日期:yyyy-MM-dd}");
+            Debug.WriteLine($"▶ 列帳日期   = {日期:yyyy-MM-dd}");
             Debug.WriteLine($"▶ 單據別     = {單據別}");
             Debug.WriteLine($"▶ 流水號     = {流水號}");
 
-            var 事業 = 進銷存組織?.Length >= 2 ? 進銷存組織.Substring(0, 2) : "";
-            Debug.WriteLine($"▶ 轉換後事業 = {事業}");
-
-            // ✅ 正確排除：限制條件一致
             var existingProductIds = await _context.庫存盤點明細
                 .Where(d =>
                     d.進銷存組織 == 進銷存組織 &&
-                    d.單據別 == 單據別 &&
+                    //d.倉庫代號 == 倉庫代號 &&        // ✅ 加入倉庫代號條件
                     d.日期 == 主檔日期 &&
+                    d.單據別 == 單據別 &&
                     d.流水號 == 流水號)
                 .Select(d => d.商品編號)
                 .ToListAsync();
@@ -1495,20 +1569,20 @@ namespace MVC_Demo2.Controllers
             Debug.WriteLine($"▶ 已存在明細商品數量 = {existingProductIds.Count}");
 
             var query = from s in _context.庫存日檔
-                        join p in _context.事業商品檔
-                            on new { s.商品編號, 事業 } equals new { p.商品編號, p.事業 }
+                        join p in _context.事業商品檔 on s.商品編號 equals p.商品編號
                         where s.倉庫組織 == 進銷存組織
-                              && s.倉庫代號 == 倉庫代號
-                              && s.日期 == 日期
-                              && p.是否停用 == false
-                              && p.是否暫停銷售 == false
-                              && !existingProductIds.Contains(s.商品編號)
-                        group new { s, p } by new { s.商品編號, p.商品簡稱 } into g
+                           && s.倉庫代號 == 倉庫代號
+                           && s.日期 == 日期
+                           && s.本日結存數量 != 0
+                           && p.是否停用 == false
+                           && p.是否暫停銷售 == false
+                           && !existingProductIds.Contains(s.商品編號)
+                        group new { s, p } by new { s.商品編號, p.商品名稱 } into g
                         orderby g.Key.商品編號
                         select new SelectListItem
                         {
                             Value = g.Key.商品編號,
-                            Text = g.Key.商品編號 + "_" + g.Key.商品簡稱
+                            Text = g.Key.商品編號 + "_" + g.Key.商品名稱
                         };
 
             var result = await query.ToListAsync();
@@ -1523,26 +1597,50 @@ namespace MVC_Demo2.Controllers
             result.Insert(0, new SelectListItem { Value = "", Text = "--請選擇--" });
             return result;
         }
-
-        private async Task<List<MVC_Demo2.Models.ViewModel.HW_01_商品選項項目ViewModel>> Get品項選項_依據庫存日檔Async_for_fullInventory(
-    string 進銷存組織, string 倉庫代號, DateTime 列帳日)
+        private async Task<List<HW_01_商品選項項目ViewModel>> Get品項選項_依據庫存日檔Async_for_fullInventory(
+    string 進銷存組織, string 倉庫代號, DateTime 列帳日, DateTime 主檔日期, string 單據別, int 流水號)
         {
+            var existingProductIds = await _context.庫存盤點明細
+                .Where(d =>
+                    d.進銷存組織 == 進銷存組織 &&
+                    //d.倉庫代號 == 倉庫代號 &&
+                    d.日期 == 主檔日期 &&
+                    d.單據別 == 單據別 &&
+                    d.流水號 == 流水號)
+                .Select(d => d.商品編號)
+                .ToListAsync();
+
+            Debug.WriteLine($"❗ 已存在明細商品數量 = {existingProductIds.Count}");
+
             var query = from s in _context.庫存日檔
                         join p in _context.事業商品檔 on s.商品編號 equals p.商品編號
                         where s.倉庫組織 == 進銷存組織
                            && s.倉庫代號 == 倉庫代號
                            && s.日期 == 列帳日
                            && s.本日結存數量 != 0
-                        select new MVC_Demo2.Models.ViewModel.HW_01_商品選項項目ViewModel
+                           && !existingProductIds.Contains(s.商品編號)
+                        group new { s, p } by new { s.商品編號, p.商品名稱 } into g
+                        //select new HW_01_商品選項項目ViewModel
+                        //{
+                        //    商品編號 = s.商品編號,
+                        //    商品名稱 = p.商品名稱,
+                        //    結存數量 = s.本日結存數量
+                        //};
+                        select new HW_01_商品選項項目ViewModel
                         {
-                            商品編號 = s.商品編號,
-                            商品名稱 = p.商品名稱,
-                            結存數量 = s.本日結存數量
+                            商品編號 = g.Key.商品編號,
+                            商品名稱 = g.Key.商品名稱,
+                            結存數量 = g.Sum(x => x.s.本日結存數量) // ✅ 可改為 Max / Min / First
                         };
 
-            return await query.ToListAsync();
+            var result = await query.ToListAsync();
+
+            Debug.WriteLine($"✅ 查得商品清單數 = {result.Count}");
+            return result;
         }
 
+
+         
 
         //private async Task<List<商品選項項目>> Get品項選項_依據庫存日檔Async_for_fullInventory(string 進銷存組織, string 倉庫代號, DateTime 日期)
         //{
@@ -1706,7 +1804,7 @@ namespace MVC_Demo2.Controllers
                     .FirstOrDefaultAsync(x => x.倉庫組織 == org && x.倉庫代號 == 倉庫代號);
                 ViewBag.倉庫簡稱 = warehouse?.倉庫簡稱 ?? "(查無簡稱)";
 
-                var 品項選項 = await Get品項選項_依據庫存日檔Async_for_fullInventory(進銷存組織, 倉庫代號, 列帳日格式化);
+                var 品項選項 = await Get品項選項_依據庫存日檔Async_for_fullInventory(進銷存組織, 倉庫代號, 列帳日格式化, 日期, 單據別, 流水號);
 
                 ViewBag.品項選項 = 品項選項;
 

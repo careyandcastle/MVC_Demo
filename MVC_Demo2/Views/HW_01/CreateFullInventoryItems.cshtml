@@ -1,69 +1,8 @@
 ﻿@model MVC_Demo2.Models.ViewModel.HW_01_庫存盤點明細檔CreateViewModel
 @{ ViewData["Title"] = "產生整庫盤點品項";
-    var 商品選項 = ViewBag.品項選項 as List<SelectListItem>; }
-
-<div class="container-fluid">
-    <h4 class="text-primary mb-3">@ViewData["Title"]</h4>
-    <div class="row">
-        <div class="col-md-12">
-
-            <form asp-action="CreateFullInventoryItems" method="post">
-                @Html.AntiForgeryToken()
-
-                <!-- 顯示欄位區域 -->
-                <div class="form-group row">
-                    <label class="col-sm-2 col-form-label">倉庫簡稱</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" value="@ViewBag.倉庫簡稱" readonly />
-                    </div>
-
-                    <label class="col-sm-2 col-form-label">庫存日期</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" value="@ViewBag.var列帳日期" readonly />
-                    </div>
-                </div>
-
-                <!-- 自動產生列示區（直接列出所有商品） -->
-                <table class="table table-bordered table-sm" id="item-list-table">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>商品編號</th>
-                            <th>商品名稱</th>
-                            <th>結存數量</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                        @foreach (var item in ViewBag.品項選項)
-                        {
-                            <tr>
-                                <td>
-                                    @item.商品編號
-                                    <input type="hidden" name="選項清單[].商品編號" value="@item.商品編號" />
-                                </td>
-                                <td>@item.商品名稱</td>
-                                <td>@item.結存數量</td>
-                            </tr>
-                        }
-
-                    </tbody>
-                </table>
-
-                <!-- 隱藏原始鍵值 -->
-                @Html.HiddenFor(m => m.進銷存組織)
-                @Html.HiddenFor(m => m.單據別)
-                @Html.HiddenFor(m => m.日期)
-                @Html.HiddenFor(m => m.流水號)
-                @Html.HiddenFor(m => m.倉庫代號)
-
-                <!-- 存檔/關閉按鈕 -->
-                <div class="form-group mt-4">
-                    <button type="submit" class="btn btn-primary">產生整庫品項</button>
-                    <button type="button" class="btn btn-secondary" dat@model MVC_Demo2.Models.ViewModel.HW_01_庫存盤點明細檔CreateViewModel
-@{ ViewData["Title"] = "產生整庫盤點品項";
     @*var 商品選項 = ViewBag.品項選項 as List<SelectListItem>; }*@
     @*var 商品選項 = ViewBag.品項選項 as List<MVC_Demo2.Models.ViewModel.HW_01_商品選項項目ViewModel>;*@
-var 商品選項 = ViewBag.品項選項 as List<MVC_Demo2.Models.ViewModel.HW_01_商品選項項目ViewModel>;
+    var 商品選項 = ViewBag.品項選項 as List<MVC_Demo2.Models.ViewModel.HW_01_商品選項項目ViewModel>;
 }
 <div class="container-fluid">
     <h4 class="text-primary mb-3">@ViewData["Title"]</h4>
@@ -98,16 +37,16 @@ var 商品選項 = ViewBag.品項選項 as List<MVC_Demo2.Models.ViewModel.HW_01
                     <tbody>
 
                         @*@foreach (var item in ViewBag.品項選項)
-        {
-            <tr>
-                <td>
-                    @item.商品編號
-                    <input type="hidden" name="選項清單[].商品編號" value="@item.商品編號" />
-                </td>
-                <td>@item.商品名稱</td>
-                <td>@item.結存數量</td>
-            </tr>
-        }*@
+                            {
+                                <tr>
+                                    <td>
+                                        @item.商品編號
+                                        <input type="hidden" name="選項清單[].商品編號" value="@item.商品編號" />
+                                    </td>
+                                    <td>@item.商品名稱</td>
+                                    <td>@item.結存數量</td>
+                                </tr>
+                            }*@
                         @for (int i = 0; i < 商品選項.Count; i++)
                         {
                             var item = 商品選項[i];
@@ -119,8 +58,8 @@ var 商品選項 = ViewBag.品項選項 as List<MVC_Demo2.Models.ViewModel.HW_01
                                 <td>@item.商品名稱</td>
                                 <td>
                                     @item.結存數量
-                                                                <input type="hidden" name="選項清單[@i].庫存數量" value="@item.結存數量" />
-                                                            </td>
+                                    <input type="hidden" name="選項清單[@i].庫存數量" value="@item.結存數量" />
+                                </td>
 
                             </tr>
                         }
@@ -140,11 +79,6 @@ var 商品選項 = ViewBag.品項選項 as List<MVC_Demo2.Models.ViewModel.HW_01
                 <div class="form-group mt-4">
                     <button type="submit" class="btn btn-primary">產生整庫品項</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>a-dismiss="modal">關閉</button>
                 </div>
             </form>
         </div>
